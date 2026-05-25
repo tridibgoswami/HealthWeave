@@ -43,7 +43,8 @@ async def init_db() -> None:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
-        await Base.metadata.create_all(bind=conn)  # type: ignore[arg-type]
+        # SQLAlchemy 2.0 async: use run_sync for DDL
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

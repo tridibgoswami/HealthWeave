@@ -12,7 +12,7 @@ from sqlalchemy import (
     String, Text, JSON, Enum as SAEnum, func, Index,
 )
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as orm_relationship
 
 from app.core.database import Base
 
@@ -72,7 +72,7 @@ class FamilyMember(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    user = relationship("User", foreign_keys=[user_id], back_populates="family_members")
+    user = orm_relationship("User", foreign_keys="FamilyMember.user_id", back_populates="family_members")
 
 
 class FamilyHereditaryRisk(Base):

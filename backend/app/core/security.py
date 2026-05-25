@@ -9,7 +9,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 

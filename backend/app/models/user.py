@@ -64,7 +64,7 @@ class User(Base):
     # Relationships
     profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     health_records = relationship("HealthRecord", back_populates="user", cascade="all, delete-orphan")
-    family_members = relationship("FamilyMember", back_populates="user", cascade="all, delete-orphan")
+    family_members = relationship("FamilyMember", foreign_keys="FamilyMember.user_id", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
     emergency_passport = relationship("EmergencyPassport", back_populates="user", uselist=False, cascade="all, delete-orphan")
     health_scores = relationship("HealthScore", back_populates="user", cascade="all, delete-orphan")
