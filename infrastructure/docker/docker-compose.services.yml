@@ -1,0 +1,70 @@
+version: "3.9"
+
+# HealthWeave – Infrastructure services only (DB + Redis + MinIO)
+# Run this when developing the API locally outside Docker.
+#
+# Ports shifted to avoid conflicts with existing local services:
+#   PostgreSQL → 5433  (your machine's existing PG uses 5432)
+#   MinIO API  → 9002  (9000 reserved for local uvicorn)
+#   MinIO UI   → 9003
+#   Redis      → 6379  (standard, usually free)
+#
+# Usage:
+#   docker compose -f infrastructure/docker/docker-compose.services.yml up -d
+
+services:
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: healthweave-db
+    environment:
+      POSTGRES_USER: healthweave
+      POSTGRES_PASSWORD: healthweave
+      POSTGRES_DB: healthweave
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthweave"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: healthweave-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  minio:
+    image: minio/minio:latest
+    container_name: healthweave-minio
+    environment:
+      MINIO_ROOT_USER: healthweave
+      MINIO_ROOT_PASSWORD: healthweave123
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
