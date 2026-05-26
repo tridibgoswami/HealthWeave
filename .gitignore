@@ -42,3 +42,4 @@ htmlcov/
 
 # Docker volumes
 data/
+node_modules/
