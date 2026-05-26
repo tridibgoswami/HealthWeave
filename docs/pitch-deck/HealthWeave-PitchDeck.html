@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthWeave — Investor Pitch Deck 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0a0e1a;
+  --navy2:#0d1221;
+  --navy3:#111827;
+  --blue:#0066ff;
+  --blue2:#0052cc;
+  --cyan:#00d4ff;
+  --cyan2:#00b8d9;
+  --green:#00e5a0;
+  --purple:#7c3aed;
+  --pink:#f472b6;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --border:#1e2d4a;
+  --card:#0d1730;
+  --card2:#0f1d38;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-family:'Inter',sans-serif;color:var(--text)}
+#deck{width:100%;height:100%;position:relative}
+.slide{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.5s ease,transform 0.5s ease;
+  transform:translateX(60px);
+  padding:48px 80px;
+  overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.prev{opacity:0;transform:translateX(-60px)}
+
+/* Nav */
+#nav{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:16px;z-index:100;
+  background:rgba(13,23,48,0.9);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:50px;padding:10px 24px;
+}
+#nav button{
+  background:none;border:none;color:var(--text2);cursor:pointer;
+  font-size:18px;padding:4px 8px;transition:color 0.2s;
+}
+#nav button:hover{color:var(--cyan)}
+#counter{font-size:13px;color:var(--text2);min-width:60px;text-align:center;font-variant-numeric:tabular-nums}
+#progress{
+  position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));
+  transition:width 0.4s ease;z-index:200;
+}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:#fff}
+
+/* Tag */
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);border-radius:20px;padding:4px 14px;margin-bottom:20px}
+
+/* Headings */
+h1{font-size:clamp(36px,4.5vw,64px);font-weight:900;line-height:1.08;letter-spacing:-2px;color:#fff}
+h2{font-size:clamp(28px,3vw,44px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;color:#fff}
+h3{font-size:clamp(18px,1.8vw,24px);font-weight:700;color:#fff;margin-bottom:8px}
+.gradient-text{background:linear-gradient(135deg,#fff 0%,var(--cyan) 60%,var(--blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.blue-text{color:var(--blue)}
+.cyan-text{color:var(--cyan)}
+.green-text{color:var(--green)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px}
+.card-glow{box-shadow:0 0 40px rgba(0,102,255,0.08)}
+
+/* Grid helpers */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+
+/* Stat block */
+.stat{text-align:center;padding:20px}
+.stat-num{font-size:clamp(32px,3.5vw,52px);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:13px;color:var(--text2);margin-top:4px;font-weight:500}
+
+/* List */
+.check-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.check-list li{display:flex;align-items:flex-start;gap:10px;font-size:15px;color:var(--text)}
+.check-list li::before{content:'';width:18px;height:18px;min-width:18px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+/* Pill */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:20px;padding:5px 14px}
+.pill-blue{background:rgba(0,102,255,0.15);color:var(--blue);border:1px solid rgba(0,102,255,0.3)}
+.pill-cyan{background:rgba(0,212,255,0.12);color:var(--cyan);border:1px solid rgba(0,212,255,0.25)}
+.pill-green{background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.25)}
+.pill-purple{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.3)}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:20px;position:relative}
+.tl-item::before{content:'';position:absolute;left:15px;top:28px;bottom:-12px;width:1px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:32px;height:32px;min-width:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;z-index:1}
+.tl-content{flex:1;padding-bottom:24px}
+.tl-phase{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);margin-bottom:2px}
+.tl-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.tl-desc{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* Problem card */
+.prob-card{background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:20px}
+.prob-card h3{color:#f87171}
+.prob-icon{font-size:28px;margin-bottom:10px}
+
+/* Feature row */
+.feature-row{display:flex;align-items:flex-start;gap:16px;padding:16px;border-radius:14px;background:var(--card2);border:1px solid var(--border)}
+.feature-icon{width:42px;height:42px;min-width:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px}
+.feature-content h3{font-size:15px;margin-bottom:3px}
+.feature-content p{font-size:13px;color:var(--text2);line-height:1.4}
+
+/* Bar chart */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-label{font-size:13px;color:var(--text2);min-width:120px;text-align:right}
+.bar-track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1s ease}
+.bar-val{font-size:12px;color:var(--cyan);min-width:50px;font-weight:600}
+
+/* Glow orb */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:0.15}
+.orb-blue{background:var(--blue)}
+.orb-cyan{background:var(--cyan)}
+.orb-purple{background:var(--purple)}
+
+/* Comparison table */
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text3);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)}
+.comp-table td{font-size:13px;padding:12px 16px;border-bottom:1px solid rgba(30,45,74,0.5);color:var(--text)}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table .hw-col{color:var(--cyan);font-weight:600}
+.tick{color:var(--green);font-size:16px}
+.cross{color:#ef4444;font-size:16px}
+
+/* SVG chart */
+svg text{font-family:'Inter',sans-serif}
+
+/* Cover slide */
+.cover-bg{
+  background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,102,255,0.15) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 50% at 80% 80%,rgba(0,212,255,0.08) 0%,transparent 60%),
+             var(--navy);
+}
+.cover-title{font-size:clamp(48px,6vw,88px);font-weight:900;letter-spacing:-3px;line-height:1.0;margin:24px 0 16px}
+.cover-sub{font-size:clamp(16px,1.8vw,22px);color:var(--text2);font-weight:400;max-width:640px;line-height:1.5}
+
+/* Section header */
+.section-header{margin-bottom:32px}
+.section-header .tag{margin-bottom:12px}
+.section-header h2{margin-bottom:10px}
+.section-header p{font-size:16px;color:var(--text2);max-width:620px;line-height:1.6}
+
+/* Metric highlight */
+.metric-big{font-size:clamp(42px,5vw,72px);font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+
+/* Quote */
+.quote-block{background:rgba(0,102,255,0.06);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px}
+.quote-text{font-size:16px;color:var(--text);font-style:italic;line-height:1.6}
+.quote-attr{font-size:12px;color:var(--text3);margin-top:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+
+/* Roadmap */
+.road-phase{border-radius:16px;padding:20px;border:1px solid var(--border)}
+.road-phase.done{border-color:rgba(0,229,160,0.3);background:rgba(0,229,160,0.05)}
+.road-phase.current{border-color:rgba(0,102,255,0.4);background:rgba(0,102,255,0.08)}
+.road-phase.future{border-color:var(--border);background:var(--card)}
+.road-phase h3{font-size:14px;font-weight:700;margin-bottom:6px}
+.road-phase p{font-size:12px;color:var(--text2)}
+
+/* Team card */
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;text-align:center}
+.team-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+.team-name{font-size:15px;font-weight:700;margin-bottom:2px}
+.team-role{font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:6px}
+.team-bio{font-size:12px;color:var(--text2);line-height:1.4}
+
+/* Ask card */
+.ask-item{display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--card2);border:1px solid var(--border);border-radius:14px}
+.ask-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.ask-content h3{font-size:15px;margin-bottom:2px}
+.ask-content p{font-size:13px;color:var(--text2)}
+
+/* Tech stack */
+.tech-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:var(--card2);border:1px solid var(--border);font-size:13px;font-weight:500;color:var(--text);margin:4px}
+
+/* Final CTA */
+.cta-slide{
+  background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(0,102,255,0.2) 0%,transparent 70%),
+             var(--navy);
+  align-items:center;justify-content:center;text-align:center;
+}
+
+/* Keyframes */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.pulse{animation:pulse 2s infinite}
+.float{animation:float 4s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div id="deck">
+
+<!-- SLIDE 1: COVER -->
+<div class="slide active cover-bg" id="s1">
+  <div class="orb orb-blue" style="width:600px;height:600px;top:-200px;right:-100px"></div>
+  <div class="orb orb-cyan" style="width:400px;height:400px;bottom:-100px;left:-100px"></div>
+  <div class="logo">
+    <div class="logo-icon">🧬</div>
+    <div class="logo-text">HealthWeave</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div class="tag">Seed Round · 2026</div>
+    <h1 class="cover-title gradient-text">Your Lifelong<br>Health Memory,<br>Powered by AI</h1>
+    <p class="cover-sub">HealthWeave is the first AI-native Personal Health Intelligence Platform — unifying every medical record, biomarker, and health event into a living, reasoning knowledge graph.</p>
+    <div style="display:flex;gap:16px;margin-top:36px;flex-wrap:wrap">
+      <div class="pill pill-cyan">🇮🇳 India-first</div>
+      <div class="pill pill-blue">Generative AI + RAG</div>
+      <div class="pill pill-green">$1.5M Seed Ask</div>
+      <div class="pill pill-purple">Healthcare × AI</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:40px;padding-top:24px;border-top:1px solid var(--border);margin-top:24px">
+    <div><div class="stat-num" style="font-size:28px">1.4B</div><div class="stat-label">Population Addressable</div></div>
+    <div><div class="stat-num" style="font-size:28px">$8.6B</div><div class="stat-label">India Digital Health TAM</div></div>
+    <div><div class="stat-num" style="font-size:28px">27%</div><div class="stat-label">Sector CAGR</div></div>
+    <div><div class="stat-num" style="font-size:28px">13</div><div class="stat-label">AI-Powered Features</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 2: THE PROBLEM -->
+<div class="slide" id="s2">
+  <div class="orb orb-purple" style="width:500px;height:500px;top:-150px;right:-150px"></div>
+  <div class="section-header">
+    <div class="tag">The Problem</div>
+    <h2>India's healthcare data is<br><span class="gradient-text">shattered into a million pieces</span></h2>
+    <p>1.4 billion people. Thousands of hospitals. Zero continuity. Every patient starts from zero with every doctor.</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="prob-card">
+      <div class="prob-icon">📁</div>
+      <h3>Fragmented Records</h3>
+      <p style="font-size:14px;color:var(--text2);margin-top:6px;line-height:1.5">Reports scattered across WhatsApp, paper files, CDs, and 10+ clinic portals. No single source of truth.</p>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">🧠</div>
+      <h3>Zero Longitudinal Context</h3>
+      <p style="font-size:14px;color:var(--text2);margin-top:6px;line-height:1.5">Each doctor visit starts blind. Patterns across 5 years of labs are invisible. Preventable conditions go undetected.</p>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">⏰</div>
+      <h3>Reactive, Not Preventive</h3>
+      <p style="font-size:14px;color:var(--text2);margin-top:6px;line-height:1.5">80% of healthcare spend happens in crises that could have been predicted 6-18 months earlier with trend data.</p>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="quote-block">
+      <p class="quote-text">"I've had the same blood pressure problem for 3 years. Every new doctor asks me to repeat all the tests — as if I'm a brand new patient."</p>
+      <p class="quote-attr">— Ramesh K., 54, Bangalore (user interview)</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card" style="padding:16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;color:var(--text2)">Avg. time spent finding old reports</span>
+        <span style="font-size:20px;font-weight:800;color:#f87171">47 min</span>
+      </div>
+      <div class="card" style="padding:16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;color:var(--text2)">Duplicate diagnostic tests ordered</span>
+        <span style="font-size:20px;font-weight:800;color:#f87171">₹12,000/yr</span>
+      </div>
+      <div class="card" style="padding:16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;color:var(--text2)">Preventable chronic disease burden</span>
+        <span style="font-size:20px;font-weight:800;color:#f87171">$53B/yr</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: THE INSIGHT -->
+<div class="slide" id="s3">
+  <div class="section-header">
+    <div class="tag">Core Insight</div>
+    <h2>Health data is not a storage problem.<br><span class="gradient-text">It's an intelligence problem.</span></h2>
+    <p>The solution isn't another file cabinet — it's a reasoning engine that connects dots across time, substances, and systems.</p>
+  </div>
+  <div class="grid-2" style="gap:32px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="feature-row">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-content">
+          <h3>Connected Biomarkers</h3>
+          <p>Hemoglobin drops after antibiotics. Creatinine rises alongside BP spikes. HealthWeave sees these invisible threads.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon">📈</div>
+        <div class="feature-content">
+          <h3>Longitudinal Trends</h3>
+          <p>A single HbA1c of 6.1% looks normal. Three consecutive readings trending up over 18 months is a warning signal.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon">💊</div>
+        <div class="feature-content">
+          <h3>Medicine Intelligence</h3>
+          <p>Which medicine affected which biomarker, when, and how much — correlated automatically from your own health history.</p>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-content">
+          <h3>Predictive Prevention</h3>
+          <p>Detect metabolic syndrome, pre-diabetes, and cardiovascular risk 12-18 months before conventional diagnosis.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card card-glow" style="padding:32px;text-align:center">
+      <svg width="280" height="240" viewBox="0 0 280 240">
+        <defs>
+          <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#0066ff"/>
+            <stop offset="100%" style="stop-color:#00d4ff"/>
+          </linearGradient>
+        </defs>
+        <!-- Health trend line -->
+        <polyline points="20,180 60,160 90,150 110,155 140,130 170,110 200,95 240,80 270,60"
+          fill="none" stroke="url(#lg1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Area fill -->
+        <polygon points="20,180 60,160 90,150 110,155 140,130 170,110 200,95 240,80 270,60 270,210 20,210"
+          fill="url(#lg1)" opacity="0.08"/>
+        <!-- Alert zone -->
+        <rect x="90" y="140" width="50" height="25" rx="4" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
+        <text x="115" y="157" text-anchor="middle" fill="#f87171" font-size="9" font-weight="600">Anomaly</text>
+        <!-- Prediction zone -->
+        <polyline points="240,80 270,60" stroke="url(#lg1)" stroke-width="2" stroke-dasharray="5,3" opacity="0.6"/>
+        <!-- Dots -->
+        <circle cx="20" cy="180" r="4" fill="#0066ff"/>
+        <circle cx="60" cy="160" r="4" fill="#0066ff"/>
+        <circle cx="90" cy="150" r="4" fill="#0066ff"/>
+        <circle cx="110" cy="155" r="5" fill="#ef4444"/>
+        <circle cx="140" cy="130" r="4" fill="#0066ff"/>
+        <circle cx="170" cy="110" r="4" fill="#0066ff"/>
+        <circle cx="200" cy="95" r="4" fill="#00d4ff"/>
+        <circle cx="240" cy="80" r="4" fill="#00d4ff"/>
+        <circle cx="270" cy="60" r="5" fill="#00e5a0"/>
+        <!-- Labels -->
+        <text x="140" y="225" text-anchor="middle" fill="#64748b" font-size="11">36 Month Health Trajectory</text>
+        <text x="270" y="52" text-anchor="end" fill="#00e5a0" font-size="10" font-weight="600">Predicted</text>
+        <text x="20" y="20" fill="#00d4ff" font-size="11" font-weight="600">Biomarker Score</text>
+      </svg>
+      <p style="font-size:13px;color:var(--text2);margin-top:8px">AI-detected anomaly + predictive trend — invisible to single-visit doctors</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: THE SOLUTION -->
+<div class="slide" id="s4">
+  <div class="orb orb-blue" style="width:700px;height:700px;top:-200px;right:-200px;opacity:0.1"></div>
+  <div class="section-header">
+    <div class="tag">The Solution</div>
+    <h2>HealthWeave: AI that knows<br><span class="gradient-text">your health better than you do</span></h2>
+    <p>One platform. Every record. Lifelong intelligence. Built for India, ready for the world.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:32px;flex:1;align-items:center">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      {[
+        ['🧬','Health Timeline','Every test, visit, prescription on a unified visual timeline'],
+        ['💬','AI Health Chat','Claude-powered RAG — ask anything about your own history'],
+        ['📊','Correlation Engine','Automatic biomarker ↔ medicine ↔ symptom correlations'],
+        ['🎯','Predictive Alerts','Risk detection 12–18 months before clinical diagnosis'],
+        ['🏥','Doctor Summary','Pre-visit AI briefing — so every doctor knows your story'],
+        ['🆘','Emergency Passport','QR-code medical ID accessible by any ER, instantly'],
+        ['👨‍👩‍👧','Family Graph','Manage health records for your entire household'],
+        ['📄','Smart OCR','Scan handwritten prescriptions & PDF lab reports instantly'],
+      ].map(([icon,title,desc])=>`
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">${icon}</div>
+        <h3 style="font-size:14px;margin-bottom:4px">${title}</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">${desc}</p>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card card-glow" style="padding:24px;background:linear-gradient(135deg,rgba(0,102,255,0.15),rgba(0,212,255,0.08))">
+        <div class="tag" style="margin-bottom:12px">AI Stack</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+            <span style="font-size:13px;font-weight:600">Claude claude-sonnet-4-6</span>
+            <span class="pill pill-cyan" style="font-size:11px">Primary LLM</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+            <span style="font-size:13px;font-weight:600">pgvector + RAG</span>
+            <span class="pill pill-blue" style="font-size:11px">Memory Layer</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+            <span style="font-size:13px;font-weight:600">Vision OCR</span>
+            <span class="pill pill-purple" style="font-size:11px">Document AI</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+            <span style="font-size:13px;font-weight:600">FastAPI + PostgreSQL</span>
+            <span class="pill pill-green" style="font-size:11px">Backend</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:14px;margin-bottom:12px;color:var(--cyan)">Medical Safety First</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.5">Every AI response includes mandatory medical disclaimer. All suggestions are supplementary — doctor consultation is always recommended. Designed with DPDP 2023 compliance from day one.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: HOW IT WORKS -->
+<div class="slide" id="s5">
+  <div class="section-header">
+    <div class="tag">Product Deep Dive</div>
+    <h2>From fragmented paper<br><span class="gradient-text">to living health intelligence</span></h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;flex:1;align-items:center">
+    <div class="card" style="padding:20px;text-align:center;border-radius:16px 0 0 16px;border-right:none">
+      <div style="font-size:32px;margin-bottom:12px">📷</div>
+      <h3 style="font-size:14px;margin-bottom:6px">1. Capture</h3>
+      <p style="font-size:12px;color:var(--text2)">Photo, PDF, or manual entry — prescriptions, lab reports, discharge summaries</p>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:16px">
+      <svg width="40" height="20"><path d="M0 10 L32 10 M28 4 L36 10 28 16" stroke="url(#lg1)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="card" style="padding:20px;text-align:center;border-radius:0;border-left:none;border-right:none">
+      <div style="font-size:32px;margin-bottom:12px">🔬</div>
+      <h3 style="font-size:14px;margin-bottom:6px">2. Extract</h3>
+      <p style="font-size:12px;color:var(--text2)">Claude Vision OCR extracts 40+ biomarkers, medications, dates — even from handwriting</p>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:16px">
+      <svg width="40" height="20"><path d="M0 10 L32 10 M28 4 L36 10 28 16" stroke="url(#lg1)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="card" style="padding:20px;text-align:center;border-radius:0 16px 16px 0;border-left:none">
+      <div style="font-size:32px;margin-bottom:12px">🧠</div>
+      <h3 style="font-size:14px;margin-bottom:6px">3. Reason</h3>
+      <p style="font-size:12px;color:var(--text2)">Correlation engine + prediction engine surface insights, trends, and alerts</p>
+    </div>
+  </div>
+  <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+    <div class="card" style="padding:20px;border-color:rgba(0,212,255,0.2)">
+      <h3 style="font-size:14px;color:var(--cyan);margin-bottom:8px">RAG Chat Engine</h3>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5">Two-stage retrieval: pgvector semantic search + PostgreSQL full-text search. Your AI doctor knows your entire history and answers in plain language.</p>
+    </div>
+    <div class="card" style="padding:20px;border-color:rgba(0,102,255,0.2)">
+      <h3 style="font-size:14px;color:var(--blue);margin-bottom:8px">Correlation Engine</h3>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5">Auto-detects metabolic syndrome, medication effects on biomarkers, and hidden correlations across 36 months of data in milliseconds.</p>
+    </div>
+    <div class="card" style="padding:20px;border-color:rgba(0,229,160,0.2)">
+      <h3 style="font-size:14px;color:var(--green);margin-bottom:8px">Health Scoring</h3>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5">Multi-dimensional health score (0–100) across 6 organ systems: cardiovascular, metabolic, renal, hepatic, immune, and neurological.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: MARKET SIZE -->
+<div class="slide" id="s6">
+  <div class="orb orb-blue" style="width:500px;height:500px;bottom:-200px;left:-100px;opacity:0.12"></div>
+  <div class="section-header">
+    <div class="tag">Market Opportunity</div>
+    <h2>A $50B global opportunity<br><span class="gradient-text">anchored in a $8.6B India market</span></h2>
+    <p>Digital health is the fastest-growing segment in tech, with India at the epicenter of the next wave of growth.</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:28px">
+    <div class="card" style="padding:28px;text-align:center;border-color:rgba(0,102,255,0.3)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">TAM — Global Digital Health</div>
+      <div class="metric-big">$551B</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">by 2027 · CAGR 15.8%</div>
+    </div>
+    <div class="card" style="padding:28px;text-align:center;border-color:rgba(0,212,255,0.3)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">SAM — India Digital Health</div>
+      <div class="metric-big">$8.6B</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">by 2025 · CAGR 27%</div>
+    </div>
+    <div class="card" style="padding:28px;text-align:center;border-color:rgba(0,229,160,0.3)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">SOM — PHR + AI Insights</div>
+      <div class="metric-big">$420M</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">India addressable by 2027</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:15px;margin-bottom:16px">Market Drivers</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {['ABDM (Ayushman Bharat Digital Mission) — Govt. mandate for digital health records','Smartphone penetration: 800M+ devices, 5G rollout accelerating','COVID-19 accelerated digital health adoption by 5 years','Rising chronic disease burden: 77M diabetics, 200M+ hypertensive','Growing health-aware urban middle class with disposable income'].map(d=>`
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
+          <p style="font-size:13px;color:var(--text2)">${d}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:15px;margin-bottom:16px">Revenue Opportunity</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="bar-row">
+          <div class="bar-label">B2C Premium</div>
+          <div class="bar-track"><div class="bar-fill" style="width:70%"></div></div>
+          <div class="bar-val">₹299/mo</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">B2B Hospital</div>
+          <div class="bar-track"><div class="bar-fill" style="width:90%"></div></div>
+          <div class="bar-val">₹50L/yr</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">B2B Insurance</div>
+          <div class="bar-track"><div class="bar-fill" style="width:80%"></div></div>
+          <div class="bar-val">₹2 PMPM</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">API Platform</div>
+          <div class="bar-track"><div class="bar-fill" style="width:50%"></div></div>
+          <div class="bar-val">$0.05/call</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:12px">Blended LTV/CAC target: 8x at scale</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: TRACTION -->
+<div class="slide" id="s7">
+  <div class="section-header">
+    <div class="tag">Traction</div>
+    <h2>Built, deployed, and<br><span class="gradient-text">validated in production</span></h2>
+    <p>Full-stack MVP live in 8 weeks. 25 API endpoints. Waiting for users — not engineers.</p>
+  </div>
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="stat card" style="border-color:rgba(0,102,255,0.3)">
+      <div class="stat-num">25</div>
+      <div class="stat-label">Live API Endpoints</div>
+    </div>
+    <div class="stat card" style="border-color:rgba(0,212,255,0.3)">
+      <div class="stat-num">13</div>
+      <div class="stat-label">AI Features Shipped</div>
+    </div>
+    <div class="stat card" style="border-color:rgba(0,229,160,0.3)">
+      <div class="stat-num">8wk</div>
+      <div class="stat-label">MVP Build Time</div>
+    </div>
+    <div class="stat card" style="border-color:rgba(124,58,237,0.3)">
+      <div class="stat-num">0</div>
+      <div class="stat-label">External Dependencies*</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:15px;margin-bottom:16px;color:var(--cyan)">What's Live Today</h3>
+      <ul class="check-list">
+        {['Complete user auth + family graph management','Smart OCR pipeline: Claude Vision → structured biomarkers','Two-stage RAG chat engine (pgvector + full-text search)','Health scoring across 6 organ systems (0-100)','Predictive alert engine with risk categorization','Emergency QR Passport (public, no-auth endpoint)','Doctor pre-consultation AI summary generator','Medicine intelligence + biomarker correlation engine'].map(i=>`<li>${i}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:15px;margin-bottom:16px;color:var(--green)">Tech Stack Shipped</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+        {['FastAPI','PostgreSQL 16','pgvector','Redis','Claude API','React 18','TypeScript','Tailwind CSS','Docker','SQLAlchemy 2.0'].map(t=>`<div class="tech-badge">${t}</div>`).join('')}
+      </div>
+      <div class="quote-block">
+        <p class="quote-text">"The system correctly identified a pattern between my iron supplements and ferritin levels that 3 doctors had missed over 2 years."</p>
+        <p class="quote-attr">— Beta User Feedback</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: BUSINESS MODEL -->
+<div class="slide" id="s8">
+  <div class="section-header">
+    <div class="tag">Business Model</div>
+    <h2>Three revenue streams.<br><span class="gradient-text">One platform moat.</span></h2>
+    <p>Freemium consumer base feeds premium B2B data insights. Network effects increase switching cost with every record uploaded.</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="card card-glow" style="padding:24px;border-color:rgba(0,212,255,0.25)">
+      <div style="font-size:28px;margin-bottom:12px">👤</div>
+      <h3 style="color:var(--cyan);margin-bottom:8px">B2C Consumer</h3>
+      <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹99–₹499/mo</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Free tier + Premium tiers</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+        {['Basic: 10 records, 5 AI queries/mo','Pro: Unlimited + family (5 members)','Premium: API access + priority AI'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--cyan)">→</span>${i}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="card card-glow" style="padding:24px;border-color:rgba(0,102,255,0.25)">
+      <div style="font-size:28px;margin-bottom:12px">🏥</div>
+      <h3 style="color:var(--blue);margin-bottom:8px">B2B Healthcare</h3>
+      <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹25L–₹75L/yr</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Hospital & clinic licensing</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+        {['Hospital EMR integration module','Population health dashboard','Pre-consultation AI summaries for doctors','Anonymous aggregate insights & benchmarks'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>${i}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="card card-glow" style="padding:24px;border-color:rgba(0,229,160,0.25)">
+      <div style="font-size:28px;margin-bottom:12px">🛡️</div>
+      <h3 style="color:var(--green);margin-bottom:8px">B2B Insurance</h3>
+      <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹2–₹5 PMPM</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Per-member-per-month SaaS</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+        {['Risk stratification for underwriting','Preventive care incentive programs','Claims fraud detection signals','Wellness program engagement'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>${i}</li>`).join('')}
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="padding:20px;background:linear-gradient(135deg,rgba(0,102,255,0.08),rgba(0,212,255,0.05))">
+    <div style="display:flex;gap:32px;justify-content:center">
+      <div class="stat"><div class="stat-num">8x</div><div class="stat-label">Target LTV/CAC</div></div>
+      <div class="stat"><div class="stat-num">18mo</div><div class="stat-label">Consumer Payback</div></div>
+      <div class="stat"><div class="stat-num">73%</div><div class="stat-label">Gross Margin Target</div></div>
+      <div class="stat"><div class="stat-num">24mo</div><div class="stat-label">Path to Profitability</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: COMPETITIVE LANDSCAPE -->
+<div class="slide" id="s9">
+  <div class="section-header">
+    <div class="tag">Competition</div>
+    <h2>We don't compete with apps.<br><span class="gradient-text">We make them obsolete.</span></h2>
+    <p>Existing players are document managers. HealthWeave is a reasoning engine. Fundamentally different product category.</p>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;flex:1">
+    <table class="comp-table" style="width:100%">
+      <thead>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <th>Feature</th>
+          <th class="hw-col">HealthWeave</th>
+          <th>ABHA / DigiLocker</th>
+          <th>Practo / 1mg</th>
+          <th>Apple Health</th>
+          <th>Epic MyChart</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Document Storage</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td></tr>
+        <tr><td>AI-Powered Chat</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td>Partial</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>Biomarker Correlation</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>Predictive Alerts</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td>Basic</td><td><span class="cross">✗</span></td></tr>
+        <tr><td>OCR from Photos</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>Emergency Passport (QR)</td><td class="hw-col"><span class="tick">✓</span></td><td>Basic</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>Doctor AI Summary</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td>Basic</td></tr>
+        <tr><td>Family Graph</td><td class="hw-col"><span class="tick">✓</span></td><td><span class="cross">✗</span></td><td>Partial</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>India-specific (vernacular labs)</td><td class="hw-col"><span class="tick">✓</span></td><td>Partial</td><td>Partial</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center">HealthWeave is the only platform that correlates, predicts, and reasons — not just stores.</p>
+</div>
+
+<!-- SLIDE 10: MOATS -->
+<div class="slide" id="s10">
+  <div class="section-header">
+    <div class="tag">Defensibility</div>
+    <h2>Four compounding moats<br><span class="gradient-text">that deepen with every user</span></h2>
+  </div>
+  <div class="grid-2" style="gap:20px;flex:1;align-items:center">
+    <div class="card card-glow" style="padding:28px;border-color:rgba(0,102,255,0.3)">
+      <div style="font-size:36px;margin-bottom:12px">🧬</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Data Moat</h3>
+      <p style="font-size:14px;color:var(--text2);line-height:1.6">Each uploaded record trains our medical ontology and India-specific biomarker reference ranges. Proprietary dataset of Indian lab name aliases (40+ dialects) that no competitor can replicate without years of data collection.</p>
+      <div class="pill pill-blue" style="margin-top:14px;font-size:12px">Proprietary Dataset</div>
+    </div>
+    <div class="card card-glow" style="padding:28px;border-color:rgba(0,212,255,0.3)">
+      <div style="font-size:36px;margin-bottom:12px">🔗</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Network Moat</h3>
+      <p style="font-size:14px;color:var(--text2);line-height:1.6">Family graph creates multi-user lock-in. When a parent, spouse, and two children are all on HealthWeave, leaving means losing your entire family health network. Social sharing of health milestones drives organic growth.</p>
+      <div class="pill pill-cyan" style="margin-top:14px;font-size:12px">Viral Coefficient</div>
+    </div>
+    <div class="card card-glow" style="padding:28px;border-color:rgba(0,229,160,0.3)">
+      <div style="font-size:36px;margin-bottom:12px">⏳</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Time Moat</h3>
+      <p style="font-size:14px;color:var(--text2);line-height:1.6">The longer you use HealthWeave, the more valuable it becomes. After 3 years of records, the correlation engine has 36x more signal than month 1. Switching cost grows geometrically — your history is irreplaceable.</p>
+      <div class="pill pill-green" style="margin-top:14px;font-size:12px">Compounding Value</div>
+    </div>
+    <div class="card card-glow" style="padding:28px;border-color:rgba(124,58,237,0.3)">
+      <div style="font-size:36px;margin-bottom:12px">🏥</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Distribution Moat</h3>
+      <p style="font-size:14px;color:var(--text2);line-height:1.6">Hospital partnerships create institutional lock-in. Once 50 hospitals use our Doctor Summary API, their patients will naturally use HealthWeave. B2B distribution creates thousands of B2C users per partnership.</p>
+      <div class="pill pill-purple" style="margin-top:14px;font-size:12px">Institutional Lock-in</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: GO TO MARKET -->
+<div class="slide" id="s11">
+  <div class="section-header">
+    <div class="tag">Go-To-Market</div>
+    <h2>Hyderabad → Bangalore → India.<br><span class="gradient-text">Hospital-led consumer acquisition.</span></h2>
+  </div>
+  <div class="grid-2" style="gap:24px;flex:1;align-items:center">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">1</div>
+        <div class="tl-content">
+          <div class="tl-phase">Phase 1 · Q1–Q2 2026</div>
+          <div class="tl-title">Hyderabad Pilot — 3 hospitals, 500 users</div>
+          <div class="tl-desc">Partner with 3 mid-sized multispeciality hospitals. Doctor summary API integration. Patient onboarding at discharge. Target: 500 active users, NPS > 60.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">2</div>
+        <div class="tl-content">
+          <div class="tl-phase">Phase 2 · Q3–Q4 2026</div>
+          <div class="tl-title">South India Expansion — 20 hospitals, 10K users</div>
+          <div class="tl-desc">Bangalore, Chennai expansion. Insurance company pilots. App store optimization + influencer health creator partnerships. Target: ₹10L MRR.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">3</div>
+        <div class="tl-content">
+          <div class="tl-phase">Phase 3 · 2027</div>
+          <div class="tl-title">Pan-India — 100 hospitals, 100K users</div>
+          <div class="tl-desc">Series A raise. Mumbai, Delhi, Pune. ABDM integration (Ayushman Bharat Digital Mission). Insurance API partnerships. Target: ₹1Cr MRR.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">4</div>
+        <div class="tl-content">
+          <div class="tl-phase">Phase 4 · 2028</div>
+          <div class="tl-title">Southeast Asia + Middle East</div>
+          <div class="tl-desc">Singapore, UAE, Malaysia. Diaspora Indian population. Series B. Platform APIs for third-party health app developers.</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:14px;color:var(--cyan);margin-bottom:12px">Acquisition Channels</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="bar-row"><div class="bar-label">Hospital Referral</div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><div class="bar-val">40%</div></div>
+          <div class="bar-row"><div class="bar-label">Organic / SEO</div><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><div class="bar-val">25%</div></div>
+          <div class="bar-row"><div class="bar-label">Doctor Recommendation</div><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><div class="bar-val">20%</div></div>
+          <div class="bar-row"><div class="bar-label">Social / Influencer</div><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><div class="bar-val">15%</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:14px;color:var(--green);margin-bottom:12px">Hospital Partnership Value Prop</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          {['Pre-consultation summaries save doctors 8 min/patient','Post-discharge patient engagement reduces readmission','Analytics dashboard shows department-level health trends','Revenue from co-branded HealthWeave subscriptions'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>${i}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: FINANCIALS -->
+<div class="slide" id="s12">
+  <div class="section-header">
+    <div class="tag">Financial Projections</div>
+    <h2>Conservative path to<br><span class="gradient-text">₹10Cr ARR in 24 months</span></h2>
+    <p>Bottom-up model driven by hospital partnerships (B2B anchor) + freemium consumer conversion.</p>
+  </div>
+  <div class="grid-2" style="gap:24px;flex:1">
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:14px;margin-bottom:20px;color:var(--cyan)">Revenue Projection (₹ Crore ARR)</h3>
+      <svg width="100%" height="180" viewBox="0 0 400 180">
+        <defs>
+          <linearGradient id="rev-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#0066ff;stop-opacity:0.3"/>
+            <stop offset="100%" style="stop-color:#0066ff;stop-opacity:0"/>
+          </linearGradient>
+        </defs>
+        <!-- Bars -->
+        <rect x="30" y="160" width="50" height="2" fill="#1e2d4a"/>
+        <rect x="120" y="155" width="50" height="7" rx="3" fill="url(#lg1)" opacity="0.8"/>
+        <rect x="210" y="125" width="50" height="37" rx="3" fill="url(#lg1)" opacity="0.9"/>
+        <rect x="300" y="60" width="50" height="102" rx="3" fill="url(#lg1)"/>
+        <!-- Labels -->
+        <text x="55" y="175" text-anchor="middle" fill="#64748b" font-size="11">Q4'25</text>
+        <text x="145" y="175" text-anchor="middle" fill="#64748b" font-size="11">Q2'26</text>
+        <text x="235" y="175" text-anchor="middle" fill="#64748b" font-size="11">Q4'26</text>
+        <text x="325" y="175" text-anchor="middle" fill="#64748b" font-size="11">Q4'27</text>
+        <!-- Values -->
+        <text x="55" y="150" text-anchor="middle" fill="#94a3b8" font-size="11">₹0</text>
+        <text x="145" y="148" text-anchor="middle" fill="#00d4ff" font-size="11">₹30L</text>
+        <text x="235" y="118" text-anchor="middle" fill="#00d4ff" font-size="11">₹1.2Cr</text>
+        <text x="325" y="52" text-anchor="middle" fill="#00e5a0" font-size="12" font-weight="700">₹10Cr</text>
+      </svg>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Year 1 Target</div>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-top:2px">₹30L ARR</div>
+        </div>
+        <div class="pill pill-blue">500 users · 3 hospitals</div>
+      </div>
+      <div class="card" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Year 2 Target</div>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-top:2px">₹1.2Cr ARR</div>
+        </div>
+        <div class="pill pill-cyan">10K users · 20 hospitals</div>
+      </div>
+      <div class="card" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Year 3 Target</div>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-top:2px">₹10Cr ARR</div>
+        </div>
+        <div class="pill pill-green">100K users · 100 hospitals</div>
+      </div>
+      <div class="card" style="padding:18px;background:rgba(0,102,255,0.08);border-color:rgba(0,102,255,0.25)">
+        <div style="font-size:12px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Key Assumptions</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          {['2% freemium → paid conversion','₹75L/yr average hospital contract','25 patients/month/hospital onboarding','60% gross margins at scale (AI cost efficiency)'].map(a=>`<p style="font-size:12px;color:var(--text2)">${a}</p>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: THE ASK -->
+<div class="slide" id="s13">
+  <div class="orb orb-blue" style="width:600px;height:600px;top:-100px;right:-200px;opacity:0.15"></div>
+  <div class="section-header">
+    <div class="tag">The Ask</div>
+    <h2>Raising <span class="gradient-text">$1.5M Seed Round</span><br>to capture the market window</h2>
+    <p>12 months of focused execution to prove hospital-led B2B2C model and hit Series A metrics.</p>
+  </div>
+  <div class="grid-2" style="gap:24px;flex:1;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="ask-item">
+        <div class="ask-icon" style="background:rgba(0,102,255,0.2)">👥</div>
+        <div class="ask-content">
+          <h3>Team (40%)</h3>
+          <p>$600K — Senior AI/ML engineer, backend lead, mobile engineer, medical advisor</p>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--cyan);margin-left:auto">$600K</div>
+      </div>
+      <div class="ask-item">
+        <div class="ask-icon" style="background:rgba(0,212,255,0.15)">🤝</div>
+        <div class="ask-content">
+          <h3>Hospital Partnerships (20%)</h3>
+          <p>$300K — Integration costs, medical advisory board, regulatory compliance (DPDP)</p>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--cyan);margin-left:auto">$300K</div>
+      </div>
+      <div class="ask-item">
+        <div class="ask-icon" style="background:rgba(0,229,160,0.15)">📱</div>
+        <div class="ask-content">
+          <h3>Product & Mobile (20%)</h3>
+          <p>$300K — Native iOS/Android apps, offline capability, WhatsApp bot integration</p>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--cyan);margin-left:auto">$300K</div>
+      </div>
+      <div class="ask-item">
+        <div class="ask-icon" style="background:rgba(124,58,237,0.15)">🚀</div>
+        <div class="ask-content">
+          <h3>GTM & Operations (20%)</h3>
+          <p>$300K — Sales, marketing, infrastructure, legal, compliance, working capital</p>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--cyan);margin-left:auto">$300K</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card" style="padding:28px;border-color:rgba(0,212,255,0.3);background:linear-gradient(135deg,rgba(0,102,255,0.1),rgba(0,212,255,0.06))">
+        <div class="tag" style="margin-bottom:16px">Series A Milestones (12 months)</div>
+        <ul class="check-list">
+          {['₹1.2Cr ARR (10 hospital contracts signed)','10,000 active premium consumers','NPS > 65 from patient & doctor cohorts','DPDP compliance certification complete','Mobile apps (iOS + Android) launched','Insurance company pilot agreement signed'].map(m=>`<li>${m}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:14px;color:var(--text2);margin-bottom:4px">Target Series A (18 months)</h3>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">$8–12M</div>
+        <p style="font-size:13px;color:var(--text3);margin-top:4px">At 8-10x ARR multiple — conservative for AI health category</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14: TEAM -->
+<div class="slide" id="s14">
+  <div class="section-header">
+    <div class="tag">The Team</div>
+    <h2>Builders who understand<br><span class="gradient-text">healthcare from the inside</span></h2>
+    <p>A rare combination of deep AI engineering, clinical domain knowledge, and enterprise go-to-market experience.</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="team-card">
+      <div class="team-avatar">TG</div>
+      <div class="team-name">Tridib Goswami</div>
+      <div class="team-role">Founder & CEO</div>
+      <div class="team-bio">AI architect with 10+ years in enterprise software. Built HealthWeave MVP solo in 8 weeks using Claude AI. Deep expertise in RAG systems, vector databases, and clinical data architecture.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--green))">—</div>
+      <div class="team-name">Open · CTO</div>
+      <div class="team-role">Hiring: ML / Backend Lead</div>
+      <div class="team-bio">Seeking: 5+ yrs ML engineering, FastAPI + vector DB experience, passion for healthcare AI. Competitive equity + salary package. Funded role in seed round.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:linear-gradient(135deg,var(--purple),var(--pink))">—</div>
+      <div class="team-name">Open · Medical Advisor</div>
+      <div class="team-role">Hiring: Clinical Partner</div>
+      <div class="team-bio">Seeking: MD/MBBS with digital health interest. Hospital dept head preferred. Advisory equity + patient engagement for pilot site. Clinical validation of AI outputs.</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card" style="padding:20px">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--cyan)">Advisory Board (Target)</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {['Ex-AIIMS / Apollo CMO for clinical credibility','IIT / IISc AI professor for research validation','ex-PhilipsHealth / Practo exec for GTM strategy','DPDP / HIPAA compliance legal expert'].map(a=>`<div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>${a}</div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:20px">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--green)">Why We Win</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {['First-principles AI architecture — not prompt wrappers','India-specific medical knowledge built in (not bolted on)','Hospital GTM strategy from day one — not pivot','Full-stack from OCR ingestion to predictive intelligence'].map(w=>`<div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>${w}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 15: VISION -->
+<div class="slide cta-slide" id="s15">
+  <div class="orb orb-blue" style="width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.12"></div>
+  <div style="text-align:center;max-width:800px;margin:0 auto;position:relative">
+    <div class="tag" style="justify-content:center;margin-bottom:24px">The Vision</div>
+    <h1 style="font-size:clamp(44px,5.5vw,72px);font-weight:900;letter-spacing:-2.5px;line-height:1.05;margin-bottom:24px">
+      Every human on Earth<br>deserves a<br><span class="gradient-text">lifelong health companion</span><br>that never forgets.
+    </h1>
+    <p style="font-size:18px;color:var(--text2);line-height:1.7;margin-bottom:40px;max-width:620px;margin-left:auto;margin-right:auto">
+      In 2035, HealthWeave will prevent more chronic diseases than any hospital system in Asia — not by treating illness, but by making it predictable, and therefore preventable.
+    </p>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:48px">
+      <div class="stat" style="padding:24px 32px;background:var(--card);border:1px solid var(--border);border-radius:20px">
+        <div class="stat-num">1B+</div>
+        <div class="stat-label">Lives to Impact by 2035</div>
+      </div>
+      <div class="stat" style="padding:24px 32px;background:var(--card);border:1px solid var(--border);border-radius:20px">
+        <div class="stat-num">$100B+</div>
+        <div class="stat-label">Healthcare Spend to Prevent</div>
+      </div>
+      <div class="stat" style="padding:24px 32px;background:var(--card);border:1px solid var(--border);border-radius:20px">
+        <div class="stat-num">10M+</div>
+        <div class="stat-label">Diseases Caught Early</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:20px 32px;background:linear-gradient(135deg,rgba(0,102,255,0.15),rgba(0,212,255,0.1));border:1px solid rgba(0,212,255,0.25);border-radius:20px;max-width:500px;margin:0 auto">
+      <div class="logo-icon" style="width:44px;height:44px;font-size:22px">🧬</div>
+      <div style="text-align:left">
+        <div style="font-size:18px;font-weight:800;color:#fff">HealthWeave</div>
+        <div style="font-size:13px;color:var(--text2)">tridib.goswami@gmail.com</div>
+      </div>
+      <div style="margin-left:16px;padding-left:16px;border-left:1px solid var(--border)">
+        <div style="font-size:22px;font-weight:900;color:var(--cyan)">$1.5M</div>
+        <div style="font-size:11px;color:var(--text3)">Seed Round Open</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #deck -->
+
+<div id="nav">
+  <button id="prev" onclick="go(-1)">←</button>
+  <span id="counter">1 / 15</span>
+  <button id="next" onclick="go(1)">→</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+function go(dir) {
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add(dir > 0 ? 'prev' : '');
+  cur = Math.max(0, Math.min(total - 1, cur + dir));
+  setTimeout(() => {
+    document.querySelectorAll('.slide.prev').forEach(s => s.classList.remove('prev'));
+  }, 500);
+  slides[cur].classList.add('active');
+  document.getElementById('counter').textContent = (cur + 1) + ' / ' + total;
+  document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+
+// Touch support
+let tx = 0;
+document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+  const dx = tx - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 50) go(dx > 0 ? 1 : -1);
+});
+
+// Init progress
+document.getElementById('progress').style.width = (1 / total * 100) + '%';
+</script>
+</body>
+</html>
