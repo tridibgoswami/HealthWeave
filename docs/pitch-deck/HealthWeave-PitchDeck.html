@@ -375,21 +375,46 @@ svg text{font-family:'Inter',sans-serif}
   </div>
   <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:32px;flex:1;align-items:center">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      {[
-        ['🧬','Health Timeline','Every test, visit, prescription on a unified visual timeline'],
-        ['💬','AI Health Chat','Claude-powered RAG — ask anything about your own history'],
-        ['📊','Correlation Engine','Automatic biomarker ↔ medicine ↔ symptom correlations'],
-        ['🎯','Predictive Alerts','Risk detection 12–18 months before clinical diagnosis'],
-        ['🏥','Doctor Summary','Pre-visit AI briefing — so every doctor knows your story'],
-        ['🆘','Emergency Passport','QR-code medical ID accessible by any ER, instantly'],
-        ['👨‍👩‍👧','Family Graph','Manage health records for your entire household'],
-        ['📄','Smart OCR','Scan handwritten prescriptions & PDF lab reports instantly'],
-      ].map(([icon,title,desc])=>`
       <div class="card" style="padding:16px">
-        <div style="font-size:22px;margin-bottom:8px">${icon}</div>
-        <h3 style="font-size:14px;margin-bottom:4px">${title}</h3>
-        <p style="font-size:12px;color:var(--text2);line-height:1.4">${desc}</p>
-      </div>`).join('')}
+        <div style="font-size:22px;margin-bottom:8px">🧬</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Health Timeline</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Every test, visit, prescription on a unified visual timeline</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">💬</div>
+        <h3 style="font-size:14px;margin-bottom:4px">AI Health Chat</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Claude-powered RAG — ask anything about your own history</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">📊</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Correlation Engine</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Automatic biomarker ↔ medicine ↔ symptom correlations</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">🎯</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Predictive Alerts</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Risk detection 12–18 months before clinical diagnosis</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">🏥</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Doctor Summary</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Pre-visit AI briefing — so every doctor knows your story</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">🆘</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Emergency Passport</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">QR-code medical ID accessible by any ER, instantly</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">👨‍👩‍👧</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Family Graph</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Manage health records for your entire household</p>
+      </div>
+      <div class="card" style="padding:16px">
+        <div style="font-size:22px;margin-bottom:8px">📄</div>
+        <h3 style="font-size:14px;margin-bottom:4px">Smart OCR</h3>
+        <p style="font-size:12px;color:var(--text2);line-height:1.4">Scan handwritten prescriptions &amp; PDF lab reports instantly</p>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px">
       <div class="card card-glow" style="padding:24px;background:linear-gradient(135deg,rgba(0,102,255,0.15),rgba(0,212,255,0.08))">
@@ -495,11 +520,26 @@ svg text{font-family:'Inter',sans-serif}
     <div class="card" style="padding:24px">
       <h3 style="font-size:15px;margin-bottom:16px">Market Drivers</h3>
       <div style="display:flex;flex-direction:column;gap:10px">
-        {['ABDM (Ayushman Bharat Digital Mission) — Govt. mandate for digital health records','Smartphone penetration: 800M+ devices, 5G rollout accelerating','COVID-19 accelerated digital health adoption by 5 years','Rising chronic disease burden: 77M diabetics, 200M+ hypertensive','Growing health-aware urban middle class with disposable income'].map(d=>`
         <div style="display:flex;align-items:flex-start;gap:8px">
           <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
-          <p style="font-size:13px;color:var(--text2)">${d}</p>
-        </div>`).join('')}
+          <p style="font-size:13px;color:var(--text2)">ABDM (Ayushman Bharat Digital Mission) — Govt. mandate for digital health records</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
+          <p style="font-size:13px;color:var(--text2)">Smartphone penetration: 800M+ devices, 5G rollout accelerating</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
+          <p style="font-size:13px;color:var(--text2)">COVID-19 accelerated digital health adoption by 5 years</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
+          <p style="font-size:13px;color:var(--text2)">Rising chronic disease burden: 77M diabetics, 200M+ hypertensive</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px;min-width:6px"></div>
+          <p style="font-size:13px;color:var(--text2)">Growing health-aware urban middle class with disposable income</p>
+        </div>
       </div>
     </div>
     <div class="card" style="padding:24px">
@@ -560,13 +600,29 @@ svg text{font-family:'Inter',sans-serif}
     <div class="card" style="padding:24px">
       <h3 style="font-size:15px;margin-bottom:16px;color:var(--cyan)">What's Live Today</h3>
       <ul class="check-list">
-        {['Complete user auth + family graph management','Smart OCR pipeline: Claude Vision → structured biomarkers','Two-stage RAG chat engine (pgvector + full-text search)','Health scoring across 6 organ systems (0-100)','Predictive alert engine with risk categorization','Emergency QR Passport (public, no-auth endpoint)','Doctor pre-consultation AI summary generator','Medicine intelligence + biomarker correlation engine'].map(i=>`<li>${i}</li>`).join('')}
+        <li>Complete user auth + family graph management</li>
+        <li>Smart OCR pipeline: Claude Vision → structured biomarkers</li>
+        <li>Two-stage RAG chat engine (pgvector + full-text search)</li>
+        <li>Health scoring across 6 organ systems (0–100)</li>
+        <li>Predictive alert engine with risk categorization</li>
+        <li>Emergency QR Passport (public, no-auth endpoint)</li>
+        <li>Doctor pre-consultation AI summary generator</li>
+        <li>Medicine intelligence + biomarker correlation engine</li>
       </ul>
     </div>
     <div class="card" style="padding:24px">
       <h3 style="font-size:15px;margin-bottom:16px;color:var(--green)">Tech Stack Shipped</h3>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-        {['FastAPI','PostgreSQL 16','pgvector','Redis','Claude API','React 18','TypeScript','Tailwind CSS','Docker','SQLAlchemy 2.0'].map(t=>`<div class="tech-badge">${t}</div>`).join('')}
+        <div class="tech-badge">FastAPI</div>
+        <div class="tech-badge">PostgreSQL 16</div>
+        <div class="tech-badge">pgvector</div>
+        <div class="tech-badge">Redis</div>
+        <div class="tech-badge">Claude API</div>
+        <div class="tech-badge">React 18</div>
+        <div class="tech-badge">TypeScript</div>
+        <div class="tech-badge">Tailwind CSS</div>
+        <div class="tech-badge">Docker</div>
+        <div class="tech-badge">SQLAlchemy 2.0</div>
       </div>
       <div class="quote-block">
         <p class="quote-text">"The system correctly identified a pattern between my iron supplements and ferritin levels that 3 doctors had missed over 2 years."</p>
@@ -590,7 +646,9 @@ svg text{font-family:'Inter',sans-serif}
       <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹99–₹499/mo</div>
       <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Free tier + Premium tiers</p>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
-        {['Basic: 10 records, 5 AI queries/mo','Pro: Unlimited + family (5 members)','Premium: API access + priority AI'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--cyan)">→</span>${i}</li>`).join('')}
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--cyan)">→</span>Basic: 10 records, 5 AI queries/mo</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--cyan)">→</span>Pro: Unlimited + family (5 members)</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--cyan)">→</span>Premium: API access + priority AI</li>
       </ul>
     </div>
     <div class="card card-glow" style="padding:24px;border-color:rgba(0,102,255,0.25)">
@@ -599,7 +657,10 @@ svg text{font-family:'Inter',sans-serif}
       <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹25L–₹75L/yr</div>
       <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Hospital & clinic licensing</p>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
-        {['Hospital EMR integration module','Population health dashboard','Pre-consultation AI summaries for doctors','Anonymous aggregate insights & benchmarks'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>${i}</li>`).join('')}
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>Hospital EMR integration module</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>Population health dashboard</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>Pre-consultation AI summaries for doctors</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--blue)">→</span>Anonymous aggregate insights &amp; benchmarks</li>
       </ul>
     </div>
     <div class="card card-glow" style="padding:24px;border-color:rgba(0,229,160,0.25)">
@@ -608,7 +669,10 @@ svg text{font-family:'Inter',sans-serif}
       <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px">₹2–₹5 PMPM</div>
       <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Per-member-per-month SaaS</p>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
-        {['Risk stratification for underwriting','Preventive care incentive programs','Claims fraud detection signals','Wellness program engagement'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>${i}</li>`).join('')}
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>Risk stratification for underwriting</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>Preventive care incentive programs</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>Claims fraud detection signals</li>
+        <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">→</span>Wellness program engagement</li>
       </ul>
     </div>
   </div>
@@ -745,7 +809,10 @@ svg text{font-family:'Inter',sans-serif}
       <div class="card" style="padding:20px">
         <h3 style="font-size:14px;color:var(--green);margin-bottom:12px">Hospital Partnership Value Prop</h3>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
-          {['Pre-consultation summaries save doctors 8 min/patient','Post-discharge patient engagement reduces readmission','Analytics dashboard shows department-level health trends','Revenue from co-branded HealthWeave subscriptions'].map(i=>`<li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>${i}</li>`).join('')}
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>Pre-consultation summaries save doctors 8 min/patient</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>Post-discharge patient engagement reduces readmission</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>Analytics dashboard shows department-level health trends</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)">✓</span>Revenue from co-branded HealthWeave subscriptions</li>
         </ul>
       </div>
     </div>
@@ -811,7 +878,10 @@ svg text{font-family:'Inter',sans-serif}
       <div class="card" style="padding:18px;background:rgba(0,102,255,0.08);border-color:rgba(0,102,255,0.25)">
         <div style="font-size:12px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Key Assumptions</div>
         <div style="display:flex;flex-direction:column;gap:4px">
-          {['2% freemium → paid conversion','₹75L/yr average hospital contract','25 patients/month/hospital onboarding','60% gross margins at scale (AI cost efficiency)'].map(a=>`<p style="font-size:12px;color:var(--text2)">${a}</p>`).join('')}
+          <p style="font-size:12px;color:var(--text2)">2% freemium → paid conversion</p>
+          <p style="font-size:12px;color:var(--text2)">₹75L/yr average hospital contract</p>
+          <p style="font-size:12px;color:var(--text2)">25 patients/month/hospital onboarding</p>
+          <p style="font-size:12px;color:var(--text2)">60% gross margins at scale (AI cost efficiency)</p>
         </div>
       </div>
     </div>
@@ -865,7 +935,12 @@ svg text{font-family:'Inter',sans-serif}
       <div class="card" style="padding:28px;border-color:rgba(0,212,255,0.3);background:linear-gradient(135deg,rgba(0,102,255,0.1),rgba(0,212,255,0.06))">
         <div class="tag" style="margin-bottom:16px">Series A Milestones (12 months)</div>
         <ul class="check-list">
-          {['₹1.2Cr ARR (10 hospital contracts signed)','10,000 active premium consumers','NPS > 65 from patient & doctor cohorts','DPDP compliance certification complete','Mobile apps (iOS + Android) launched','Insurance company pilot agreement signed'].map(m=>`<li>${m}</li>`).join('')}
+          <li>₹1.2Cr ARR (10 hospital contracts signed)</li>
+          <li>10,000 active premium consumers</li>
+          <li>NPS &gt; 65 from patient &amp; doctor cohorts</li>
+          <li>DPDP compliance certification complete</li>
+          <li>Mobile apps (iOS + Android) launched</li>
+          <li>Insurance company pilot agreement signed</li>
         </ul>
       </div>
       <div class="card" style="padding:20px">
@@ -908,13 +983,19 @@ svg text{font-family:'Inter',sans-serif}
     <div class="card" style="padding:20px">
       <h3 style="font-size:14px;margin-bottom:12px;color:var(--cyan)">Advisory Board (Target)</h3>
       <div style="display:flex;flex-direction:column;gap:8px">
-        {['Ex-AIIMS / Apollo CMO for clinical credibility','IIT / IISc AI professor for research validation','ex-PhilipsHealth / Practo exec for GTM strategy','DPDP / HIPAA compliance legal expert'].map(a=>`<div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>${a}</div>`).join('')}
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>Ex-AIIMS / Apollo CMO for clinical credibility</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>IIT / IISc AI professor for research validation</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>ex-PhilipsHealth / Practo exec for GTM strategy</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--purple)">◆</span>DPDP / HIPAA compliance legal expert</div>
       </div>
     </div>
     <div class="card" style="padding:20px">
       <h3 style="font-size:14px;margin-bottom:12px;color:var(--green)">Why We Win</h3>
       <div style="display:flex;flex-direction:column;gap:8px">
-        {['First-principles AI architecture — not prompt wrappers','India-specific medical knowledge built in (not bolted on)','Hospital GTM strategy from day one — not pivot','Full-stack from OCR ingestion to predictive intelligence'].map(w=>`<div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>${w}</div>`).join('')}
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>First-principles AI architecture — not prompt wrappers</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>India-specific medical knowledge built in (not bolted on)</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>Hospital GTM strategy from day one — not pivot</div>
+        <div style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center"><span style="color:var(--green)">✓</span>Full-stack from OCR ingestion to predictive intelligence</div>
       </div>
     </div>
   </div>
