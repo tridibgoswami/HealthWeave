@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "HealthWeave",
+    "slug": "healthweave",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0066FF"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "in.healthweave.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "HealthWeave uses your camera to scan lab reports and prescriptions.",
+        "NSPhotoLibraryUsageDescription": "HealthWeave accesses your photos to upload health documents.",
+        "NSFaceIDUsageDescription": "HealthWeave uses Face ID to protect your health data."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0066FF"
+      },
+      "package": "in.healthweave.app",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      ["expo-camera", { "cameraPermission": "Allow HealthWeave to access your camera." }],
+      ["expo-notifications", {
+        "icon": "./assets/notification-icon.png",
+        "color": "#0066FF"
+      }]
+    ],
+    "extra": {
+      "apiBaseUrl": "http://localhost:8000/api/v1"
+    }
+  }
+}
