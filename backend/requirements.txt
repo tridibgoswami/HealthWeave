@@ -34,7 +34,7 @@ pypdf==5.1.0
 python-magic==0.4.27
 
 # Object storage
-boto3==1.35.80
+boto3==1.35.36
 aioboto3==13.2.0
 
 # Rate limiting
