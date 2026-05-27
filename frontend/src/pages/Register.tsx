@@ -19,7 +19,7 @@ export function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    try { await register(form); navigate("/"); } catch {}
+    try { await register(form); navigate("/dashboard"); } catch {}
   };
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>

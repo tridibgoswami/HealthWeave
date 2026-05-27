@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import { AppShell } from "./components/layout/AppShell";
 import { Dashboard } from "./pages/Dashboard";
+import { LandingPage } from "./pages/LandingPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,19 +49,20 @@ function AppInner() {
       <React.Suspense fallback={<Spinner />}>
         <Routes>
           {/* Public */}
+          <Route path="/"                   element={<LandingPage />} />
           <Route path="/login"              element={<Login />} />
           <Route path="/register"           element={<Register />} />
           <Route path="/emergency/:token"   element={<EmergencyPage />} />
 
           {/* Protected — wrapped in AppShell */}
-          <Route path="/"         element={<Protected><Dashboard /></Protected>} />
+          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/upload"   element={<Protected><UploadPage /></Protected>} />
           <Route path="/timeline" element={<Protected><TimelinePage /></Protected>} />
           <Route path="/chat"     element={<Protected><ChatPage /></Protected>} />
           <Route path="/alerts"   element={<Protected><AlertsPage /></Protected>} />
           <Route path="/passport" element={<Protected><PassportPage /></Protected>} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </React.Suspense>
 

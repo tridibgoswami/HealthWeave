@@ -10,7 +10,7 @@ import { intelligenceApi } from "../../services/api";
 import { cn } from "../../utils/cn";
 
 const NAV = [
-  { to: "/",         icon: LayoutDashboard, label: "Dashboard",       end: true  },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard",       end: true  },
   { to: "/upload",   icon: Upload,          label: "Upload Records",   end: false },
   { to: "/timeline", icon: Activity,        label: "Health Timeline",  end: false },
   { to: "/chat",     icon: MessageSquare,   label: "AI Assistant",     end: false },
