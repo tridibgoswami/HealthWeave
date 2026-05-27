@@ -2,6 +2,7 @@ import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Upload, Zap, ShieldCheck, Clock } from "lucide-react";
 import { DocumentUpload } from "../components/reports/DocumentUpload";
+import { intelligenceApi } from "../services/api";
 
 const HOW_IT_WORKS = [
   { Icon: Upload,      color: "text-brand-blue",  bg: "bg-blue-50",    text: "Upload any format — PDF, JPG, PNG, handwritten scans" },
@@ -15,8 +16,15 @@ export function UploadPage() {
 
   const onComplete = () => {
     qc.invalidateQueries({ queryKey: ["records-list"] });
-    qc.invalidateQueries({ queryKey: ["health-scores"] });
     qc.invalidateQueries({ queryKey: ["timeline"] });
+    // Backend auto-computes scores after processing, but also trigger manually
+    // in case the user is on a slower connection or AI is queued.
+    intelligenceApi.computeScores().catch(() => {});
+    // Refetch scores after ~45s to pick up freshly computed values
+    setTimeout(() => {
+      qc.invalidateQueries({ queryKey: ["health-scores"] });
+      qc.invalidateQueries({ queryKey: ["alerts", false] });
+    }, 45000);
   };
 
   return (

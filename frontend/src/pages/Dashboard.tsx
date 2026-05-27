@@ -1,10 +1,10 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   Heart, Activity, Droplets, Zap, Flame, Shield, Brain, TrendingUp,
   Upload, MessageSquare, ChevronRight, Sparkles, AlertTriangle,
-  BarChart3, FileText, ArrowUpRight, ArrowDownRight, Bell,
+  BarChart3, FileText, ArrowUpRight, ArrowDownRight, Bell, RefreshCw,
 } from "lucide-react";
 import { intelligenceApi, recordsApi } from "../services/api";
 import { useAuthStore } from "../store/authStore";
@@ -74,6 +74,7 @@ function MiniScoreRing({ score, hex, size = 52 }: { score: number; hex: string; 
 /* ─── Dashboard ─────────────────────────────────────────────────────── */
 export function Dashboard() {
   const { user } = useAuthStore();
+  const qc = useQueryClient();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const firstName = user?.profile?.first_name || "there";
@@ -83,6 +84,16 @@ export function Dashboard() {
     queryKey: ["health-scores"],
     queryFn: () => intelligenceApi.getHealthScores(2),
     staleTime: 10 * 60 * 1000,
+  });
+
+  const refreshScores = useMutation({
+    mutationFn: () => intelligenceApi.computeScores(),
+    onSuccess: () => {
+      setTimeout(() => {
+        qc.invalidateQueries({ queryKey: ["health-scores"] });
+        qc.invalidateQueries({ queryKey: ["alerts", false] });
+      }, 8000);
+    },
   });
 
   const { data: alertsData } = useQuery({
@@ -102,7 +113,8 @@ export function Dashboard() {
   const prev    = scores[1] || {};
   const alerts  = alertsData?.data || [];
   const records = recordsData?.data?.records || [];
-  const overall = Math.round(latest.overall_score || 0);
+  // backend returns "overall_score" key (fixed in intelligence API)
+  const overall = Math.round(latest.overall_score ?? latest.overall ?? 0);
 
   const criticalAlerts = alerts.filter((a: any) => a.risk_level === "critical").length;
   const highAlerts     = alerts.filter((a: any) => a.risk_level === "high").length;
@@ -242,10 +254,21 @@ export function Dashboard() {
                   <h2 className="text-base font-bold text-slate-900">Organ Health Scores</h2>
                   <p className="text-xs text-slate-400 mt-0.5">AI-computed from your uploaded lab reports</p>
                 </div>
-                <Link to="/timeline"
-                  className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:text-blue-700 transition-colors">
-                  View timeline <ChevronRight size={13} />
-                </Link>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => refreshScores.mutate()}
+                    disabled={refreshScores.isPending}
+                    title="Recompute scores from latest records"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-blue transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw size={12} className={refreshScores.isPending ? "animate-spin" : ""} />
+                    {refreshScores.isPending ? "Refreshing…" : "Refresh"}
+                  </button>
+                  <Link to="/timeline"
+                    className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:text-blue-700 transition-colors">
+                    Timeline <ChevronRight size={13} />
+                  </Link>
+                </div>
               </div>
 
               <div className="p-6">
@@ -306,10 +329,10 @@ export function Dashboard() {
                       })}
                     </div>
 
-                    {latest.ai_narrative && (
+                    {(latest.ai_narrative ?? latest.narrative) && (
                       <div className="mt-5 flex gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
                         <Sparkles size={15} className="text-brand-blue shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-800 leading-relaxed">{latest.ai_narrative}</p>
+                        <p className="text-sm text-blue-800 leading-relaxed">{latest.ai_narrative ?? latest.narrative}</p>
                       </div>
                     )}
                   </>

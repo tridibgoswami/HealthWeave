@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
   Bell, ShieldAlert, LogOut, Dna, User,
@@ -40,17 +40,17 @@ export function Sidebar() {
       className="w-[260px] bg-sidebar-gradient flex flex-col h-screen fixed left-0 top-0 z-40 shadow-sidebar"
       style={{ background: "linear-gradient(180deg, #0F172A 0%, #0A0F1E 100%)" }}
     >
-      {/* Logo */}
+      {/* Logo — links back to home page */}
       <div className="px-5 py-5 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-blue-glow shrink-0">
+        <Link to="/" className="flex items-center gap-3 group" title="Back to home">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-blue-glow shrink-0 group-hover:shadow-lg transition-all">
             <Dna size={17} className="text-white" />
           </div>
           <div>
-            <p className="font-extrabold text-white text-sm tracking-tight leading-tight">HealthWeave</p>
+            <p className="font-extrabold text-white text-sm tracking-tight leading-tight group-hover:text-brand-cyan transition-colors">HealthWeave</p>
             <p className="text-[10px] text-slate-500 font-medium leading-tight">AI Health Intelligence</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}

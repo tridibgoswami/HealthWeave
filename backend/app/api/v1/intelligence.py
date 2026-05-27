@@ -43,7 +43,7 @@ async def get_health_scores(
         "scores": [
             {
                 "date": str(s.scored_date),
-                "overall": s.overall_score,
+                "overall_score": s.overall_score,
                 "heart": s.heart_score,
                 "liver": s.liver_score,
                 "kidney": s.kidney_score,
@@ -53,7 +53,7 @@ async def get_health_scores(
                 "preventive": s.preventive_score,
                 "thyroid": s.thyroid_score,
                 "blood": s.blood_score,
-                "narrative": s.ai_narrative,
+                "ai_narrative": s.ai_narrative,
                 "confidence": s.confidence,
                 "data_completeness": s.data_completeness,
             }

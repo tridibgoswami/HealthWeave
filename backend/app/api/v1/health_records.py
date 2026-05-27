@@ -113,8 +113,12 @@ async def _process_document_background(
     doc_id: str,
     user_id: str,
 ):
-    """Background task: OCR → AI extraction → embedding → timeline event."""
+    """Background task: OCR → AI extraction → embedding → timeline event → score recompute."""
+    import logging
     from app.core.database import get_db_context
+
+    _log = logging.getLogger(__name__)
+    processing_succeeded = False
 
     async with get_db_context() as db:
         try:
@@ -225,16 +229,29 @@ async def _process_document_background(
                 await timeline_svc.create_timeline_event_from_record(record)
 
             await db.commit()
+            processing_succeeded = True
 
         except Exception as exc:
-            import logging
-            logging.getLogger(__name__).error("Document processing failed: %s", exc, exc_info=True)
+            _log.error("Document processing failed: %s", exc, exc_info=True)
             await db.execute(
                 update(HealthDocument)
                 .where(HealthDocument.id == uuid.UUID(doc_id))
                 .values(status=DocumentStatus.FAILED)
             )
             await db.commit()
+
+    # After document processing completes, recompute health scores and alerts
+    # so the dashboard reflects new biomarker data immediately.
+    if processing_succeeded:
+        from app.api.v1.intelligence import _compute_scores_background, _generate_alerts_background
+        try:
+            await _compute_scores_background(user_id)
+        except Exception as exc:
+            _log.warning("Post-upload score computation failed: %s", exc)
+        try:
+            await _generate_alerts_background(user_id)
+        except Exception as exc:
+            _log.warning("Post-upload alert generation failed: %s", exc)
 
 
 @router.get("/")
