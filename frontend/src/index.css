@@ -4,27 +4,107 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --sidebar-width: 256px; }
-
-* { box-sizing: border-box; }
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #F8FAFC;
-  color: #0F172A;
+:root {
+  --sidebar-width: 260px;
+  --header-height: 0px;
 }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+@layer base {
+  * { box-sizing: border-box; }
 
-.prose-chat p { margin: 0.2rem 0; line-height: 1.6; }
-.prose-chat ul { margin: 0.3rem 0; padding-left: 1.2rem; }
-.prose-chat ol { margin: 0.3rem 0; padding-left: 1.2rem; }
-.prose-chat li { margin: 0.1rem 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F1F5F9;
+    color: #0F172A;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+}
+
+@layer components {
+  /* Premium card */
+  .hw-card {
+    @apply bg-white rounded-2xl border border-slate-100 shadow-card transition-all duration-200;
+  }
+  .hw-card:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* Section label (UPPERCASE SMALL) */
+  .section-label {
+    @apply text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400;
+  }
+
+  /* Gradient badge */
+  .badge-blue   { @apply bg-blue-50 text-blue-700 border border-blue-100; }
+  .badge-green  { @apply bg-emerald-50 text-emerald-700 border border-emerald-100; }
+  .badge-orange { @apply bg-orange-50 text-orange-700 border border-orange-100; }
+  .badge-red    { @apply bg-red-50 text-red-700 border border-red-100; }
+  .badge-amber  { @apply bg-amber-50 text-amber-700 border border-amber-100; }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
+  }
+  .nav-item-inactive {
+    @apply text-slate-400 hover:text-white hover:bg-white/10;
+  }
+  .nav-item-active {
+    @apply bg-brand-blue text-white shadow-blue-glow;
+  }
+
+  /* Input field */
+  .hw-input {
+    @apply w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900
+           placeholder:text-slate-400 bg-white
+           focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-50
+           transition-all duration-200;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 bg-gradient-to-r from-brand-blue to-brand-blue-dark
+           text-white font-semibold rounded-xl px-5 py-3 text-sm
+           hover:from-blue-700 hover:to-blue-800 transition-all duration-200
+           shadow-sm hover:shadow-blue-glow disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Skeleton pulse */
+  .skeleton {
+    @apply bg-slate-100 rounded-xl animate-pulse;
+  }
+}
+
+/* Prose overrides for chat */
+.prose-chat p  { margin: 0.2rem 0; line-height: 1.65; }
+.prose-chat ul { margin: 0.3rem 0; padding-left: 1.25rem; }
+.prose-chat ol { margin: 0.3rem 0; padding-left: 1.25rem; }
+.prose-chat li { margin: 0.15rem 0; }
 .prose-chat strong { font-weight: 600; }
-.prose-chat code { background: rgba(0,0,0,0.07); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.85em; font-family: monospace; }
-.prose-chat h3 { font-size: 0.95em; font-weight: 600; margin: 0.4rem 0 0.2rem; }
+.prose-chat code {
+  background: rgba(0,0,0,0.07);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'Menlo', 'Monaco', monospace;
+}
+.prose-chat h3 { font-size: 0.95em; font-weight: 700; margin: 0.5rem 0 0.25rem; }
+
+/* Shimmer loading effect */
+.shimmer-bg {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

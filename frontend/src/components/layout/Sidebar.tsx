@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
-  Bell, ShieldAlert, LogOut, Heart, User,
+  Bell, ShieldAlert, LogOut, Dna, User,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -10,7 +10,7 @@ import { intelligenceApi } from "../../services/api";
 import { cn } from "../../utils/cn";
 
 const NAV = [
-  { to: "/",         icon: LayoutDashboard, label: "Dashboard",       end: true },
+  { to: "/",         icon: LayoutDashboard, label: "Dashboard",       end: true  },
   { to: "/upload",   icon: Upload,          label: "Upload Records",   end: false },
   { to: "/timeline", icon: Activity,        label: "Health Timeline",  end: false },
   { to: "/chat",     icon: MessageSquare,   label: "AI Assistant",     end: false },
@@ -27,91 +27,92 @@ export function Sidebar() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const alertCount = (alertsData?.data || []).length;
-  const first = user?.profile?.first_name || "User";
-  const last  = user?.profile?.last_name  || "";
+  const alertCount  = (alertsData?.data || []).length;
+  const criticalCnt = (alertsData?.data || []).filter((a: any) => a.risk_level === "critical").length;
+  const first   = user?.profile?.first_name || "User";
+  const last    = user?.profile?.last_name  || "";
   const initials = `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "U";
 
   const handleLogout = () => { logout(); navigate("/login"); };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen fixed left-0 top-0 z-40 shadow-sm">
+    <aside
+      className="w-[260px] bg-sidebar-gradient flex flex-col h-screen fixed left-0 top-0 z-40 shadow-sidebar"
+      style={{ background: "linear-gradient(180deg, #0F172A 0%, #0A0F1E 100%)" }}
+    >
       {/* Logo */}
-      <div className="px-5 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
-            <Heart size={16} className="text-white" />
+      <div className="px-5 py-5 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-blue-glow shrink-0">
+            <Dna size={17} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-sm leading-tight">HealthWeave</p>
-            <p className="text-[10px] text-gray-400 leading-tight">Health Intelligence Platform</p>
+            <p className="font-extrabold text-white text-sm tracking-tight leading-tight">HealthWeave</p>
+            <p className="text-[10px] text-slate-500 font-medium leading-tight">AI Health Intelligence</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 mb-2">Main Menu</p>
-        {NAV.map((item) => (
+      <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+        <p className="section-label px-3 mb-3">Main Menu</p>
+
+        {NAV.map(({ to, icon: Icon, label, end, badge }) => (
           <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
+            key={to}
+            to={to}
+            end={end}
             className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-                isActive
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              )
+              cn("nav-item", isActive ? "nav-item-active" : "nav-item-inactive")
             }
           >
-            <item.icon size={17} />
-            <span className="flex-1">{item.label}</span>
-            {item.badge && alertCount > 0 && (
-              <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+            <Icon size={17} className="shrink-0" />
+            <span className="flex-1">{label}</span>
+            {badge && alertCount > 0 && (
+              <span className={cn(
+                "text-[10px] font-extrabold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1",
+                criticalCnt > 0 ? "bg-red-500 text-white animate-pulse-slow" : "bg-brand-amber text-white"
+              )}>
                 {alertCount > 9 ? "9+" : alertCount}
               </span>
             )}
           </NavLink>
         ))}
 
-        <div className="pt-4 mt-2 border-t border-gray-100">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 mb-2">Emergency</p>
+        <div className="pt-4 mt-3 border-t border-white/5">
+          <p className="section-label px-3 mb-3">Emergency</p>
           <NavLink
             to="/passport"
             className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-                isActive
-                  ? "bg-red-500 text-white"
-                  : "text-red-500 hover:bg-red-50"
+              cn("nav-item", isActive
+                ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                : "text-red-400/70 hover:text-red-400 hover:bg-red-500/10"
               )
             }
           >
-            <ShieldAlert size={17} />
+            <ShieldAlert size={17} className="shrink-0" />
             <span>Emergency Passport</span>
           </NavLink>
         </div>
       </nav>
 
       {/* User footer */}
-      <div className="p-3 border-t border-gray-100 space-y-0.5">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
-          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
-            {initials || <User size={13} />}
+      <div className="p-3 border-t border-white/5">
+        <div className="flex items-center gap-3 px-3 py-3 rounded-xl mb-0.5">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+            {initials || <User size={14} />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">{first} {last}</p>
-            <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+            <p className="text-sm font-semibold text-white truncate">{first} {last}</p>
+            <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all w-full"
+          className="nav-item nav-item-inactive w-full text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
         >
           <LogOut size={16} />
-          Sign Out
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>

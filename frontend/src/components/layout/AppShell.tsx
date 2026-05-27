@@ -3,9 +3,9 @@ import { Sidebar } from "./Sidebar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-100 overflow-hidden">
       <Sidebar />
-      <main className="flex-1 ml-64 overflow-y-auto h-full">
+      <main className="flex-1 ml-[260px] overflow-y-auto h-full">
         {children}
       </main>
     </div>

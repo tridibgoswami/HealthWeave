@@ -5,6 +5,7 @@ import {
   Upload, FileText, Image as ImageIcon, CheckCircle2, XCircle,
   Loader2, X, FlaskConical, Pill, ScanLine, FileSymlink,
   Syringe, Stethoscope, Scissors, Activity, Heart, FileQuestion,
+  Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { recordsApi } from "../../services/api";
@@ -53,7 +54,6 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
   const [hospitalName, setHospitalName] = useState("");
   const [doctorName, setDoctorName] = useState("");
 
-  // ID-based upload — no stale closure bug
   const doUpload = useCallback(async (id: string, file: File, type: string) => {
     setFiles((p) => p.map((f) => f.id === id ? { ...f, status: "uploading", progress: 35 } : f));
 
@@ -72,7 +72,6 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
         : f
       ));
 
-      // Brief processing delay to show AI analyzing state
       setTimeout(() => {
         setFiles((p) => p.map((f) => f.id === id ? { ...f, status: "done", progress: 100 } : f));
         toast.success("Record saved and queued for AI analysis");
@@ -93,7 +92,6 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
       progress: 0,
     }));
     setFiles((p) => [...p, ...uploads]);
-    // Capture docType at drop time so each file gets the correct type
     const currentType = docType;
     uploads.forEach((u) => doUpload(u.id, u.file, currentType));
   }, [docType, doUpload]);
@@ -103,22 +101,19 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
     accept: ACCEPTED,
     maxSize: 50 * 1024 * 1024,
     onDropRejected: (rejected) => {
-      rejected.forEach(({ errors }) => {
-        toast.error(errors[0]?.message || "File rejected");
-      });
+      rejected.forEach(({ errors }) => toast.error(errors[0]?.message || "File rejected"));
     },
   });
 
   const removeFile = (id: string) => setFiles((p) => p.filter((f) => f.id !== id));
   const clearDone  = () => setFiles((p) => p.filter((f) => f.status !== "done" && f.status !== "error"));
-
   const pendingCount = files.filter((f) => f.status !== "done" && f.status !== "error").length;
 
   return (
     <div className="space-y-6">
       {/* Document type selector */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Document Type</label>
+        <p className="section-label mb-3">Document Type</p>
         <div className="grid grid-cols-5 gap-2">
           {RECORD_TYPES.map(({ value, label, Icon }) => (
             <button
@@ -126,13 +121,13 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
               type="button"
               onClick={() => setDocType(value)}
               className={cn(
-                "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-medium transition-all",
+                "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all",
                 docType === value
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-gray-100 bg-white text-gray-600 hover:border-gray-200 hover:bg-gray-50"
+                  ? "border-brand-blue bg-blue-50 text-brand-blue shadow-blue-glow"
+                  : "border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50"
               )}
             >
-              <Icon size={18} className={docType === value ? "text-blue-600" : "text-gray-400"} />
+              <Icon size={17} className={docType === value ? "text-brand-blue" : "text-slate-400"} />
               {label}
             </button>
           ))}
@@ -142,23 +137,27 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
       {/* Optional metadata */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Hospital / Clinic (optional)</label>
+          <label className="section-label block mb-1.5">
+            Hospital / Clinic <span className="text-slate-400 font-normal normal-case">(optional)</span>
+          </label>
           <input
             type="text"
             value={hospitalName}
             onChange={(e) => setHospitalName(e.target.value)}
             placeholder="e.g. Apollo Hospitals"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
+            className="hw-input"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Doctor Name (optional)</label>
+          <label className="section-label block mb-1.5">
+            Doctor Name <span className="text-slate-400 font-normal normal-case">(optional)</span>
+          </label>
           <input
             type="text"
             value={doctorName}
             onChange={(e) => setDoctorName(e.target.value)}
             placeholder="e.g. Dr. Sharma"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
+            className="hw-input"
           />
         </div>
       </div>
@@ -169,31 +168,32 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
         className={cn(
           "border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-200",
           isDragActive
-            ? "border-blue-500 bg-blue-50 scale-[1.01]"
-            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+            ? "border-brand-blue bg-blue-50 scale-[1.01]"
+            : "border-slate-200 hover:border-brand-blue/40 hover:bg-slate-50"
         )}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-4">
           <div className={cn(
             "w-16 h-16 rounded-2xl flex items-center justify-center transition-colors",
-            isDragActive ? "bg-blue-100" : "bg-gray-100"
+            isDragActive ? "bg-blue-100" : "bg-slate-100"
           )}>
-            <Upload size={28} className={isDragActive ? "text-blue-600" : "text-gray-400"} />
+            <Upload size={28} className={isDragActive ? "text-brand-blue" : "text-slate-400"} />
           </div>
           <div>
-            <p className="font-bold text-gray-800 text-base">
+            <p className="font-bold text-slate-800 text-base">
               {isDragActive ? "Drop files here" : "Drag & drop your health documents"}
             </p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               Lab reports, prescriptions, scan images, discharge summaries
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">PDF or images (JPG, PNG, WebP) · Max 50 MB · Handwritten supported</p>
+            <p className="text-xs text-slate-400 mt-0.5">PDF or images (JPG, PNG, WebP) · Max 50 MB · Handwritten supported</p>
           </div>
           <button
             type="button"
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-sm"
+            className="btn-primary"
           >
+            <Upload size={14} />
             Browse Files
           </button>
         </div>
@@ -207,12 +207,12 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-700">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-semibold text-slate-700">
                 {pendingCount > 0 ? `${pendingCount} processing…` : `${files.length} file${files.length > 1 ? "s" : ""} uploaded`}
               </p>
               {files.some((f) => f.status === "done" || f.status === "error") && (
-                <button onClick={clearDone} className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                <button onClick={clearDone} className="text-xs text-slate-400 hover:text-slate-600 font-semibold transition-colors">
                   Clear completed
                 </button>
               )}
@@ -228,31 +228,31 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
                   "flex items-center gap-3 rounded-xl px-4 py-3 border",
                   f.status === "done"  ? "bg-emerald-50 border-emerald-100" :
                   f.status === "error" ? "bg-red-50 border-red-100" :
-                  "bg-gray-50 border-gray-100"
+                  "bg-slate-50 border-slate-100"
                 )}
               >
                 <div className="shrink-0">
                   {f.file.type.startsWith("image/")
-                    ? <ImageIcon size={16} className="text-blue-500" />
+                    ? <ImageIcon size={16} className="text-brand-blue" />
                     : <FileText size={16} className="text-red-500" />
                   }
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{f.file.name}</p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">{f.file.name}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <p className={cn(
                       "text-xs font-medium",
                       f.status === "done"  ? "text-emerald-600" :
                       f.status === "error" ? "text-red-500" :
-                      "text-gray-500"
+                      "text-slate-500"
                     )}>
                       {f.error || STATUS_LABEL[f.status]}
                     </p>
                     {(f.status === "uploading" || f.status === "processing") && (
-                      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full bg-blue-500 rounded-full"
+                          className="h-full bg-brand-blue rounded-full"
                           animate={{ width: `${f.progress}%` }}
                           transition={{ duration: 0.4, ease: "easeOut" }}
                         />
@@ -262,14 +262,14 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
                 </div>
 
                 <div className="shrink-0 flex items-center gap-2">
-                  {f.status === "done" && <CheckCircle2 size={16} className="text-emerald-500" />}
+                  {f.status === "done"  && <CheckCircle2 size={16} className="text-emerald-500" />}
                   {f.status === "error" && <XCircle size={16} className="text-red-500" />}
                   {(f.status === "uploading" || f.status === "processing") && (
-                    <Loader2 size={16} className="text-blue-500 animate-spin" />
+                    <Loader2 size={16} className="text-brand-blue animate-spin" />
                   )}
                   {(f.status === "done" || f.status === "error") && (
                     <button onClick={() => removeFile(f.id)}
-                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                       <X size={13} />
                     </button>
                   )}
@@ -280,12 +280,9 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-2 text-xs text-gray-400">
-        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-        All documents are encrypted in transit and at rest. Only you can access your records.
+      <div className="flex items-center gap-2 text-xs text-slate-400">
+        <Lock size={12} className="shrink-0" />
+        All documents are AES-256 encrypted in transit and at rest. Only you can access your records.
       </div>
     </div>
   );

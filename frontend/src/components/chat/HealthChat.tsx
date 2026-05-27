@@ -13,11 +13,11 @@ interface Message {
 
 const SUGGESTIONS = [
   "Why do I experience fatigue repeatedly?",
-  "Show my cholesterol trend over the past 5 years",
+  "Show my cholesterol trend over 5 years",
   "Which medication may have caused my acidity?",
   "Compare my HbA1c across all lab reports",
   "What changed in my health after 2022?",
-  "Summarize my kidney health history",
+  "Summarise my kidney health history",
 ];
 
 export function HealthChat({ sessionId }: { sessionId: string }) {
@@ -51,14 +51,14 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
     try {
       const res = await chatApi.sendMessage(sessionId, trimmed);
       setMessages((p) => [...p, {
-        id: res.data.message_id || Date.now().toString() + "-ai",
+        id: res.data.message_id || `${Date.now()}-ai`,
         role: "assistant",
         content: res.data.content,
         sources: res.data.sources,
       }]);
     } catch {
       setMessages((p) => [...p, {
-        id: Date.now().toString() + "-err",
+        id: `${Date.now()}-err`,
         role: "assistant",
         content: "I'm having trouble accessing your health data right now. Please try again in a moment.",
       }]);
@@ -73,20 +73,20 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-3xl border border-slate-100 shadow-card-hover overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-sm">
-          <Sparkles size={16} className="text-white" />
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-purple-600 flex items-center justify-center shadow-blue-glow shrink-0">
+          <Sparkles size={15} className="text-white" />
         </div>
         <div className="flex-1">
-          <p className="font-bold text-gray-900 text-sm">HealthWeave AI</p>
-          <p className="text-xs text-gray-400">Analysing your complete health history</p>
+          <p className="font-extrabold text-slate-900 text-sm tracking-tight">HealthWeave AI</p>
+          <p className="text-xs text-slate-400">Analysing your complete health history</p>
         </div>
         {messages.length > 0 && (
           <button
             onClick={() => setMessages([])}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
             title="Clear conversation"
           >
             <RotateCcw size={14} />
@@ -98,28 +98,28 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 min-h-0">
         {loadingHistory ? (
           <div className="flex justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-gray-300" />
+            <Loader2 size={24} className="animate-spin text-slate-200" />
           </div>
         ) : messages.length === 0 ? (
           <div className="space-y-6">
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 mx-auto flex items-center justify-center mb-4 border border-blue-100">
-                <Sparkles size={28} className="text-blue-500" />
+                <Sparkles size={28} className="text-brand-blue" />
               </div>
-              <p className="font-bold text-gray-900 text-base">Ask anything about your health</p>
-              <p className="text-sm text-gray-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
+              <p className="font-extrabold text-slate-900 text-base tracking-tight">Ask anything about your health</p>
+              <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
                 I can analyse your uploaded reports, explain trends, compare biomarkers,
                 and give you personalised health insights.
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">Suggested questions</p>
+              <p className="section-label mb-3 text-center">Suggested questions</p>
               <div className="grid grid-cols-2 gap-2">
                 {SUGGESTIONS.map((s) => (
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="text-left text-xs px-3 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all leading-snug"
+                    className="text-left text-xs px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:border-brand-blue/40 hover:bg-blue-50 hover:text-brand-blue transition-all leading-snug font-medium"
                   >
                     {s}
                   </button>
@@ -130,25 +130,23 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "flex-row-reverse")}>
-              {/* Avatar */}
               <div className={cn(
                 "w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5",
                 msg.role === "assistant"
-                  ? "bg-gradient-to-br from-blue-600 to-purple-600"
-                  : "bg-gray-200"
+                  ? "bg-gradient-to-br from-brand-blue to-purple-600"
+                  : "bg-slate-200"
               )}>
                 {msg.role === "assistant"
                   ? <Sparkles size={12} className="text-white" />
-                  : <User size={12} className="text-gray-500" />
+                  : <User size={12} className="text-slate-500" />
                 }
               </div>
 
-              {/* Bubble */}
               <div className={cn(
                 "max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                 msg.role === "assistant"
-                  ? "bg-gray-50 border border-gray-100 text-gray-800"
-                  : "bg-blue-600 text-white rounded-tr-sm"
+                  ? "bg-slate-50 border border-slate-100 text-slate-800"
+                  : "bg-brand-blue text-white rounded-tr-sm"
               )}>
                 {msg.role === "assistant" ? (
                   <div className="prose-chat">
@@ -159,14 +157,12 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
                 )}
 
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-gray-200">
-                    <p className="text-[10px] text-gray-500 font-semibold mb-1.5 uppercase tracking-wide">
-                      Based on your records
-                    </p>
+                  <div className="mt-3 pt-2.5 border-t border-slate-200">
+                    <p className="section-label mb-1.5">Based on your records</p>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.sources.map((s) => (
                         <span key={s.id}
-                          className="text-[10px] bg-white border border-gray-200 px-2 py-0.5 rounded-full text-gray-600 font-medium">
+                          className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded-full text-slate-600 font-semibold">
                           {s.title}
                         </span>
                       ))}
@@ -180,13 +176,13 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
 
         {loading && (
           <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-blue to-purple-600 flex items-center justify-center shrink-0">
               <Sparkles size={12} className="text-white" />
             </div>
-            <div className="bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3">
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3">
               <div className="flex gap-1 items-center h-4">
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"
+                  <div key={i} className="w-1.5 h-1.5 bg-brand-blue rounded-full animate-bounce"
                     style={{ animationDelay: `${i * 150}ms` }} />
                 ))}
               </div>
@@ -207,8 +203,8 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
       {/* Input */}
       <div className="px-4 pb-4 pt-3 shrink-0">
         <div className={cn(
-          "flex items-end gap-2 bg-gray-50 border rounded-2xl px-3 py-2 transition-all",
-          "focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-50 border-gray-200"
+          "flex items-end gap-2 bg-slate-50 border rounded-2xl px-3 py-2 transition-all",
+          "focus-within:border-brand-blue/50 focus-within:ring-2 focus-within:ring-blue-50 border-slate-200"
         )}>
           <textarea
             ref={inputRef}
@@ -217,7 +213,7 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
             onKeyDown={onKey}
             placeholder="Ask about your health history…"
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400 max-h-28 py-1"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-800 placeholder-slate-400 max-h-28 py-1"
           />
           <button
             onClick={() => send()}
@@ -225,14 +221,14 @@ export function HealthChat({ sessionId }: { sessionId: string }) {
             className={cn(
               "w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0",
               input.trim() && !loading
-                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-brand-blue text-white hover:bg-brand-blue-dark shadow-blue-glow"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed"
             )}
           >
             <Send size={13} />
           </button>
         </div>
-        <p className="text-[10px] text-center text-gray-400 mt-1.5">
+        <p className="text-[10px] text-center text-slate-400 mt-1.5">
           Enter to send · Shift+Enter for new line
         </p>
       </div>

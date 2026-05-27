@@ -12,9 +12,9 @@ interface Props {
 }
 
 function grade(score: number | null) {
-  if (!score) return { label: "—",        cls: "text-gray-400" };
+  if (!score) return { label: "—",        cls: "text-slate-400" };
   if (score >= 85) return { label: "Excellent", cls: "text-emerald-600" };
-  if (score >= 70) return { label: "Good",      cls: "text-blue-600" };
+  if (score >= 70) return { label: "Good",      cls: "text-brand-blue" };
   if (score >= 55) return { label: "Fair",      cls: "text-amber-600" };
   if (score >= 40) return { label: "Poor",      cls: "text-orange-600" };
   return              { label: "Critical",  cls: "text-red-600" };
@@ -32,7 +32,7 @@ function ScoreRing({ score, colorClass }: { score: number; colorClass: string })
           className={colorClass} style={{ transition: "stroke-dashoffset 0.8s ease" }} />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-base font-bold text-gray-900">{Math.round(score)}</span>
+        <span className="text-base font-extrabold text-slate-900">{Math.round(score)}</span>
       </div>
     </div>
   );
@@ -42,14 +42,14 @@ export function HealthScoreCard({ label, score, delta, icon, color, bgColor }: P
   const { label: gradeLabel, cls: gradeClass } = grade(score);
 
   return (
-    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-card flex flex-col gap-3 hover:shadow-card-hover transition-all">
       <div className="flex items-center justify-between">
         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
           <span className={color}>{icon}</span>
         </div>
         {delta !== undefined && (
-          <span className={cn("flex items-center gap-0.5 text-xs font-semibold",
-            delta > 0 ? "text-emerald-600" : delta < 0 ? "text-red-500" : "text-gray-400"
+          <span className={cn("flex items-center gap-0.5 text-xs font-bold",
+            delta > 0 ? "text-emerald-600" : delta < 0 ? "text-red-500" : "text-slate-400"
           )}>
             {delta > 0 ? <ArrowUp size={11} /> : delta < 0 ? <ArrowDown size={11} /> : <Minus size={11} />}
             {delta !== 0 ? Math.abs(delta) : "stable"}
@@ -61,15 +61,15 @@ export function HealthScoreCard({ label, score, delta, icon, color, bgColor }: P
         {score !== null ? (
           <ScoreRing score={score} colorClass={color} />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-            <span className="text-sm text-gray-400 font-semibold">—</span>
+          <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
+            <span className="text-sm text-slate-400 font-bold">—</span>
           </div>
         )}
       </div>
 
       <div className="text-center">
-        <p className="text-sm font-semibold text-gray-800">{label}</p>
-        <p className={cn("text-xs font-medium mt-0.5", gradeClass)}>{gradeLabel}</p>
+        <p className="text-sm font-bold text-slate-800">{label}</p>
+        <p className={cn("text-xs font-semibold mt-0.5", gradeClass)}>{gradeLabel}</p>
       </div>
     </div>
   );
