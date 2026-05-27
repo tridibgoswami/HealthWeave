@@ -474,6 +474,20 @@ const AUDIENCES = [
     ],
   },
   {
+    icon: BarChart3,
+    label: "Hospitals & Clinics",
+    color: "bg-teal-600",
+    headline: "Run a smarter, paperless ward.",
+    sub: "Give your doctors instant access to structured patient histories. Manage your entire team, track consent, and stay DPDP 2023 compliant — all in one platform.",
+    points: [
+      "Onboard doctors and manage their patient access",
+      "Patients arrive with AI-extracted, structured histories",
+      "DPDP 2023 compliant data governance built-in",
+      "Invite doctors via secure email — no IT setup needed",
+      "Reduce admin overhead across every department",
+    ],
+  },
+  {
     icon: ShieldAlert,
     label: "First Responders",
     color: "bg-red-600",
