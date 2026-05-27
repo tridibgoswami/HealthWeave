@@ -451,13 +451,12 @@ const AUDIENCES = [
     label: "Patients",
     color: "bg-blue-600",
     headline: "Own your health story.",
-    sub: "Stop relying on scattered paper reports. HealthWeave gives you a single, secure, AI-powered view of your complete health history — accessible anytime, anywhere.",
+    sub: "One secure place for your entire medical history — lab reports, prescriptions, scans — with AI that explains what it all means.",
     points: [
-      "Understand your lab reports in plain language",
-      "Know when a trend is becoming dangerous",
-      "Go to your doctor appointments fully prepared",
-      "Share your health history instantly with any specialist",
       "Emergency passport protects you even when unconscious",
+      "Get AI-powered health score across 9 organ systems",
+      "Predictive alerts before a trend becomes a crisis",
+      "Share records with any specialist in seconds",
     ],
   },
   {
