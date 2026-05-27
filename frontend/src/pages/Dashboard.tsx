@@ -124,7 +124,7 @@ export function Dashboard() {
     <div className="min-h-full">
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <div
-        className="relative overflow-hidden px-8 pt-10 pb-16"
+        className="relative overflow-hidden px-8 pt-10 pb-8"
         style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0F172A 60%, #0D1B3E 100%)" }}
       >
         {/* Decorative circles */}
@@ -197,7 +197,7 @@ export function Dashboard() {
       </div>
 
       {/* ── Body ────────────────────────────────────────────────── */}
-      <div className="px-8 -mt-6 pb-10 max-w-[1200px]">
+      <div className="px-8 mt-6 pb-10 max-w-[1200px]">
 
         {/* Quick action cards (raised above hero) */}
         <div className="grid grid-cols-4 gap-4 mb-8">
