@@ -554,7 +554,6 @@ function AudienceSection() {
               <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-6", aud.color)}>
                 <aud.icon size={30} className="text-white" />
               </div>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">{aud.sub}</p>
               <div className="grid grid-cols-2 gap-3">
                 {aud.points.slice(0, 4).map((p) => (
                   <div key={p} className="bg-white/4 rounded-xl p-3 border border-white/5">
