@@ -43,8 +43,29 @@ async def init_db() -> None:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
-        # SQLAlchemy 2.0 async: use run_sync for DDL
+        # Create all tables (new tables only; existing ones are not altered)
         await conn.run_sync(Base.metadata.create_all)
+        # Schema migrations — safe to run on every startup
+        await _run_migrations(conn)
+
+
+async def _run_migrations(conn) -> None:
+    """Idempotent schema migrations for additive changes."""
+    # Add new enum values to userrole (PostgreSQL requires this before adding columns)
+    for value in ("hospital_admin", "super_admin", "caregiver"):
+        await conn.execute(text(
+            f"ALTER TYPE userrole ADD VALUE IF NOT EXISTS '{value}'"
+        ))
+
+    # Add organization_id FK column to users if not present
+    await conn.execute(text("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS organization_id UUID
+            REFERENCES organizations(id) ON DELETE SET NULL
+    """))
+
+    # New __pycache__ dirs for new API modules land automatically,
+    # but new notification/consent/org tables are handled by create_all above.
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

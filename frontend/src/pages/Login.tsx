@@ -61,9 +61,9 @@ export function Login() {
         <div className="relative z-10">
           <h1 className="text-5xl font-black text-white leading-[1.1] tracking-tight mb-5">
             Your health,<br />
-            <span className="text-transparent bg-clip-text" style={{
-              background: "linear-gradient(135deg, #0066FF, #06B6D4)"
-            }}>intelligently<br />understood.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-brand-blue to-brand-cyan">
+              intelligently<br />understood.
+            </span>
           </h1>
           <p className="text-slate-400 text-base leading-relaxed mb-10 max-w-sm">
             Upload your lab reports, prescriptions and scans. Our AI extracts insights,
