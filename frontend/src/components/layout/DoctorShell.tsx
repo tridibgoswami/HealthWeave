@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Dna, LogOut, Stethoscope,
-  Bell, User, ChevronDown,
+  Bell, User, Home,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useQuery } from "@tanstack/react-query";
@@ -51,7 +51,7 @@ export function DoctorShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest px-3 mb-3">Navigation</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest px-3 mb-3">Navigation</p>
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -66,6 +66,13 @@ export function DoctorShell({ children }: { children: React.ReactNode }) {
               <span className="flex-1">{label}</span>
             </NavLink>
           ))}
+
+          <div className="pt-3 mt-2 border-t border-white/5">
+            <Link to="/" className="nav-item text-white/40 hover:text-white/70 hover:bg-white/5">
+              <Home size={17} className="shrink-0" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
         </nav>
 
         <div className="p-3 border-t border-white/5">

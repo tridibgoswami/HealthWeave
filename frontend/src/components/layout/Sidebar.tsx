@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
-  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck,
+  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -94,6 +94,16 @@ export function Sidebar() {
             <ShieldAlert size={17} className="shrink-0" />
             <span>Emergency Passport</span>
           </NavLink>
+        </div>
+
+        <div className="pt-3 mt-2 border-t border-white/5">
+          <Link
+            to="/"
+            className="nav-item nav-item-inactive text-slate-500 hover:text-slate-300"
+          >
+            <Home size={17} className="shrink-0" />
+            <span>Back to Home</span>
+          </Link>
         </div>
       </nav>
 

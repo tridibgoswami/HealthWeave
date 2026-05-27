@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Building2, Dna, LogOut, Bell, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Dna, LogOut, Bell, UserPlus, Home } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { notificationsApi } from "../../services/api";
@@ -70,6 +70,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <span>{label}</span>
             </NavLink>
           ))}
+
+          <div className="pt-3 mt-2 border-t border-white/5">
+            <Link to="/" className="nav-item text-white/40 hover:text-white/70 hover:bg-white/5">
+              <Home size={17} className="shrink-0" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
         </nav>
 
         <div className="p-3 border-t border-white/5">
