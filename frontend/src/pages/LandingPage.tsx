@@ -526,43 +526,24 @@ function AudienceSection() {
         </div>
 
         {/* Content */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h3 className="text-3xl font-black text-white mb-4">{aud.headline}</h3>
-            <p className="text-slate-400 text-base leading-relaxed mb-8">{aud.sub}</p>
-            <ul className="space-y-3">
-              {aud.points.map((p) => (
-                <li key={p} className="flex items-start gap-3">
-                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5", aud.color)}>
-                    <CheckCircle2 size={12} className="text-white" />
-                  </div>
-                  <span className="text-slate-300 text-sm leading-snug">{p}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8">
-              <Link to="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg">
-                Get Started Free <ArrowRight size={15} />
-              </Link>
-            </div>
-          </div>
-
-          {/* Visual panel */}
-          <div className="hidden lg:block">
-            <div className="bg-white/4 border border-white/8 rounded-3xl p-8">
-              <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-6", aud.color)}>
-                <aud.icon size={30} className="text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {aud.points.slice(0, 4).map((p) => (
-                  <div key={p} className="bg-white/4 rounded-xl p-3 border border-white/5">
-                    <CheckCircle2 size={14} className="text-emerald-400 mb-2" />
-                    <p className="text-white text-xs font-semibold leading-snug">{p}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="max-w-2xl mx-auto text-center lg:text-left lg:mx-0">
+          <h3 className="text-3xl font-black text-white mb-4">{aud.headline}</h3>
+          <p className="text-slate-400 text-base leading-relaxed mb-8">{aud.sub}</p>
+          <ul className="space-y-3 inline-block text-left">
+            {aud.points.map((p) => (
+              <li key={p} className="flex items-start gap-3">
+                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5", aud.color)}>
+                  <CheckCircle2 size={12} className="text-white" />
+                </div>
+                <span className="text-slate-300 text-sm leading-snug">{p}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8">
+            <Link to="/register"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg">
+              Get Started Free <ArrowRight size={15} />
+            </Link>
           </div>
         </div>
       </div>
