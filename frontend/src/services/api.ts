@@ -56,8 +56,11 @@ api.interceptors.response.use(
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export const authApi = {
-  register: (data: { email: string; password: string; first_name: string; last_name: string; phone?: string }) =>
-    api.post("/auth/register", data),
+  register: (data: {
+    email: string; password: string; first_name: string; last_name: string;
+    phone?: string; role?: string; specialization?: string;
+    medical_registration_number?: string; organization_name?: string;
+  }) => api.post("/auth/register", data),
 
   login: (data: { email: string; password: string }) =>
     api.post("/auth/login", data),
@@ -151,4 +154,56 @@ export const emergencyApi = {
   savePassport: (data: object) => api.post("/emergency/my-passport", data),
 
   autoUpdate: () => api.post("/emergency/my-passport/auto-update"),
+};
+
+// ── Organizations ──────────────────────────────────────────────────────────────
+
+export const orgApi = {
+  create: (data: object) => api.post("/organizations/", data),
+  getMyOrg: () => api.get("/organizations/me"),
+  listMembers: (orgId: string) => api.get(`/organizations/${orgId}/members`),
+  inviteDoctor: (orgId: string, data: { email: string; role?: string }) =>
+    api.post(`/organizations/${orgId}/invite`, data),
+  acceptInvitation: (data: { token: string; password: string; first_name?: string; last_name?: string }) =>
+    api.post("/organizations/invitations/accept", data),
+  getStats: (orgId: string) => api.get(`/organizations/${orgId}/stats`),
+};
+
+// ── Doctor Portal ──────────────────────────────────────────────────────────────
+
+export const doctorApi = {
+  getProfile: () => api.get("/doctor/profile"),
+  updateProfile: (data: object) => api.put("/doctor/profile", data),
+  listPatients: () => api.get("/doctor/patients"),
+  getPatientSummary: (patientId: string) => api.get(`/doctor/patients/${patientId}/summary`),
+  getPatientBiomarkers: (patientId: string, months = 12) =>
+    api.get(`/doctor/patients/${patientId}/biomarkers`, { params: { months } }),
+  addClinicalNote: (patientId: string, data: object) =>
+    api.post(`/doctor/patients/${patientId}/notes`, data),
+  listClinicalNotes: (patientId: string) =>
+    api.get(`/doctor/patients/${patientId}/notes`),
+  requestLabs: (patientId: string, data: object) =>
+    api.post(`/doctor/patients/${patientId}/lab-requests`, data),
+};
+
+// ── Consent ────────────────────────────────────────────────────────────────────
+
+export const consentApi = {
+  grantConsent: (data: {
+    doctor_email: string; share_full_history?: boolean;
+    share_biomarkers?: boolean; share_prescriptions?: boolean;
+    share_lab_reports?: boolean; share_scans?: boolean;
+    valid_days?: number; purpose?: string;
+  }) => api.post("/consent/grant", data),
+  listConsents: () => api.get("/consent/"),
+  revokeConsent: (consentId: string) => api.post("/consent/revoke", { consent_id: consentId }),
+};
+
+// ── Notifications ──────────────────────────────────────────────────────────────
+
+export const notificationsApi = {
+  list: (unreadOnly = false) => api.get("/notifications/", { params: { unread_only: unreadOnly } }),
+  unreadCount: () => api.get("/notifications/unread-count"),
+  markRead: (id: string) => api.post(`/notifications/${id}/read`),
+  markAllRead: () => api.post("/notifications/mark-all-read"),
 };

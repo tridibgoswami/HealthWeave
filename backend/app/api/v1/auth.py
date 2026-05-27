@@ -20,7 +20,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-from app.models.user import User, UserProfile
+from app.models.user import User, UserProfile, UserRole
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -31,6 +31,12 @@ class RegisterRequest(BaseModel):
     password: str
     first_name: str
     last_name: str
+    role: str = "patient"  # "patient" | "doctor" | "hospital_admin"
+    # Doctor-specific fields
+    specialization: str | None = None
+    medical_registration_number: str | None = None
+    # Hospital admin fields
+    organization_name: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -58,10 +64,18 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
             detail="Email already registered",
         )
 
+    role_map = {
+        "patient": UserRole.PATIENT,
+        "doctor": UserRole.DOCTOR,
+        "hospital_admin": UserRole.HOSPITAL_ADMIN,
+    }
+    user_role = role_map.get(payload.role, UserRole.PATIENT)
+
     user = User(
         email=payload.email,
         phone=payload.phone,
         hashed_password=hash_password(payload.password),
+        role=user_role,
     )
     db.add(user)
     await db.flush()
@@ -73,6 +87,18 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
         display_name=f"{payload.first_name} {payload.last_name}",
     )
     db.add(profile)
+    await db.flush()
+
+    # Create doctor profile if registering as doctor
+    if user_role == UserRole.DOCTOR:
+        from app.models.organization import DoctorProfile
+        doc_profile = DoctorProfile(
+            user_id=user.id,
+            specialization=payload.specialization,
+            medical_registration_number=payload.medical_registration_number,
+        )
+        db.add(doc_profile)
+
     await db.commit()
 
     return TokenResponse(
@@ -143,12 +169,23 @@ async def get_me(
         raise HTTPException(status_code=404, detail="User not found")
     user, profile = row
 
+    org_info = None
+    if user.organization_id:
+        from app.models.organization import Organization
+        org_result = await db.execute(
+            select(Organization).where(Organization.id == user.organization_id)
+        )
+        org = org_result.scalar_one_or_none()
+        if org:
+            org_info = {"id": str(org.id), "name": org.name, "org_type": org.org_type}
+
     return {
         "id": str(user.id),
         "email": user.email,
         "phone": user.phone,
         "role": user.role,
         "is_verified": user.is_verified,
+        "organization": org_info,
         "profile": {
             "first_name": profile.first_name if profile else None,
             "last_name": profile.last_name if profile else None,

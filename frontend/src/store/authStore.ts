@@ -18,6 +18,12 @@ interface UserProfile {
   known_allergies: string[];
 }
 
+interface Organization {
+  id: string;
+  name: string;
+  org_type: string;
+}
+
 interface User {
   id: string;
   email: string;
@@ -25,6 +31,7 @@ interface User {
   role: string;
   is_verified: boolean;
   profile: UserProfile | null;
+  organization: Organization | null;
 }
 
 interface AuthState {
@@ -40,6 +47,10 @@ interface AuthState {
     first_name: string;
     last_name: string;
     phone?: string;
+    role?: string;
+    specialization?: string;
+    medical_registration_number?: string;
+    organization_name?: string;
   }) => Promise<void>;
   logout: () => void;
   fetchMe: () => Promise<void>;

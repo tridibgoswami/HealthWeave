@@ -21,6 +21,10 @@ from app.api.v1.health_records import router as records_router
 from app.api.v1.ai_chat import router as chat_router
 from app.api.v1.intelligence import router as intelligence_router
 from app.api.v1.emergency import router as emergency_router
+from app.api.v1.organizations import router as organizations_router
+from app.api.v1.doctor import router as doctor_router
+from app.api.v1.consent import router as consent_router
+from app.api.v1.notifications import router as notifications_router
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -85,6 +89,10 @@ app.include_router(records_router, prefix=settings.API_V1_PREFIX)
 app.include_router(chat_router, prefix=settings.API_V1_PREFIX)
 app.include_router(intelligence_router, prefix=settings.API_V1_PREFIX)
 app.include_router(emergency_router, prefix=settings.API_V1_PREFIX)
+app.include_router(organizations_router, prefix=settings.API_V1_PREFIX)
+app.include_router(doctor_router, prefix=settings.API_V1_PREFIX)
+app.include_router(consent_router, prefix=settings.API_V1_PREFIX)
+app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
 
 
 # ── Health & Meta ──────────────────────────────────────────────────────────────

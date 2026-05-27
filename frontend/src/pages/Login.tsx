@@ -12,14 +12,26 @@ const TRUST_POINTS = [
 export function Login() {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, user, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    try { await login(email, password); navigate("/dashboard"); } catch {}
+    try {
+      await login(email, password);
+      // Role-based redirect happens after store updates
+    } catch {}
   };
+
+  // Redirect after successful login based on role
+  React.useEffect(() => {
+    if (user) {
+      if (user.role === "doctor") navigate("/doctor/dashboard");
+      else if (user.role === "hospital_admin") navigate("/admin/dashboard");
+      else navigate("/dashboard");
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex">

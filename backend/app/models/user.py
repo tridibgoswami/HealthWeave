@@ -40,7 +40,9 @@ class UserRole(str, Enum):
     PATIENT = "patient"
     DOCTOR = "doctor"
     CAREGIVER = "caregiver"
+    HOSPITAL_ADMIN = "hospital_admin"
     ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
 
 
 class User(Base):
@@ -51,6 +53,7 @@ class User(Base):
     phone = Column(String(20), unique=True, index=True)
     hashed_password = Column(String(255), nullable=False)
     role = Column(SAEnum(UserRole), default=UserRole.PATIENT, nullable=False)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True, index=True)
 
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)

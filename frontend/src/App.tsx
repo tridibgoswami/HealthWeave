@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import { AppShell } from "./components/layout/AppShell";
+import { DoctorShell } from "./components/layout/DoctorShell";
+import { AdminShell } from "./components/layout/AdminShell";
 import { Dashboard } from "./pages/Dashboard";
 import { LandingPage } from "./pages/LandingPage";
 
@@ -13,14 +15,29 @@ const queryClient = new QueryClient({
   },
 });
 
-const Login         = React.lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
-const Register      = React.lazy(() => import("./pages/Register").then((m) => ({ default: m.Register })));
-const TimelinePage  = React.lazy(() => import("./pages/TimelinePage").then((m) => ({ default: m.TimelinePage })));
-const ChatPage      = React.lazy(() => import("./pages/ChatPage").then((m) => ({ default: m.ChatPage })));
-const UploadPage    = React.lazy(() => import("./pages/UploadPage").then((m) => ({ default: m.UploadPage })));
-const EmergencyPage = React.lazy(() => import("./pages/EmergencyPage").then((m) => ({ default: m.EmergencyPage })));
-const AlertsPage    = React.lazy(() => import("./pages/AlertsPage").then((m) => ({ default: m.AlertsPage })));
-const PassportPage  = React.lazy(() => import("./pages/PassportPage").then((m) => ({ default: m.PassportPage })));
+const Login           = React.lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
+const Register        = React.lazy(() => import("./pages/Register").then((m) => ({ default: m.Register })));
+const RegisterChoice  = React.lazy(() => import("./pages/RegisterChoice").then((m) => ({ default: m.RegisterChoice })));
+const RegisterDoctor  = React.lazy(() => import("./pages/RegisterDoctor").then((m) => ({ default: m.RegisterDoctor })));
+const RegisterHospital = React.lazy(() => import("./pages/RegisterHospital").then((m) => ({ default: m.RegisterHospital })));
+const JoinPage        = React.lazy(() => import("./pages/JoinPage").then((m) => ({ default: m.JoinPage })));
+const TimelinePage    = React.lazy(() => import("./pages/TimelinePage").then((m) => ({ default: m.TimelinePage })));
+const ChatPage        = React.lazy(() => import("./pages/ChatPage").then((m) => ({ default: m.ChatPage })));
+const UploadPage      = React.lazy(() => import("./pages/UploadPage").then((m) => ({ default: m.UploadPage })));
+const EmergencyPage   = React.lazy(() => import("./pages/EmergencyPage").then((m) => ({ default: m.EmergencyPage })));
+const AlertsPage      = React.lazy(() => import("./pages/AlertsPage").then((m) => ({ default: m.AlertsPage })));
+const PassportPage    = React.lazy(() => import("./pages/PassportPage").then((m) => ({ default: m.PassportPage })));
+const ConsentPage     = React.lazy(() => import("./pages/ConsentPage").then((m) => ({ default: m.ConsentPage })));
+
+// Doctor portal
+const DoctorDashboard   = React.lazy(() => import("./pages/doctor/DoctorDashboard").then((m) => ({ default: m.DoctorDashboard })));
+const DoctorPatients    = React.lazy(() => import("./pages/doctor/DoctorPatients").then((m) => ({ default: m.DoctorPatients })));
+const DoctorPatientView = React.lazy(() => import("./pages/doctor/DoctorPatientView").then((m) => ({ default: m.DoctorPatientView })));
+
+// Admin portal
+const AdminDashboard = React.lazy(() => import("./pages/admin/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
+const AdminDoctors   = React.lazy(() => import("./pages/admin/AdminDoctors").then((m) => ({ default: m.AdminDoctors })));
+const AdminInvite    = React.lazy(() => import("./pages/admin/AdminInvite").then((m) => ({ default: m.AdminInvite })));
 
 const Spinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -36,6 +53,28 @@ function Protected({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <AppShell>{children}</AppShell> : <Navigate to="/login" replace />;
 }
 
+function DoctorProtected({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role === "hospital_admin") return <Navigate to="/admin/dashboard" replace />;
+  return <DoctorShell>{children}</DoctorShell>;
+}
+
+function AdminProtected({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role === "doctor") return <Navigate to="/doctor/dashboard" replace />;
+  return <AdminShell>{children}</AdminShell>;
+}
+
+function RoleRedirect() {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role === "doctor") return <Navigate to="/doctor/dashboard" replace />;
+  if (user?.role === "hospital_admin") return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
+
 function AppInner() {
   const { isAuthenticated, fetchMe } = useAuthStore();
 
@@ -49,19 +88,36 @@ function AppInner() {
       <React.Suspense fallback={<Spinner />}>
         <Routes>
           {/* Public */}
-          <Route path="/"                   element={<LandingPage />} />
-          <Route path="/login"              element={<Login />} />
-          <Route path="/register"           element={<Register />} />
-          <Route path="/emergency/:token"   element={<EmergencyPage />} />
+          <Route path="/"                    element={<LandingPage />} />
+          <Route path="/login"               element={<Login />} />
+          <Route path="/register"            element={<RegisterChoice />} />
+          <Route path="/register/patient"    element={<Register />} />
+          <Route path="/register/doctor"     element={<RegisterDoctor />} />
+          <Route path="/register/hospital"   element={<RegisterHospital />} />
+          <Route path="/join"                element={<JoinPage />} />
+          <Route path="/emergency/:token"    element={<EmergencyPage />} />
 
-          {/* Protected — wrapped in AppShell */}
+          {/* Patient portal — wrapped in AppShell */}
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-          <Route path="/upload"   element={<Protected><UploadPage /></Protected>} />
-          <Route path="/timeline" element={<Protected><TimelinePage /></Protected>} />
-          <Route path="/chat"     element={<Protected><ChatPage /></Protected>} />
-          <Route path="/alerts"   element={<Protected><AlertsPage /></Protected>} />
-          <Route path="/passport" element={<Protected><PassportPage /></Protected>} />
+          <Route path="/upload"    element={<Protected><UploadPage /></Protected>} />
+          <Route path="/timeline"  element={<Protected><TimelinePage /></Protected>} />
+          <Route path="/chat"      element={<Protected><ChatPage /></Protected>} />
+          <Route path="/alerts"    element={<Protected><AlertsPage /></Protected>} />
+          <Route path="/passport"  element={<Protected><PassportPage /></Protected>} />
+          <Route path="/consent"   element={<Protected><ConsentPage /></Protected>} />
 
+          {/* Doctor portal */}
+          <Route path="/doctor/dashboard"              element={<DoctorProtected><DoctorDashboard /></DoctorProtected>} />
+          <Route path="/doctor/patients"               element={<DoctorProtected><DoctorPatients /></DoctorProtected>} />
+          <Route path="/doctor/patients/:patientId"    element={<DoctorProtected><DoctorPatientView /></DoctorProtected>} />
+
+          {/* Hospital admin portal */}
+          <Route path="/admin/dashboard" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
+          <Route path="/admin/doctors"   element={<AdminProtected><AdminDoctors /></AdminProtected>} />
+          <Route path="/admin/invite"    element={<AdminProtected><AdminInvite /></AdminProtected>} />
+
+          {/* Smart redirect based on role */}
+          <Route path="/app" element={<RoleRedirect />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </React.Suspense>

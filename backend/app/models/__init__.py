@@ -1,3 +1,7 @@
+from app.models.organization import (
+    Organization, OrganizationMember, DoctorProfile,
+    PatientConsent, ClinicalNote, LabRequest, Invitation, Notification,
+)
 from app.models.user import User, UserProfile, AuditLog
 from app.models.health_record import HealthRecord, HealthDocument, BiomarkerValue, TimelineEvent
 from app.models.medicine import MedicineEntry, MedicineInteractionAlert, MedicineMasterCatalog
