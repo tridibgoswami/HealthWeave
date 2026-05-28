@@ -98,6 +98,7 @@ function AppMockup() {
 
 /* ── Sticky Navbar ───────────────────────────────────────────── */
 function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const { logout } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -143,10 +144,17 @@ function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
         {/* CTAs */}
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
-            <Link to="/dashboard"
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors">
-              Go to Dashboard <ArrowRight size={13} />
-            </Link>
+            <>
+              <Link to="/dashboard"
+                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors">
+                Go to Dashboard <ArrowRight size={13} />
+              </Link>
+              <button
+                onClick={() => logout()}
+                className="text-sm text-slate-400 hover:text-white font-semibold transition-colors px-3 py-2">
+                Sign Out
+              </button>
+            </>
           ) : (
             <>
               <Link to="/login" className="text-sm text-slate-400 hover:text-white font-semibold transition-colors px-3 py-2">
@@ -177,7 +185,14 @@ function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
           ))}
           <div className="pt-3 border-t border-white/5 flex flex-col gap-2">
             {isAuthenticated ? (
-              <Link to="/dashboard" className="btn-primary justify-center">Go to Dashboard</Link>
+              <>
+                <Link to="/dashboard" className="btn-primary justify-center">Go to Dashboard</Link>
+                <button
+                  onClick={() => { logout(); setOpen(false); }}
+                  className="text-center py-2 text-slate-400 font-semibold hover:text-white transition-colors">
+                  Sign Out
+                </button>
+              </>
             ) : (
               <>
                 <Link to="/login" className="text-center py-2 text-slate-300 font-semibold">Sign In</Link>
