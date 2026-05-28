@@ -12,6 +12,10 @@ const TRUST_POINTS = [
 export function Login() {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const { login, user, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
 
@@ -20,8 +24,22 @@ export function Login() {
     clearError();
     try {
       await login(email, password);
-      // Role-based redirect happens after store updates
     } catch {}
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      await fetch("/api/v1/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      setForgotSent(true);
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   // Redirect after successful login based on role
@@ -108,50 +126,87 @@ export function Login() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-card-hover border border-slate-100 p-8">
-            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">Welcome back</h2>
-            <p className="text-slate-500 text-sm mb-7">Sign in to your health dashboard</p>
 
-            {error && (
-              <div className="mb-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
-                <Lock size={13} className="shrink-0 mt-0.5 text-red-400" />
-                {error}
-              </div>
+            {forgotMode ? (
+              <>
+                <button onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(""); }}
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-5 font-medium">
+                  ← Back to Sign In
+                </button>
+                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">Reset Password</h2>
+                <p className="text-slate-500 text-sm mb-7">Enter your email and we'll send you a reset link.</p>
+
+                {forgotSent ? (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700 text-center">
+                    Check your email for the reset link. Also check spam/junk.
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="relative">
+                      <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="you@example.com" required className="hw-input pl-10" />
+                    </div>
+                    <button type="submit" disabled={forgotLoading} className="btn-primary w-full">
+                      {forgotLoading ? "Sending…" : "Send Reset Link"}
+                    </button>
+                  </form>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">Welcome back</h2>
+                <p className="text-slate-500 text-sm mb-7">Sign in to your health dashboard</p>
+
+                {error && (
+                  <div className="mb-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+                    <Lock size={13} className="shrink-0 mt-0.5 text-red-400" />
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+                      Email address
+                    </label>
+                    <div className="relative">
+                      <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com" required className="hw-input pl-10" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        Password
+                      </label>
+                      <button type="button" onClick={() => setForgotMode(true)}
+                        className="text-xs text-brand-blue hover:text-blue-700 font-semibold">
+                        Forgot password?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••" required className="hw-input pl-10" />
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={isLoading} className="btn-primary w-full mt-2">
+                    {isLoading ? "Signing in…" : <><span>Sign In</span><ArrowRight size={15} /></>}
+                  </button>
+                </form>
+
+                <p className="text-center text-sm text-slate-500 mt-6">
+                  Don't have an account?{" "}
+                  <Link to="/register" className="text-brand-blue font-bold hover:text-blue-700">
+                    Create one free
+                  </Link>
+                </p>
+              </>
             )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
-                  Email address
-                </label>
-                <div className="relative">
-                  <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com" required className="hw-input pl-10" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••" required className="hw-input pl-10" />
-                </div>
-              </div>
-
-              <button type="submit" disabled={isLoading} className="btn-primary w-full mt-2">
-                {isLoading ? "Signing in…" : <><span>Sign In</span><ArrowRight size={15} /></>}
-              </button>
-            </form>
-
-            <p className="text-center text-sm text-slate-500 mt-6">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-brand-blue font-bold hover:text-blue-700">
-                Create one free
-              </Link>
-            </p>
           </div>
 
           <p className="text-center text-[11px] text-slate-400 mt-5 flex items-center justify-center gap-1.5">

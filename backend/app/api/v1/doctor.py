@@ -69,7 +69,7 @@ async def _require_doctor(user_id: str, db: AsyncSession) -> User:
 
 
 async def _check_consent(doctor_id: uuid.UUID, patient_id: uuid.UUID, db: AsyncSession):
-    """Raises 403 if doctor does not have active consent from patient."""
+    """Raises 403 if doctor does not have active, non-expired consent from patient."""
     result = await db.execute(
         select(PatientConsent).where(
             and_(
@@ -84,6 +84,20 @@ async def _check_consent(doctor_id: uuid.UUID, patient_id: uuid.UUID, db: AsyncS
         raise HTTPException(
             status_code=403,
             detail="No active consent from this patient. Ask patient to share their records with you.",
+        )
+    # Enforce expiry: auto-revoke and deny if past valid_until
+    if consent.valid_until and consent.valid_until < date.today():
+        from datetime import datetime, timezone
+        from sqlalchemy import update
+        await db.execute(
+            update(PatientConsent)
+            .where(PatientConsent.id == consent.id)
+            .values(status=ConsentStatus.REVOKED, revoked_at=datetime.now(timezone.utc))
+        )
+        await db.commit()
+        raise HTTPException(
+            status_code=403,
+            detail="Patient's consent has expired. Please ask them to share their records again.",
         )
     return consent
 

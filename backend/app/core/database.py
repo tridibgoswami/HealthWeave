@@ -64,8 +64,15 @@ async def _run_migrations(conn) -> None:
             REFERENCES organizations(id) ON DELETE SET NULL
     """))
 
-    # New __pycache__ dirs for new API modules land automatically,
-    # but new notification/consent/org tables are handled by create_all above.
+    # Add password reset token columns
+    await conn.execute(text("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS reset_token VARCHAR(100)
+    """))
+    await conn.execute(text("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ
+    """))
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

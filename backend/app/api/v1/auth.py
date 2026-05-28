@@ -55,6 +55,15 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(User).where(User.email == payload.email))
@@ -152,6 +161,71 @@ async def refresh(payload: RefreshRequest):
         refresh_token=create_refresh_token(user_id),
         user_id=user_id,
     )
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Generate a password-reset token. In production, email it to the user.
+    For now, the token is returned in the response for testing — wire up an
+    email provider (SendGrid, SES) before going live.
+    """
+    import secrets
+    from datetime import timedelta
+
+    result = await db.execute(select(User).where(User.email == payload.email))
+    user = result.scalar_one_or_none()
+
+    # Always return 200 so we don't leak whether an email is registered
+    if not user:
+        return {"message": "If that email exists, a reset link has been sent."}
+
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=2)
+
+    await db.execute(
+        update(User)
+        .where(User.id == user.id)
+        .values(reset_token=reset_token, reset_token_expires_at=expires_at)
+    )
+    await db.commit()
+
+    # TODO: Send email via SendGrid/SES in production
+    # For now, log to console (remove before go-live)
+    print(f"[PASSWORD RESET] Token for {payload.email}: {reset_token}")
+
+    return {
+        "message": "If that email exists, a reset link has been sent.",
+        # Remove this field before going live — for testing only:
+        "_dev_token": reset_token,
+    }
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(payload: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Validate reset token and set new password."""
+    result = await db.execute(
+        select(User).where(User.reset_token == payload.token)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    if user.reset_token_expires_at and user.reset_token_expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset token has expired. Please request a new one.")
+
+    await db.execute(
+        update(User)
+        .where(User.id == user.id)
+        .values(
+            hashed_password=hash_password(payload.new_password),
+            reset_token=None,
+            reset_token_expires_at=None,
+        )
+    )
+    await db.commit()
+    return {"message": "Password updated successfully. You can now log in."}
 
 
 @router.get("/me")
