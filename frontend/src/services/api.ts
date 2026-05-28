@@ -167,6 +167,8 @@ export const orgApi = {
   acceptInvitation: (data: { token: string; password: string; first_name?: string; last_name?: string }) =>
     api.post("/organizations/invitations/accept", data),
   getStats: (orgId: string) => api.get(`/organizations/${orgId}/stats`),
+  search: (q: string) => api.get("/organizations/search", { params: { q } }),
+  getDepartments: () => api.get("/organizations/departments"),
 };
 
 // ── Doctor Portal ──────────────────────────────────────────────────────────────
@@ -174,6 +176,7 @@ export const orgApi = {
 export const doctorApi = {
   getProfile: () => api.get("/doctor/profile"),
   updateProfile: (data: object) => api.put("/doctor/profile", data),
+  search: (q: string) => api.get("/doctor/search", { params: { q } }),
   listPatients: () => api.get("/doctor/patients"),
   getPatientSummary: (patientId: string) => api.get(`/doctor/patients/${patientId}/summary`),
   getPatientBiomarkers: (patientId: string, months = 12) =>
@@ -189,6 +192,19 @@ export const doctorApi = {
 // ── Consent ────────────────────────────────────────────────────────────────────
 
 export const consentApi = {
+  sendReport: (data: {
+    target_type: "doctor" | "hospital";
+    doctor_email?: string;
+    organization_id?: string;
+    department?: string;
+    patient_message: string;
+    share_full_history?: boolean;
+    share_biomarkers?: boolean;
+    share_prescriptions?: boolean;
+    share_lab_reports?: boolean;
+    share_scans?: boolean;
+    valid_days?: number;
+  }) => api.post("/consent/send-report", data),
   grantConsent: (data: {
     doctor_email: string; share_full_history?: boolean;
     share_biomarkers?: boolean; share_prescriptions?: boolean;

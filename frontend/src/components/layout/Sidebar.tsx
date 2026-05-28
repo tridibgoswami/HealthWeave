@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
-  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home,
+  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home, Send,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -15,7 +15,8 @@ const NAV = [
   { to: "/timeline", icon: Activity,        label: "Health Timeline",  end: false },
   { to: "/chat",     icon: MessageSquare,   label: "AI Assistant",     end: false },
   { to: "/alerts",   icon: Bell,            label: "Alerts",           end: false, badge: true },
-  { to: "/consent",  icon: ShieldCheck,     label: "My Consents",      end: false },
+  { to: "/consent",     icon: ShieldCheck,  label: "My Consents",      end: false },
+  { to: "/send-report", icon: Send,         label: "Send Report",       end: false },
 ];
 
 export function Sidebar() {

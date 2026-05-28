@@ -23,6 +23,57 @@ from app.models.organization import (
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
+HOSPITAL_DEPARTMENTS = [
+    "General Medicine", "General Surgery", "Emergency & Trauma",
+    "Cardiology", "Cardiothoracic Surgery", "Neurology", "Neurosurgery",
+    "Orthopedics", "Orthopedic Surgery", "Gastroenterology", "Hepatology",
+    "Nephrology", "Urology", "Pulmonology", "Critical Care / ICU",
+    "Oncology", "Radiation Oncology", "Hematology", "Endocrinology",
+    "Diabetology", "Rheumatology", "Dermatology", "Psychiatry",
+    "Obstetrics & Gynecology", "Pediatrics", "Neonatology",
+    "Ophthalmology", "ENT", "Dental & Oral Surgery", "Radiology",
+    "Pathology & Lab Medicine", "Anesthesiology", "Palliative Care",
+    "Physiotherapy & Rehabilitation", "Nutrition & Dietetics", "Other",
+]
+
+
+@router.get("/search")
+async def search_organizations(
+    q: str = Query(..., min_length=2),
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    """Patient searches for a hospital/clinic by name or city."""
+    from sqlalchemy import or_, func as sa_func
+    result = await db.execute(
+        select(Organization)
+        .where(
+            Organization.is_active == True,
+            or_(
+                sa_func.lower(Organization.name).contains(q.lower()),
+                sa_func.lower(Organization.city).contains(q.lower()),
+            ),
+        )
+        .limit(10)
+    )
+    orgs = result.scalars().all()
+    return [
+        {
+            "id": str(o.id),
+            "name": o.name,
+            "org_type": o.org_type,
+            "city": o.city,
+            "state": o.state,
+        }
+        for o in orgs
+    ]
+
+
+@router.get("/departments")
+async def list_departments(user_id: str = Depends(get_current_user_id)):
+    """Return the standard list of hospital departments."""
+    return {"departments": HOSPITAL_DEPARTMENTS}
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

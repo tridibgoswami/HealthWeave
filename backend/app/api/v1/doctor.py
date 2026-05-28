@@ -24,6 +24,42 @@ from app.models.intelligence import HealthScore, PredictiveAlert
 router = APIRouter(prefix="/doctor", tags=["Doctor Portal"])
 
 
+@router.get("/search")
+async def search_doctors(
+    q: str = Query(..., min_length=2),
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    """Patient searches for a doctor by name or specialization."""
+    from sqlalchemy import or_, func as sa_func
+    result = await db.execute(
+        select(User, UserProfile, DoctorProfile)
+        .join(UserProfile, UserProfile.user_id == User.id, isouter=True)
+        .join(DoctorProfile, DoctorProfile.user_id == User.id, isouter=True)
+        .where(
+            User.role == UserRole.DOCTOR,
+            User.is_active == True,
+            or_(
+                sa_func.lower(UserProfile.first_name + " " + UserProfile.last_name).contains(q.lower()),
+                sa_func.lower(DoctorProfile.specialization).contains(q.lower()),
+                User.email.ilike(f"%{q}%"),
+            ),
+        )
+        .limit(10)
+    )
+    rows = result.all()
+    return [
+        {
+            "user_id": str(u.id),
+            "email": u.email,
+            "name": f"Dr. {p.first_name} {p.last_name}" if p else u.email,
+            "specialization": d.specialization if d else None,
+            "organization_id": str(u.organization_id) if u.organization_id else None,
+        }
+        for u, p, d in rows
+    ]
+
+
 async def _require_doctor(user_id: str, db: AsyncSession) -> User:
     result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
     user = result.scalar_one_or_none()

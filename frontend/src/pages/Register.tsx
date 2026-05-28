@@ -48,9 +48,7 @@ export function Register() {
         <div className="relative z-10">
           <h1 className="text-4xl font-black text-white leading-tight tracking-tight mb-4">
             Your lifelong<br />health story,<br />
-            <span className="text-transparent bg-clip-text" style={{
-              background: "linear-gradient(135deg, #0066FF, #06B6D4)"
-            }}>starts today.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-brand-blue to-brand-cyan">starts today.</span>
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed mb-8">
             Join thousands who use HealthWeave to understand their health, spot trends,

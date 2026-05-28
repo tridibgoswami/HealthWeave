@@ -38,6 +38,20 @@ class RevokeConsentRequest(BaseModel):
     consent_id: str
 
 
+class SendReportRequest(BaseModel):
+    target_type: str           # "doctor" | "hospital"
+    doctor_email: str | None = None
+    organization_id: str | None = None
+    department: str | None = None
+    patient_message: str       # patient's description of current issues
+    share_full_history: bool = False
+    share_biomarkers: bool = True
+    share_prescriptions: bool = True
+    share_lab_reports: bool = True
+    share_scans: bool = False
+    valid_days: int = 30
+
+
 @router.post("/grant", status_code=status.HTTP_201_CREATED)
 async def grant_consent(
     payload: GrantConsentRequest,
@@ -146,6 +160,91 @@ async def list_my_consents(
         }
         for c, u, p in rows
     ]
+
+
+@router.post("/send-report", status_code=status.HTTP_201_CREATED)
+async def send_report_to_doctor_or_hospital(
+    payload: SendReportRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Patient sends their health report to a specific doctor or hospital department,
+    with a personal message about their current issues.
+    Grants temporary consent and notifies the recipient.
+    """
+    from datetime import timedelta
+
+    me_result = await db.execute(select(User, UserProfile)
+        .join(UserProfile, UserProfile.user_id == User.id, isouter=True)
+        .where(User.id == uuid.UUID(user_id)))
+    me_row = me_result.first()
+    if not me_row:
+        raise HTTPException(status_code=404, detail="User not found")
+    me, me_profile = me_row
+    patient_name = f"{me_profile.first_name} {me_profile.last_name}" if me_profile else me.email
+
+    valid_until = date.today() + timedelta(days=payload.valid_days)
+    doctor_id = None
+    org_id = uuid.UUID(payload.organization_id) if payload.organization_id else None
+
+    if payload.target_type == "doctor":
+        if not payload.doctor_email:
+            raise HTTPException(status_code=422, detail="doctor_email required")
+        doc_result = await db.execute(
+            select(User).where(User.email == payload.doctor_email, User.role == UserRole.DOCTOR)
+        )
+        doctor = doc_result.scalar_one_or_none()
+        if not doctor:
+            raise HTTPException(status_code=404, detail=f"No doctor found with email {payload.doctor_email}")
+        doctor_id = doctor.id
+        org_id = doctor.organization_id
+
+    # Revoke existing consent to same recipient
+    await db.execute(
+        update(PatientConsent)
+        .where(
+            PatientConsent.patient_id == uuid.UUID(user_id),
+            PatientConsent.doctor_id == doctor_id if doctor_id else PatientConsent.organization_id == org_id,
+            PatientConsent.status == ConsentStatus.ACTIVE,
+        )
+        .values(status=ConsentStatus.REVOKED, revoked_at=datetime.now(timezone.utc))
+    )
+
+    consent = PatientConsent(
+        patient_id=uuid.UUID(user_id),
+        doctor_id=doctor_id,
+        organization_id=org_id,
+        share_full_history=payload.share_full_history,
+        share_biomarkers=payload.share_biomarkers,
+        share_prescriptions=payload.share_prescriptions,
+        share_lab_reports=payload.share_lab_reports,
+        share_scans=payload.share_scans,
+        valid_until=valid_until,
+        purpose=payload.patient_message,
+    )
+    db.add(consent)
+
+    # Notify doctor if sending to specific doctor
+    if doctor_id:
+        dept_info = f" ({payload.department})" if payload.department else ""
+        notif = Notification(
+            user_id=doctor_id,
+            type=NotificationType.CONSENT_GRANTED,
+            title=f"Patient {patient_name} shared their health report",
+            body=f"Message from patient: {payload.patient_message[:200]}",
+            action_url="/doctor/patients",
+            extra_data={"department": payload.department, "patient_id": user_id},
+        )
+        db.add(notif)
+
+    await db.commit()
+    return {
+        "status": "sent",
+        "consent_id": str(consent.id),
+        "valid_until": str(valid_until),
+        "message": "Your report has been shared successfully.",
+    }
 
 
 @router.post("/revoke")
