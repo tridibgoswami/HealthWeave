@@ -19,6 +19,7 @@ from app.models.intelligence import (
 )
 from app.services.ai.correlation_engine import CorrelationEngine
 from app.services.ai.prediction_engine import PredictionEngine
+from app.services.ai.medicine_interaction_service import MedicineInteractionService
 from app.services.analytics.timeline_service import TimelineService
 
 router = APIRouter(prefix="/intelligence", tags=["AI Intelligence"])
@@ -226,6 +227,224 @@ async def compare_reports(
     )
 
 
+@router.get("/biomarker-trends")
+async def get_biomarker_trends(
+    months: int = Query(24, ge=1, le=120),
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return time-series data for all biomarkers with trend analysis."""
+    from sqlalchemy import text, desc
+    sql = text("""
+        WITH ranked AS (
+            SELECT
+                canonical_name,
+                display_name,
+                value_numeric,
+                unit,
+                status,
+                measured_at,
+                reference_range_min,
+                reference_range_max,
+                COUNT(*) OVER (PARTITION BY canonical_name) AS total_readings
+            FROM biomarker_values
+            WHERE user_id = :user_id
+              AND value_numeric IS NOT NULL
+              AND canonical_name IS NOT NULL
+              AND measured_at >= NOW() - INTERVAL '1 month' * :months
+        )
+        SELECT
+            canonical_name,
+            MAX(display_name) AS display_name,
+            MAX(unit) AS unit,
+            array_agg(value_numeric ORDER BY measured_at) AS values,
+            array_agg(measured_at ORDER BY measured_at) AS dates,
+            array_agg(status ORDER BY measured_at) AS statuses,
+            MAX(reference_range_min) AS ref_min,
+            MAX(reference_range_max) AS ref_max,
+            total_readings
+        FROM ranked
+        WHERE total_readings >= 1
+        GROUP BY canonical_name, total_readings
+        ORDER BY total_readings DESC, canonical_name
+        LIMIT 30
+    """)
+    result = await db.execute(sql, {"user_id": user_id, "months": months})
+    rows = result.mappings().all()
+
+    biomarkers = []
+    for row in rows:
+        values = list(row["values"])
+        dates = [str(d)[:10] for d in row["dates"]]
+        statuses = list(row["statuses"])
+        latest = values[-1] if values else None
+        first = values[0] if values else None
+        change_pct = round(((latest - first) / abs(first)) * 100, 1) if first and first != 0 and latest is not None else None
+
+        trend = "stable"
+        if change_pct is not None:
+            if change_pct > 10:
+                trend = "rising"
+            elif change_pct < -10:
+                trend = "falling"
+
+        biomarkers.append({
+            "name": row["canonical_name"],
+            "display_name": row["display_name"] or row["canonical_name"].replace("_", " ").title(),
+            "unit": row["unit"] or "",
+            "readings": [{"date": d, "value": v, "status": s} for d, v, s in zip(dates, values, statuses)],
+            "latest_value": latest,
+            "latest_status": statuses[-1] if statuses else "unknown",
+            "reference_range": {"min": row["ref_min"], "max": row["ref_max"]},
+            "trend": trend,
+            "change_percent": change_pct,
+            "total_readings": row["total_readings"],
+        })
+
+    return {"biomarkers": biomarkers, "months": months}
+
+
+@router.get("/risk-predictions")
+async def get_risk_predictions(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get stored risk predictions grouped by disease category."""
+    from sqlalchemy import desc
+    result = await db.execute(
+        select(PredictiveAlert)
+        .where(
+            PredictiveAlert.user_id == uuid.UUID(user_id),
+            PredictiveAlert.is_dismissed == False,
+            PredictiveAlert.alert_type == "risk_trend",
+        )
+        .order_by(desc(PredictiveAlert.risk_score))
+        .limit(20)
+    )
+    alerts = result.scalars().all()
+    return {
+        "predictions": [
+            {
+                "id": str(a.id),
+                "condition": a.category or a.title,
+                "title": a.title,
+                "risk_level": a.risk_level,
+                "risk_score": a.risk_score,
+                "confidence": a.confidence,
+                "time_horizon": a.time_horizon,
+                "summary": a.summary,
+                "key_indicators": a.supporting_evidence or [],
+                "recommended_actions": a.recommended_actions or [],
+                "consult_specialist": a.consult_specialist,
+            }
+            for a in alerts
+        ]
+    }
+
+
+@router.post("/risk-predictions/run")
+async def run_risk_predictions(
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user_id),
+):
+    """Trigger fresh risk prediction computation."""
+    background_tasks.add_task(_generate_alerts_background, user_id)
+    return {"status": "running", "message": "Risk predictions are being computed"}
+
+
+@router.get("/medicine-interactions")
+async def get_medicine_interactions(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all active drug-drug interaction alerts for the patient."""
+    service = MedicineInteractionService(db)
+    interactions = await service.get_interactions(uuid.UUID(user_id))
+    return {"interactions": interactions, "count": len(interactions)}
+
+
+@router.post("/medicine-interactions/check")
+async def check_medicine_interactions(
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user_id),
+):
+    """Trigger a fresh drug interaction check for all active medicines."""
+    background_tasks.add_task(_check_interactions_background, user_id)
+    return {"status": "checking", "message": "Drug interaction analysis started"}
+
+
+@router.post("/medicine-interactions/{interaction_id}/acknowledge")
+async def acknowledge_interaction(
+    interaction_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark a drug interaction alert as acknowledged."""
+    from sqlalchemy import update
+    from datetime import datetime, timezone
+    from app.models.medicine import MedicineInteractionAlert
+    await db.execute(
+        update(MedicineInteractionAlert)
+        .where(
+            MedicineInteractionAlert.id == uuid.UUID(interaction_id),
+            MedicineInteractionAlert.user_id == uuid.UUID(user_id),
+        )
+        .values(is_acknowledged=True, acknowledged_at=datetime.now(timezone.utc))
+    )
+    await db.commit()
+    return {"status": "acknowledged"}
+
+
+@router.get("/knowledge-graph")
+async def get_knowledge_graph(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return patient-specific health knowledge graph for visualization."""
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../../ai"))
+    try:
+        from knowledge_graph.health_graph import HealthKnowledgeGraph
+        graph = HealthKnowledgeGraph()
+
+        # Enrich with patient's actual conditions and medicines
+        from sqlalchemy import text
+        bio_result = await db.execute(text("""
+            SELECT DISTINCT ON (canonical_name) canonical_name, status, value_numeric
+            FROM biomarker_values
+            WHERE user_id = :uid AND canonical_name IS NOT NULL
+            ORDER BY canonical_name, measured_at DESC
+        """), {"uid": user_id})
+        biomarkers = bio_result.mappings().all()
+
+        med_result = await db.execute(text("""
+            SELECT DISTINCT canonical_name, drug_class, prescribed_for
+            FROM medicine_entries
+            WHERE user_id = :uid AND status = 'active' AND canonical_name IS NOT NULL
+        """), {"uid": user_id})
+        medicines = med_result.mappings().all()
+
+        icd_result = await db.execute(text("""
+            SELECT DISTINCT unnest(icd10_codes) AS code
+            FROM health_records
+            WHERE user_id = :uid AND cardinality(icd10_codes) > 0
+        """), {"uid": user_id})
+        icd_codes = [r["code"] for r in icd_result.mappings().all()]
+
+        patient_data = {
+            "abnormal_biomarkers": [b["canonical_name"] for b in biomarkers if b["status"] in ("high", "low", "critical")],
+            "all_biomarkers": [b["canonical_name"] for b in biomarkers],
+            "active_medicines": [m["canonical_name"] for m in medicines],
+            "icd10_codes": icd_codes,
+        }
+        graph.enrich_with_patient_data(patient_data)
+        return graph.to_cytoscape_json()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning("Knowledge graph error: %s", exc)
+        return {"nodes": [], "edges": [], "error": "Knowledge graph unavailable"}
+
+
 # ── Background helpers ────────────────────────────────────────────────────────
 
 async def _compute_scores_background(user_id: str):
@@ -281,6 +500,13 @@ async def _generate_alerts_background(user_id: str):
             )
             db.add(alert)
         await db.commit()
+
+
+async def _check_interactions_background(user_id: str):
+    from app.core.database import get_db_context
+    async with get_db_context() as db:
+        service = MedicineInteractionService(db)
+        await service.check_and_save_interactions(uuid.UUID(user_id))
 
 
 async def _run_correlations_background(user_id: str):

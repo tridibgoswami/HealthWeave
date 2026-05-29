@@ -30,6 +30,8 @@ const PassportPage    = React.lazy(() => import("./pages/PassportPage").then((m)
 const ConsentPage     = React.lazy(() => import("./pages/ConsentPage").then((m) => ({ default: m.ConsentPage })));
 const SendReportPage  = React.lazy(() => import("./pages/SendReportPage").then((m) => ({ default: m.SendReportPage })));
 const InsightsPage    = React.lazy(() => import("./pages/InsightsPage").then((m) => ({ default: m.InsightsPage })));
+const BiomarkerPage   = React.lazy(() => import("./pages/BiomarkerPage").then((m) => ({ default: m.BiomarkerPage })));
+const RiskPage        = React.lazy(() => import("./pages/RiskPage").then((m) => ({ default: m.RiskPage })));
 
 // Doctor portal
 const DoctorDashboard   = React.lazy(() => import("./pages/doctor/DoctorDashboard").then((m) => ({ default: m.DoctorDashboard })));
@@ -109,6 +111,8 @@ function AppInner() {
           <Route path="/consent"      element={<Protected><ConsentPage /></Protected>} />
           <Route path="/send-report"  element={<Protected><SendReportPage /></Protected>} />
           <Route path="/insights"    element={<Protected><InsightsPage /></Protected>} />
+          <Route path="/biomarkers"  element={<Protected><BiomarkerPage /></Protected>} />
+          <Route path="/risk"        element={<Protected><RiskPage /></Protected>} />
 
           {/* Doctor portal */}
           <Route path="/doctor/dashboard"              element={<DoctorProtected><DoctorDashboard /></DoctorProtected>} />

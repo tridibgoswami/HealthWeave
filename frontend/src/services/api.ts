@@ -141,6 +141,22 @@ export const intelligenceApi = {
     api.get("/intelligence/timeline/compare", {
       params: { record_id_1: id1, record_id_2: id2 },
     }),
+
+  getBiomarkerTrends: (months = 24) =>
+    api.get("/intelligence/biomarker-trends", { params: { months } }),
+
+  getRiskPredictions: () => api.get("/intelligence/risk-predictions"),
+
+  runRiskPredictions: () => api.post("/intelligence/risk-predictions/run"),
+
+  getMedicineInteractions: () => api.get("/intelligence/medicine-interactions"),
+
+  checkMedicineInteractions: () => api.post("/intelligence/medicine-interactions/check"),
+
+  acknowledgeInteraction: (id: string) =>
+    api.post(`/intelligence/medicine-interactions/${id}/acknowledge`),
+
+  getKnowledgeGraph: () => api.get("/intelligence/knowledge-graph"),
 };
 
 // ── Emergency ──────────────────────────────────────────────────────────────────
