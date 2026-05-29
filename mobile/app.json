@@ -47,7 +47,7 @@
       }]
     ],
     "extra": {
-      "apiBaseUrl": "http://localhost:8000/api/v1"
+      "apiBaseUrl": "http://YOUR_PC_IP:9000/api/v1"
     }
   }
 }

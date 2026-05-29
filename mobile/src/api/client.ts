@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const BASE_URL =
   (Constants.expoConfig?.extra?.apiBaseUrl as string) ||
-  'http://localhost:8000/api/v1';
+  'http://YOUR_PC_IP:9000/api/v1';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
