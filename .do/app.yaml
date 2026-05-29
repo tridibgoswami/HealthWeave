@@ -1,0 +1,90 @@
+name: healthweave
+region: blr  # Bangalore — keeps Indian health data in India
+
+# ── Backend API ───────────────────────────────────────────────────────────────
+services:
+  - name: api
+    dockerfile_path: Dockerfile
+    source_dir: backend
+    github:
+      repo: tridibgoswami/healthweave
+      branch: claude/prompt-optimization-orion-n8dBa
+      deploy_on_push: true
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xs   # 512MB RAM — ~$12/month; upgrade to basic-s if slow
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 40
+      period_seconds: 30
+      failure_threshold: 3
+    envs:
+      # App
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+
+      # Database — DO injects this automatically from the managed DB below
+      - key: DATABASE_URL
+        value: ${db.DATABASE_URL}
+
+      # Security — fill these in the DO dashboard after first deploy
+      - key: SECRET_KEY
+        type: SECRET
+        value: REPLACE_WITH_STRONG_SECRET_MIN_32_CHARS
+
+      # AI keys — fill in DO dashboard
+      - key: ANTHROPIC_API_KEY
+        type: SECRET
+        value: ""
+      - key: OPENAI_API_KEY
+        type: SECRET
+        value: ""
+
+      # DigitalOcean Spaces — S3-compatible file storage (create Space in DO dashboard)
+      - key: S3_ENDPOINT
+        value: https://blr1.digitaloceanspaces.com
+      - key: S3_REGION
+        value: blr1
+      - key: S3_BUCKET
+        value: healthweave-documents
+      - key: S3_ACCESS_KEY
+        type: SECRET
+        value: ""
+      - key: S3_SECRET_KEY
+        type: SECRET
+        value: ""
+
+      # CORS — allow both the DO-assigned URL and any custom domain
+      - key: CORS_ORIGINS
+        value: ${frontend.PUBLIC_URL},https://app.healthweave.in
+
+      # Disable Redis for now (not required — rate limiter uses in-memory)
+      - key: REDIS_URL
+        value: ""
+
+# ── Frontend (React/Vite static site) ────────────────────────────────────────
+static_sites:
+  - name: frontend
+    source_dir: frontend
+    github:
+      repo: tridibgoswami/healthweave
+      branch: claude/prompt-optimization-orion-n8dBa
+      deploy_on_push: true
+    build_command: npm run build
+    output_dir: dist
+    index_document: index.html
+    error_document: index.html   # SPA — all routes served by index.html
+    envs:
+      - key: VITE_API_URL
+        value: ${api.PUBLIC_URL}/api/v1
+
+# ── Managed PostgreSQL ────────────────────────────────────────────────────────
+databases:
+  - name: db
+    engine: PG
+    version: "15"
+    size: db-s-1vcpu-1gb   # 1GB RAM, 10GB storage — ~$15/month
+    num_nodes: 1
+    production: false        # set true when going live with real patients

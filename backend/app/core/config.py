@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 40
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_database_url(cls, v: str) -> str:
+        # DigitalOcean Managed DB injects plain postgresql:// — convert for asyncpg
+        if isinstance(v, str):
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
+
     # ── Vector DB (pgvector via PostgreSQL) ───────────────────────────────────
     VECTOR_DIMENSION: int = 1536  # OpenAI ada-002 / text-embedding-3-small
 
