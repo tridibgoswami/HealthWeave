@@ -13,6 +13,8 @@ services:
     http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xs   # 512MB RAM — ~$12/month; upgrade to basic-s if slow
+    routes:
+      - path: /api
     health_check:
       http_path: /health
       initial_delay_seconds: 40
@@ -76,6 +78,8 @@ static_sites:
     output_dir: dist
     index_document: index.html
     error_document: index.html   # SPA — all routes served by index.html
+    routes:
+      - path: /
     envs:
       - key: VITE_API_URL
         value: ${api.PUBLIC_URL}/api/v1
