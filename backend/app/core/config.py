@@ -30,6 +30,11 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             v = v.replace("postgres://", "postgresql+asyncpg://", 1)
             v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            # Strip sslmode — asyncpg does not accept it as a URL param;
+            # SSL is enabled separately via connect_args in database.py
+            import re
+            v = re.sub(r"[?&]sslmode=[^&]*", "", v)
+            v = re.sub(r"\?$", "", v)  # remove trailing ? if sslmode was only param
         return v
 
     # ── Vector DB (pgvector via PostgreSQL) ───────────────────────────────────

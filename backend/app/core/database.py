@@ -3,6 +3,7 @@ HealthWeave – Async Database Engine
 PostgreSQL via asyncpg + SQLAlchemy 2.0 ORM, with pgvector extension.
 """
 
+import ssl
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -22,12 +23,24 @@ class Base(DeclarativeBase):
     pass
 
 
+def _ssl_args() -> dict:
+    # Use SSL for any non-local database (e.g. DigitalOcean managed DB)
+    url = settings.DATABASE_URL
+    if "localhost" in url or "127.0.0.1" in url:
+        return {}
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return {"ssl": ctx}
+
+
 engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
     pool_pre_ping=True,
     echo=settings.DEBUG,
+    connect_args=_ssl_args(),
 )
 
 AsyncSessionLocal = async_sessionmaker(
