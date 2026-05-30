@@ -42,7 +42,6 @@ slowapi==0.1.9
 
 # Notifications
 firebase-admin==6.6.0
-twilio==9.4.0
 
 # Utilities
 pydantic[email]==2.10.3

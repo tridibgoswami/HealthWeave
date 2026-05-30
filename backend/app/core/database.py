@@ -52,13 +52,17 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def init_db() -> None:
+    # Each extension gets its own transaction so a duplicate-key race condition
+    # on multi-instance deploys doesn't abort the entire startup.
+    for ext in ("vector", "pg_trgm", "unaccent"):
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text(f"CREATE EXTENSION IF NOT EXISTS {ext}"))
+        except Exception:
+            pass  # already exists or insufficient privilege — safe to ignore
+
     async with engine.begin() as conn:
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
-        # Create all tables (new tables only; existing ones are not altered)
         await conn.run_sync(Base.metadata.create_all)
-        # Schema migrations — safe to run on every startup
         await _run_migrations(conn)
 
 
