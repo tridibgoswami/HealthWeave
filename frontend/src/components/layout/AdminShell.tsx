@@ -99,7 +99,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="ml-[240px] flex-1 flex flex-col min-h-screen overflow-y-auto">
+      <div className="lg:ml-[240px] flex-1 flex flex-col min-h-screen overflow-y-auto">
         <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-2">
             <Building2 size={16} className="text-purple-600" />

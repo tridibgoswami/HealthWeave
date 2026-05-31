@@ -48,15 +48,15 @@ export function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="mb-5 shrink-0">
+    <div className="flex flex-col h-full p-4 sm:p-6">
+      <div className="mb-4 sm:mb-5 shrink-0">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 bg-gradient-to-br from-brand-blue to-purple-600 rounded-xl flex items-center justify-center shadow-blue-glow">
+          <div className="w-10 h-10 bg-gradient-to-br from-brand-blue to-purple-600 rounded-xl flex items-center justify-center shadow-blue-glow shrink-0">
             <MessageSquare size={17} className="text-white" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">AI Health Assistant</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">AI Health Assistant</h1>
         </div>
-        <p className="text-sm text-slate-400 ml-[52px]">Ask anything about your health history, reports, biomarkers, or medications</p>
+        <p className="text-sm text-slate-400 pl-[52px]">Ask anything about your health history, reports, biomarkers, or medications</p>
       </div>
       <div className="flex-1 min-h-0">
         <HealthChat sessionId={sessionId} />

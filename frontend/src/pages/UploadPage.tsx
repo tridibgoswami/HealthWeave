@@ -28,20 +28,20 @@ export function UploadPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
             <Upload size={18} className="text-brand-blue" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Upload Health Records</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Upload Health Records</h1>
         </div>
         <p className="text-sm text-slate-400 ml-[52px]">Lab reports, prescriptions, scans — AI reads everything</p>
       </div>
 
       {/* How it works strip */}
-      <div className="grid grid-cols-4 gap-3 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 sm:mb-7">
         {HOW_IT_WORKS.map(({ Icon, color, bg, text }) => (
           <div key={text} className="bg-white rounded-2xl border border-slate-100 shadow-card p-4 flex flex-col items-start gap-2.5">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${bg}`}>

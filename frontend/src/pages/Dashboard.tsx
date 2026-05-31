@@ -136,7 +136,7 @@ export function Dashboard() {
     <div className="min-h-full">
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <div
-        className="relative overflow-hidden px-8 pt-10 pb-8"
+        className="relative overflow-hidden px-4 sm:px-8 pt-6 sm:pt-10 pb-6 sm:pb-8"
         style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0F172A 60%, #0D1B3E 100%)" }}
       >
         {/* Decorative circles */}
@@ -145,14 +145,14 @@ export function Dashboard() {
         <div className="absolute -bottom-10 right-64 w-48 h-48 rounded-full opacity-5"
           style={{ background: "radial-gradient(circle, #06B6D4, transparent)" }} />
 
-        <div className="max-w-[1200px] flex items-center justify-between gap-8">
+        <div className="max-w-[1200px] flex items-center justify-between gap-4 sm:gap-8">
           {/* Left: greeting + stats */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-slate-400 text-sm font-medium mb-1">{greeting},</p>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight mb-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-1">
               {firstName} 👋
             </h1>
-            <p className="text-slate-400 text-sm mb-8">
+            <p className="text-slate-400 text-xs sm:text-sm mb-5 sm:mb-8">
               {overall > 0
                 ? `Your overall health score is ${overallLabel?.toLowerCase()}. Here's your latest overview.`
                 : "Upload your first lab report to unlock AI-powered health insights."}
@@ -183,24 +183,24 @@ export function Dashboard() {
 
           {/* Right: large score ring */}
           {!scoresLoading && overall > 0 ? (
-            <div className="shrink-0 flex flex-col items-center gap-3">
+            <div className="shrink-0 flex flex-col items-center gap-2 sm:gap-3">
               <div className="relative">
-                <ScoreRing score={overall} size={148} stroke={12} hex="#0066FF" />
+                <ScoreRing score={overall} size={110} stroke={10} hex="#0066FF" />
                 {/* Glow */}
                 <div className="absolute inset-0 rounded-full blur-2xl opacity-20"
                   style={{ background: overall >= 70 ? "#10B981" : overall >= 50 ? "#F59E0B" : "#EF4444" }} />
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Overall Score</p>
-                <p className={cn("text-sm font-bold mt-0.5",
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Overall</p>
+                <p className={cn("text-xs font-bold mt-0.5",
                   overall >= 70 ? "text-emerald-400" : overall >= 50 ? "text-amber-400" : "text-red-400"
                 )}>{overallLabel}</p>
               </div>
             </div>
           ) : scoresLoading ? (
-            <div className="w-[148px] h-[148px] rounded-full shimmer-bg shrink-0 opacity-20" />
+            <div className="w-[110px] h-[110px] rounded-full shimmer-bg shrink-0 opacity-20" />
           ) : (
-            <div className="shrink-0 flex flex-col items-center justify-center w-36 h-36 rounded-full border-2 border-dashed border-white/10">
+            <div className="shrink-0 flex flex-col items-center justify-center w-28 h-28 rounded-full border-2 border-dashed border-white/10">
               <BarChart3 size={28} className="text-white/20 mb-1" />
               <p className="text-[10px] text-white/30 text-center">No score yet</p>
             </div>
@@ -209,10 +209,10 @@ export function Dashboard() {
       </div>
 
       {/* ── Body ────────────────────────────────────────────────── */}
-      <div className="px-8 mt-6 pb-10 max-w-[1200px]">
+      <div className="px-4 sm:px-8 mt-4 sm:mt-6 pb-6 sm:pb-10 max-w-[1200px]">
 
-        {/* Quick action cards (raised above hero) */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        {/* Quick action cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             { to: "/upload",   Icon: Upload,        label: "Upload Record",   sub: "Lab, scan, prescription", bg: "bg-gradient-to-br from-brand-blue to-blue-700", glow: "shadow-blue-glow" },
             { to: "/chat",     Icon: MessageSquare, label: "Ask AI",          sub: "Query your health data",  bg: "bg-gradient-to-br from-purple-600 to-purple-800", glow: "" },
@@ -244,9 +244,9 @@ export function Dashboard() {
           })}
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* ── Organ Score Grid ──────────────────────────────── */}
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             <div className="hw-card p-0 overflow-hidden">
               {/* Card header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
@@ -273,9 +273,9 @@ export function Dashboard() {
 
               <div className="p-6">
                 {scoresLoading ? (
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     {[...Array(8)].map((_, i) => (
-                      <div key={i} className="skeleton h-32 rounded-2xl" />
+                      <div key={i} className="skeleton h-24 sm:h-32 rounded-2xl" />
                     ))}
                   </div>
                 ) : overall === 0 ? (
@@ -293,7 +293,7 @@ export function Dashboard() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-3">
                       {SCORES.map(({ key, label, Icon, hex, light }) => {
                         const k   = key.replace("_score", "");
                         const val = latest[k] ?? latest[key];

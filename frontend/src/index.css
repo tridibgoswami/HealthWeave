@@ -108,3 +108,12 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* Mobile: prevent tap highlight flash */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Mobile: improve touch scrolling */
+.overflow-y-auto { -webkit-overflow-scrolling: touch; }
+
+/* Safe area for iPhone notch / home indicator */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }

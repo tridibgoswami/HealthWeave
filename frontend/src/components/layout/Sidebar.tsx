@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
-  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home, Send, Brain, FlaskConical,
+  Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home, Send, Brain, FlaskConical, X,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -10,19 +10,24 @@ import { intelligenceApi } from "../../services/api";
 import { cn } from "../../utils/cn";
 
 const NAV = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard",       end: true  },
-  { to: "/upload",   icon: Upload,          label: "Upload Records",   end: false },
-  { to: "/timeline", icon: Activity,        label: "Health Timeline",  end: false },
-  { to: "/chat",     icon: MessageSquare,   label: "AI Assistant",     end: false },
-  { to: "/alerts",   icon: Bell,            label: "Alerts",           end: false, badge: true },
-  { to: "/insights",    icon: Brain,         label: "Health Intelligence", end: false },
-  { to: "/biomarkers",  icon: FlaskConical,  label: "Biomarker Trends",   end: false },
-  { to: "/risk",        icon: ShieldAlert,   label: "Risk Predictions",   end: false },
-  { to: "/consent",     icon: ShieldCheck,   label: "My Consents",        end: false },
-  { to: "/send-report", icon: Send,         label: "Send Report",       end: false },
+  { to: "/dashboard",   icon: LayoutDashboard, label: "Dashboard",          end: true  },
+  { to: "/upload",      icon: Upload,          label: "Upload Records",      end: false },
+  { to: "/timeline",    icon: Activity,        label: "Health Timeline",     end: false },
+  { to: "/chat",        icon: MessageSquare,   label: "AI Assistant",        end: false },
+  { to: "/alerts",      icon: Bell,            label: "Alerts",              end: false, badge: true },
+  { to: "/insights",    icon: Brain,           label: "Health Intelligence", end: false },
+  { to: "/biomarkers",  icon: FlaskConical,    label: "Biomarker Trends",    end: false },
+  { to: "/risk",        icon: ShieldAlert,     label: "Risk Predictions",    end: false },
+  { to: "/consent",     icon: ShieldCheck,     label: "My Consents",         end: false },
+  { to: "/send-report", icon: Send,            label: "Send Report",         end: false },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -39,16 +44,23 @@ export function Sidebar() {
   const initials = `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "U";
 
   const handleLogout = () => { logout(); navigate("/login"); };
+  const handleNav    = () => onClose();
 
   return (
     <aside
-      className="w-[260px] bg-sidebar-gradient flex flex-col h-screen fixed left-0 top-0 z-40 shadow-sidebar"
+      className={cn(
+        // Desktop: always visible, fixed
+        "w-[260px] flex flex-col h-screen fixed left-0 top-0 z-40 shadow-sidebar transition-transform duration-300",
+        // Mobile: slide in/out
+        "lg:translate-x-0",
+        open ? "translate-x-0" : "-translate-x-full"
+      )}
       style={{ background: "linear-gradient(180deg, #0F172A 0%, #0A0F1E 100%)" }}
     >
-      {/* Logo — links back to home page */}
-      <div className="px-5 py-5 border-b border-white/5">
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group" title="Back to home">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-blue-glow shrink-0 group-hover:shadow-lg transition-all">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-blue-glow shrink-0">
             <Dna size={17} className="text-white" />
           </div>
           <div>
@@ -56,6 +68,13 @@ export function Sidebar() {
             <p className="text-[10px] text-slate-500 font-medium leading-tight">AI Health Intelligence</p>
           </div>
         </Link>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <X size={16} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -67,6 +86,7 @@ export function Sidebar() {
             key={to}
             to={to}
             end={end}
+            onClick={handleNav}
             className={({ isActive }) =>
               cn("nav-item", isActive ? "nav-item-active" : "nav-item-inactive")
             }
@@ -88,6 +108,7 @@ export function Sidebar() {
           <p className="section-label px-3 mb-3">Emergency</p>
           <NavLink
             to="/passport"
+            onClick={handleNav}
             className={({ isActive }) =>
               cn("nav-item", isActive
                 ? "bg-red-500/20 text-red-400 border border-red-500/30"
@@ -103,6 +124,7 @@ export function Sidebar() {
         <div className="pt-3 mt-2 border-t border-white/5">
           <Link
             to="/"
+            onClick={handleNav}
             className="nav-item nav-item-inactive text-slate-500 hover:text-slate-300"
           >
             <Home size={17} className="shrink-0" />
