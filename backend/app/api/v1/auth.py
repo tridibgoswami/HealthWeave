@@ -3,15 +3,17 @@ HealthWeave – Authentication API
 JWT-based auth with refresh tokens.
 """
 
+import re
 from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -24,6 +26,17 @@ from app.models.user import User, UserProfile, UserRole
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+_PASSWORD_RE = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).{8,72}$')
+
+
+def _validate_password_strength(v: str) -> str:
+    if not _PASSWORD_RE.match(v):
+        raise ValueError(
+            "Password must be 8–72 characters and include uppercase, lowercase, "
+            "and at least one digit or special character."
+        )
+    return v
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -31,12 +44,25 @@ class RegisterRequest(BaseModel):
     password: str
     first_name: str
     last_name: str
-    role: str = "patient"  # "patient" | "doctor" | "hospital_admin"
-    # Doctor-specific fields
+    role: str = "patient"
     specialization: str | None = None
     medical_registration_number: str | None = None
-    # Hospital admin fields
     organization_name: str | None = None
+
+    @field_validator("password")
+    @classmethod
+    def strong_password(cls, v: str) -> str:
+        return _validate_password_strength(v)
+
+    @field_validator("first_name", "last_name")
+    @classmethod
+    def non_empty_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Name cannot be blank")
+        if len(v) > 100:
+            raise ValueError("Name too long")
+        return v
 
 
 class LoginRequest(BaseModel):
@@ -63,9 +89,15 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
+    @field_validator("new_password")
+    @classmethod
+    def strong_password(cls, v: str) -> str:
+        return _validate_password_strength(v)
+
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def register(payload: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(User).where(User.email == payload.email))
     if existing.scalar_one_or_none():
         raise HTTPException(
@@ -98,7 +130,6 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
     db.add(profile)
     await db.flush()
 
-    # Create doctor profile if registering as doctor
     if user_role == UserRole.DOCTOR:
         from app.models.organization import DoctorProfile
         doc_profile = DoctorProfile(
@@ -118,6 +149,7 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit("10/minute")
 async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
@@ -148,7 +180,8 @@ async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depe
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(payload: RefreshRequest):
+@limiter.limit("20/minute")
+async def refresh(payload: RefreshRequest, request: Request):
     token_data = decode_token(payload.refresh_token)
     if token_data.get("type") != "refresh":
         raise HTTPException(
@@ -164,19 +197,16 @@ async def refresh(payload: RefreshRequest):
 
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
-async def forgot_password(payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Generate a password-reset token. In production, email it to the user.
-    For now, the token is returned in the response for testing — wire up an
-    email provider (SendGrid, SES) before going live.
-    """
+@limiter.limit("5/minute")
+async def forgot_password(payload: ForgotPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
     import secrets
+    import logging
     from datetime import timedelta
+    from app.core.config import settings
 
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
-    # Always return 200 so we don't leak whether an email is registered
     if not user:
         return {"message": "If that email exists, a reset link has been sent."}
 
@@ -190,20 +220,18 @@ async def forgot_password(payload: ForgotPasswordRequest, db: AsyncSession = Dep
     )
     await db.commit()
 
-    # TODO: Send email via SendGrid/SES in production
-    # For now, log to console (remove before go-live)
-    print(f"[PASSWORD RESET] Token for {payload.email}: {reset_token}")
+    if settings.DEBUG:
+        logging.getLogger(__name__).debug(
+            "PASSWORD RESET token for %s (DEBUG only): %s", payload.email, reset_token
+        )
 
-    return {
-        "message": "If that email exists, a reset link has been sent.",
-        # Remove this field before going live — for testing only:
-        "_dev_token": reset_token,
-    }
+    # TODO: deliver reset_token via email (SendGrid / SES) before go-live
+    return {"message": "If that email exists, a reset link has been sent."}
 
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
-async def reset_password(payload: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    """Validate reset token and set new password."""
+@limiter.limit("5/minute")
+async def reset_password(payload: ResetPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(User).where(User.reset_token == payload.token)
     )

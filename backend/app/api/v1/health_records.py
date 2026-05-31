@@ -270,9 +270,15 @@ async def list_records(
     if record_type:
         conditions.append(HealthRecord.record_type == record_type)
     if from_date:
-        conditions.append(HealthRecord.record_date >= date.fromisoformat(from_date))
+        try:
+            conditions.append(HealthRecord.record_date >= date.fromisoformat(from_date))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid from_date format, expected YYYY-MM-DD")
     if to_date:
-        conditions.append(HealthRecord.record_date <= date.fromisoformat(to_date))
+        try:
+            conditions.append(HealthRecord.record_date <= date.fromisoformat(to_date))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid to_date format, expected YYYY-MM-DD")
 
     total_q = await db.execute(
         select(HealthRecord.id).where(and_(*conditions))

@@ -6,12 +6,15 @@ QR-based emergency medical access — works without login.
 import uuid
 import secrets
 from datetime import datetime, timezone
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.core.security import create_emergency_token, get_current_user_id
 from app.models.intelligence import EmergencyPassport
 from app.models.user import UserProfile
@@ -19,9 +22,23 @@ from app.models.user import UserProfile
 router = APIRouter(prefix="/emergency", tags=["Emergency Passport"])
 
 
+class PassportPayload(BaseModel):
+    blood_group: str | None = Field(None, max_length=10)
+    allergies: list[str] = Field(default_factory=list, max_length=50)
+    critical_medicines: list[str] = Field(default_factory=list, max_length=50)
+    chronic_conditions: list[str] = Field(default_factory=list, max_length=50)
+    implants: list[str] = Field(default_factory=list, max_length=20)
+    recent_surgeries: list[str] = Field(default_factory=list, max_length=20)
+    do_not_resuscitate: bool = False
+    emergency_contacts: list[dict[str, Any]] = Field(default_factory=list, max_length=5)
+    insurance: dict[str, Any] = Field(default_factory=dict)
+
+
 @router.get("/passport/{qr_token}", include_in_schema=True)
+@limiter.limit("30/minute")
 async def get_emergency_passport_by_qr(
     qr_token: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -87,7 +104,7 @@ async def get_my_passport(
 
 @router.post("/my-passport", status_code=status.HTTP_201_CREATED)
 async def create_or_update_passport(
-    payload: dict,
+    payload: PassportPayload,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -104,15 +121,15 @@ async def create_or_update_passport(
             update(EmergencyPassport)
             .where(EmergencyPassport.user_id == uuid.UUID(user_id))
             .values(
-                blood_group=payload.get("blood_group", passport.blood_group),
-                allergies=payload.get("allergies", passport.allergies),
-                current_critical_medicines=payload.get("critical_medicines", passport.current_critical_medicines),
-                chronic_conditions=payload.get("chronic_conditions", passport.chronic_conditions),
-                implants=payload.get("implants", passport.implants),
-                recent_surgeries=payload.get("recent_surgeries", passport.recent_surgeries),
-                do_not_resuscitate=payload.get("do_not_resuscitate", passport.do_not_resuscitate),
-                emergency_contacts=payload.get("emergency_contacts", passport.emergency_contacts),
-                insurance_info=payload.get("insurance", passport.insurance_info),
+                blood_group=payload.blood_group if payload.blood_group is not None else passport.blood_group,
+                allergies=payload.allergies,
+                current_critical_medicines=payload.critical_medicines,
+                chronic_conditions=payload.chronic_conditions,
+                implants=payload.implants,
+                recent_surgeries=payload.recent_surgeries,
+                do_not_resuscitate=payload.do_not_resuscitate,
+                emergency_contacts=payload.emergency_contacts,
+                insurance_info=payload.insurance,
                 snapshot_updated_at=now,
             )
         )
@@ -121,15 +138,15 @@ async def create_or_update_passport(
     else:
         new_passport = EmergencyPassport(
             user_id=uuid.UUID(user_id),
-            blood_group=payload.get("blood_group"),
-            allergies=payload.get("allergies", []),
-            current_critical_medicines=payload.get("critical_medicines", []),
-            chronic_conditions=payload.get("chronic_conditions", []),
-            implants=payload.get("implants", []),
-            recent_surgeries=payload.get("recent_surgeries", []),
-            do_not_resuscitate=payload.get("do_not_resuscitate", False),
-            emergency_contacts=payload.get("emergency_contacts", []),
-            insurance_info=payload.get("insurance", {}),
+            blood_group=payload.blood_group,
+            allergies=payload.allergies,
+            current_critical_medicines=payload.critical_medicines,
+            chronic_conditions=payload.chronic_conditions,
+            implants=payload.implants,
+            recent_surgeries=payload.recent_surgeries,
+            do_not_resuscitate=payload.do_not_resuscitate,
+            emergency_contacts=payload.emergency_contacts,
+            insurance_info=payload.insurance,
             qr_token=qr_token,
             qr_generated_at=now,
             snapshot_updated_at=now,

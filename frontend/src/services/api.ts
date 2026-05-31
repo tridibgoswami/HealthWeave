@@ -105,10 +105,38 @@ export const chatApi = {
   getMessages: (sessionId: string) =>
     api.get(`/chat/sessions/${sessionId}/messages`),
 
-  streamMessage: (sessionId: string, message: string): EventSource => {
+  streamMessage: async (
+    sessionId: string,
+    message: string,
+    onChunk: (text: string) => void,
+    onDone: () => void,
+    onError: (err: Error) => void,
+  ): Promise<void> => {
     const token = localStorage.getItem("hw_access_token");
-    const url = `${BASE_URL}/chat/sessions/${sessionId}/messages/stream?message=${encodeURIComponent(message)}&token=${token}`;
-    return new EventSource(url);
+    try {
+      const res = await fetch(`${BASE_URL}/chat/sessions/${sessionId}/messages/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ message }),
+      });
+      if (!res.ok || !res.body) {
+        onError(new Error(`Stream failed: ${res.status}`));
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        onChunk(decoder.decode(value, { stream: true }));
+      }
+      onDone();
+    } catch (err) {
+      onError(err instanceof Error ? err : new Error(String(err)));
+    }
   },
 };
 

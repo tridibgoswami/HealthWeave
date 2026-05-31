@@ -16,6 +16,15 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DEBUG: bool = False
     SECRET_KEY: str = "change-me-in-production-use-32-char-min"
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def secret_key_strength(cls, v: str) -> str:
+        if v == "change-me-in-production-use-32-char-min" or len(v) < 32:
+            import os
+            if os.getenv("APP_ENV", "development") == "production":
+                raise ValueError("SECRET_KEY must be at least 32 characters in production")
+        return v
     API_V1_PREFIX: str = "/v1"
 
     # ── Database ─────────────────────────────────────────────────────────────
@@ -72,11 +81,7 @@ class Settings(BaseSettings):
     EMERGENCY_TOKEN_EXPIRE_HOURS: int = 72
 
     # ── CORS ─────────────────────────────────────────────────────────────────
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://app.healthweave.in",
-    ]
+    CORS_ORIGINS: List[str] = ["https://app.healthweave.in"]
 
     # ── File Upload ───────────────────────────────────────────────────────────
     MAX_FILE_SIZE_MB: int = 50
