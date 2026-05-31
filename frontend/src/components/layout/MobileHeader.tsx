@@ -55,6 +55,7 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
         {/* Avatar + hamburger */}
         <button
           onClick={onMenuClick}
+          aria-label="Open menu"
           className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-xl hover:bg-white/10 transition-colors"
         >
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center text-white font-bold text-[11px] shrink-0">

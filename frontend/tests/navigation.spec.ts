@@ -72,15 +72,13 @@ test.describe("Navigation — mobile bottom nav", () => {
 
   test("mobile header is visible", async ({ page }) => {
     await page.goto("/dashboard");
-    await expect(page.locator("header").filter({ has: page.locator("text=HealthWeave") })).toBeVisible();
+    await expect(page.locator("header span:has-text('HealthWeave')").first()).toBeVisible();
   });
 
   test("hamburger opens sidebar", async ({ page }) => {
     await page.goto("/dashboard");
-    // Click the menu/hamburger button in header
-    await page.click("header button[aria-label], header button:last-child");
+    await page.click("button[aria-label='Open menu']");
     await page.waitForTimeout(500);
-    // Sidebar should be visible
     await expect(page.locator("aside")).toBeVisible();
   });
 

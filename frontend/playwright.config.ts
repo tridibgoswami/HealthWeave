@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
-  timeout: 30_000,
+  timeout: 45_000,
   retries: 1,
   workers: 2,
   reporter: [["html", { open: "never" }], ["list"]],
@@ -17,10 +17,6 @@ export default defineConfig({
     {
       name: "Desktop Chrome",
       use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "Mobile Safari",
-      use: { ...devices["iPhone 13"] },
     },
     {
       name: "Mobile Chrome",

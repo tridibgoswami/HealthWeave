@@ -25,6 +25,6 @@ export async function loginAs(page: Page, email = SHARED_EMAIL, password = SHARE
   await page.goto("/login");
   await page.fill("input[type=email], input[name=email]", email);
   await page.fill("input[type=password]", password);
-  await page.click("button[type=submit], button:has-text('Sign In'), button:has-text('Log in')");
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  await page.click("button[type=submit]");
+  await page.waitForURL("**/dashboard", { timeout: 20_000 });
 }

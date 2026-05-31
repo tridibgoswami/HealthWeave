@@ -33,12 +33,12 @@ test.describe("Dashboard", () => {
   });
 
   test("upload record quick action navigates correctly", async ({ page }) => {
-    await page.click("text=Upload Record");
+    await page.locator("a[href='/upload']").first().click();
     await expect(page).toHaveURL(/\/upload/);
   });
 
   test("ask AI quick action navigates correctly", async ({ page }) => {
-    await page.click("text=Ask AI").first();
+    await page.locator("a[href='/chat']").first().click();
     await expect(page).toHaveURL(/\/chat/);
   });
 

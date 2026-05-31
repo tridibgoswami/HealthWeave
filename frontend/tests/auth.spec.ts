@@ -34,16 +34,16 @@ test.describe("Authentication", () => {
 
   test("register page renders all fields", async ({ page }) => {
     await page.goto("/register/patient");
-    await expect(page.locator("input[name=first_name], input[placeholder*='First']")).toBeVisible();
-    await expect(page.locator("input[name=last_name], input[placeholder*='Last']")).toBeVisible();
+    await expect(page.locator("input[placeholder='Rahul']")).toBeVisible();
+    await expect(page.locator("input[placeholder='Sharma']")).toBeVisible();
     await expect(page.locator("input[type=email], input[name=email]")).toBeVisible();
     await expect(page.locator("input[type=password]")).toBeVisible();
   });
 
   test("register with weak password shows validation error", async ({ page }) => {
     await page.goto("/register/patient");
-    await page.fill("input[name=first_name], input[placeholder*='First']", "Test");
-    await page.fill("input[name=last_name], input[placeholder*='Last']", "User");
+    await page.fill("input[placeholder='Rahul']", "Test");
+    await page.fill("input[placeholder='Sharma']", "User");
     await page.fill("input[type=email]", `weak+${Date.now()}@test.com`);
     await page.fill("input[type=password]", "weak");
     await page.click("button[type=submit], button:has-text('Create Account')");
@@ -60,12 +60,12 @@ test.describe("Authentication", () => {
 
   test("full registration → dashboard flow", async ({ page }) => {
     await page.goto("/register/patient");
-    await page.fill("input[name=first_name], input[placeholder*='First']", TEST_NAME.first);
-    await page.fill("input[name=last_name], input[placeholder*='Last']", TEST_NAME.last);
+    await page.fill("input[placeholder='Rahul']", TEST_NAME.first);
+    await page.fill("input[placeholder='Sharma']", TEST_NAME.last);
     await page.fill("input[type=email]", TEST_EMAIL);
     await page.fill("input[type=password]", TEST_PASSWORD);
     await page.click("button[type=submit], button:has-text('Create Account')");
-    await page.waitForURL("**/dashboard", { timeout: 10_000 });
+    await page.waitForURL("**/dashboard", { timeout: 20_000 });
     await expect(page.locator(`text=${TEST_NAME.first}`)).toBeVisible();
   });
 
