@@ -10,3 +10,4 @@ from app.models.intelligence import (
     HealthScore, PredictiveAlert, CorrelationFinding,
     ChatSession, ChatMessage, EmergencyPassport,
 )
+from app.models.vitals import ManualVitalEntry, DocumentComment, PatientVisit

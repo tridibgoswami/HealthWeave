@@ -8,7 +8,7 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status, BackgroundTasks
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +22,7 @@ from app.models.health_record import (
     RecordType,
     TimelineEvent,
 )
+from app.models.vitals import DocumentComment
 from app.services.ocr.ocr_pipeline import OCRPipeline
 from app.services.ai.llm_client import get_llm_client
 from app.services.analytics.timeline_service import TimelineService
@@ -194,6 +195,48 @@ async def _process_document_background(
                 )
                 db.add(bv)
 
+            # Auto-compare: find previous readings for the same biomarkers
+            new_biomarkers = extraction.get("biomarkers", [])
+            if new_biomarkers:
+                from sqlalchemy import desc as _desc
+                changes: dict = {}
+                for bm in new_biomarkers:
+                    cname = bm.get("canonical_name")
+                    new_val = bm.get("value_numeric")
+                    if not cname or new_val is None:
+                        continue
+                    prev_result = await db.execute(
+                        select(BiomarkerValue)
+                        .where(
+                            BiomarkerValue.user_id == user_uuid,
+                            BiomarkerValue.canonical_name == cname,
+                            BiomarkerValue.record_id != record_uuid,
+                        )
+                        .order_by(_desc(BiomarkerValue.measured_at))
+                        .limit(1)
+                    )
+                    prev = prev_result.scalar_one_or_none()
+                    if prev and prev.value_numeric is not None:
+                        delta = new_val - prev.value_numeric
+                        pct = (delta / prev.value_numeric * 100) if prev.value_numeric != 0 else 0
+                        changes[cname] = {
+                            "name": bm.get("name", cname),
+                            "previous_value": prev.value_numeric,
+                            "new_value": new_val,
+                            "unit": bm.get("unit", ""),
+                            "delta": round(delta, 3),
+                            "delta_pct": round(pct, 1),
+                            "previous_date": str(prev.measured_at),
+                            "new_status": bm.get("status", ""),
+                            "previous_status": prev.status or "",
+                        }
+                if changes:
+                    await db.execute(
+                        update(HealthRecord)
+                        .where(HealthRecord.id == record_uuid)
+                        .values(biomarker_changes=changes)
+                    )
+
             # Generate content embedding for semantic search
             llm = get_llm_client()
             embed_text = f"{updates.get('ai_summary', '')} {extraction.get('clinical_notes', '')}"
@@ -352,6 +395,8 @@ async def get_record(
         "ai_risk_flags": record.ai_risk_flags,
         "ai_extracted_biomarkers": record.ai_extracted_biomarkers,
         "structured_data": record.structured_data,
+        "biomarker_changes": record.biomarker_changes or {},
+        "visit_id": str(record.visit_id) if record.visit_id else None,
         "biomarkers": [
             {
                 "name": bv.name,
@@ -406,4 +451,113 @@ async def get_biomarker_trends(
             for bv in values
         ],
         "count": len(values),
+    }
+
+
+# ── Comments ─────────────────────────────────────────────────────────────────
+
+class CommentCreate(BaseModel):
+    comment_text: str = Field(..., min_length=1, max_length=2000)
+
+
+class CommentUpdate(BaseModel):
+    comment_text: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/{record_id}/comments", status_code=status.HTTP_201_CREATED)
+async def add_comment(
+    record_id: str,
+    data: CommentCreate,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # Verify record belongs to user
+    result = await db.execute(
+        select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Record not found")
+    comment = DocumentComment(
+        record_id=uuid.UUID(record_id),
+        user_id=uuid.UUID(user_id),
+        comment_text=data.comment_text,
+    )
+    db.add(comment)
+    await db.commit()
+    return _comment_dict(comment)
+
+
+@router.get("/{record_id}/comments")
+async def list_comments(
+    record_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # Verify record belongs to user
+    result = await db.execute(
+        select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Record not found")
+    c_result = await db.execute(
+        select(DocumentComment)
+        .where(DocumentComment.record_id == uuid.UUID(record_id))
+        .order_by(DocumentComment.created_at)
+    )
+    return {"comments": [_comment_dict(c) for c in c_result.scalars().all()]}
+
+
+@router.put("/comments/{comment_id}")
+async def update_comment(
+    comment_id: str,
+    data: CommentUpdate,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(DocumentComment).where(
+            DocumentComment.id == uuid.UUID(comment_id),
+            DocumentComment.user_id == uuid.UUID(user_id),
+        )
+    )
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    comment.comment_text = data.comment_text
+    await db.commit()
+    return _comment_dict(comment)
+
+
+@router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_comment(
+    comment_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(DocumentComment).where(
+            DocumentComment.id == uuid.UUID(comment_id),
+            DocumentComment.user_id == uuid.UUID(user_id),
+        )
+    )
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    await db.delete(comment)
+    await db.commit()
+
+
+def _comment_dict(c: DocumentComment) -> dict:
+    return {
+        "id": str(c.id),
+        "record_id": str(c.record_id),
+        "comment_text": c.comment_text,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+        "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }

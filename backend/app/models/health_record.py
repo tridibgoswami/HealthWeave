@@ -77,6 +77,10 @@ class HealthRecord(Base):
     ai_risk_flags = Column(ARRAY(Text), default=list)
     ai_extracted_biomarkers = Column(JSON, default=dict)  # {"HbA1c": {"value": 7.2, "unit": "%", "reference": "<5.7"}}
 
+    # Visit grouping and biomarker comparison
+    visit_id = Column(UUID(as_uuid=True), ForeignKey("patient_visits.id", ondelete="SET NULL"), nullable=True)
+    biomarker_changes = Column(JSON, default=dict)  # auto-comparison with previous readings
+
     # Vector embedding for semantic search (pgvector)
     content_embedding = Column(Vector(settings.VECTOR_DIMENSION))
 

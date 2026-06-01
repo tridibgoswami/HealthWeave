@@ -91,6 +91,18 @@ async def _run_migrations(conn) -> None:
         ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ
     """))
 
+    # Add visit_id to health_records
+    await conn.execute(text("""
+        ALTER TABLE health_records
+        ADD COLUMN IF NOT EXISTS visit_id UUID REFERENCES patient_visits(id) ON DELETE SET NULL
+    """))
+
+    # Add biomarker_changes JSON column to health_records for auto-comparison
+    await conn.execute(text("""
+        ALTER TABLE health_records
+        ADD COLUMN IF NOT EXISTS biomarker_changes JSONB
+    """))
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:

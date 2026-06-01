@@ -267,3 +267,47 @@ export const notificationsApi = {
   markRead: (id: string) => api.post(`/notifications/${id}/read`),
   markAllRead: () => api.post("/notifications/mark-all-read"),
 };
+
+// ── Vitals ─────────────────────────────────────────────────────────────────────
+
+export const vitalsApi = {
+  getPresets: () => api.get("/vitals/presets"),
+  create: (data: { biomarker_name: string; value_numeric: number; unit: string; entry_date?: string; notes?: string }) =>
+    api.post("/vitals/", data),
+  list: (params?: { biomarker_name?: string; days?: number }) =>
+    api.get("/vitals/", { params }),
+  getSummary: () => api.get("/vitals/summary"),
+  update: (id: string, data: { value_numeric?: number; notes?: string }) =>
+    api.put(`/vitals/${id}`, data),
+  delete: (id: string) => api.delete(`/vitals/${id}`),
+};
+
+// ── Visits ─────────────────────────────────────────────────────────────────────
+
+export const visitsApi = {
+  create: (data: {
+    visit_date: string; doctor_name?: string; hospital_name?: string;
+    specialization?: string; chief_complaint?: string; diagnosis?: string;
+    notes?: string; follow_up_date?: string;
+  }) => api.post("/visits/", data),
+  list: () => api.get("/visits/"),
+  get: (id: string) => api.get(`/visits/${id}`),
+  update: (id: string, data: object) => api.put(`/visits/${id}`, data),
+  delete: (id: string) => api.delete(`/visits/${id}`),
+  linkRecord: (visitId: string, recordId: string) =>
+    api.post(`/visits/${visitId}/records/${recordId}`),
+  unlinkRecord: (visitId: string, recordId: string) =>
+    api.delete(`/visits/${visitId}/records/${recordId}`),
+};
+
+// ── Comments ───────────────────────────────────────────────────────────────────
+
+export const commentsApi = {
+  list: (recordId: string) => api.get(`/records/${recordId}/comments`),
+  add: (recordId: string, text: string) =>
+    api.post(`/records/${recordId}/comments`, { comment_text: text }),
+  update: (commentId: string, text: string) =>
+    api.put(`/records/comments/${commentId}`, { comment_text: text }),
+  delete: (commentId: string) =>
+    api.delete(`/records/comments/${commentId}`),
+};
