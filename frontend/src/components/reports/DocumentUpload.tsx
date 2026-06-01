@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<UploadFile["status"], string> = {
   error:      "Failed",
 };
 
-export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => void }) {
+export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: (recordId?: string) => void }) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [docType, setDocType] = useState("lab_report");
   const [hospitalName, setHospitalName] = useState("");
@@ -72,10 +72,11 @@ export function DocumentUpload({ onUploadComplete }: { onUploadComplete?: () => 
         : f
       ));
 
+      const uploadedRecordId = res.data.record_id;
       setTimeout(() => {
         setFiles((p) => p.map((f) => f.id === id ? { ...f, status: "done", progress: 100 } : f));
         toast.success("Record saved and queued for AI analysis");
-        onUploadComplete?.();
+        onUploadComplete?.(uploadedRecordId);
       }, 2000);
     } catch (err: any) {
       const msg = err.response?.data?.detail || "Upload failed. Please try again.";

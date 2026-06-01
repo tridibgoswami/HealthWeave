@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Upload, Zap, ShieldCheck, Clock } from "lucide-react";
+import { Upload, Zap, ShieldCheck, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { DocumentUpload } from "../components/reports/DocumentUpload";
-import { intelligenceApi } from "../services/api";
+import { intelligenceApi, recordsApi } from "../services/api";
 
 const HOW_IT_WORKS = [
   { Icon: Upload,      color: "text-brand-blue",  bg: "bg-blue-50",    text: "Upload any format — PDF, JPG, PNG, handwritten scans" },
@@ -11,10 +11,69 @@ const HOW_IT_WORKS = [
   { Icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50", text: "AES-256 encrypted — only you can access your records" },
 ];
 
+function BiomarkerChanges({ changes }: { changes: any[] }) {
+  if (!changes || changes.length === 0) return null;
+  return (
+    <div className="mt-6 bg-white rounded-2xl border border-slate-100 shadow-card p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp size={16} className="text-brand-blue" />
+        <h3 className="text-sm font-bold text-slate-800">Changes Since Last Test</h3>
+      </div>
+      <div className="space-y-2">
+        {changes.map((change: any, idx: number) => {
+          const delta = change.delta_percent ?? change.delta ?? null;
+          const increased = delta != null ? delta > 0 : null;
+          return (
+            <div key={idx} className="flex items-center justify-between gap-3 py-2 border-b border-slate-50 last:border-0">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-700 capitalize">
+                  {(change.name || change.biomarker_name || "").replace(/_/g, " ")}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs shrink-0">
+                {change.old_value != null && (
+                  <span className="text-slate-400">{change.old_value}{change.unit ? ` ${change.unit}` : ""}</span>
+                )}
+                {change.old_value != null && change.new_value != null && (
+                  <span className="text-slate-300">→</span>
+                )}
+                {change.new_value != null && (
+                  <span className="font-bold text-slate-800">{change.new_value}{change.unit ? ` ${change.unit}` : ""}</span>
+                )}
+                {delta != null && (
+                  <span className={`flex items-center gap-0.5 font-bold ${
+                    increased ? "text-red-500" : "text-emerald-600"
+                  }`}>
+                    {increased ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                    {delta > 0 ? "+" : ""}{typeof delta === "number" ? delta.toFixed(1) : delta}%
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function UploadPage() {
   const qc = useQueryClient();
+  const [biomarkerChanges, setBiomarkerChanges] = useState<any[] | null>(null);
 
-  const onComplete = () => {
+  const fetchChanges = async (recordId: string) => {
+    try {
+      const res = await recordsApi.get(recordId);
+      const changes = res.data?.biomarker_changes;
+      if (Array.isArray(changes) && changes.length > 0) {
+        setBiomarkerChanges(changes);
+      }
+    } catch {
+      // silently ignore
+    }
+  };
+
+  const onComplete = (recordId?: string) => {
     qc.invalidateQueries({ queryKey: ["records-list"] });
     qc.invalidateQueries({ queryKey: ["timeline"] });
     // Backend auto-computes scores after processing, but also trigger manually
@@ -24,6 +83,8 @@ export function UploadPage() {
     setTimeout(() => {
       qc.invalidateQueries({ queryKey: ["health-scores"] });
       qc.invalidateQueries({ queryKey: ["alerts", false] });
+      // Fetch biomarker changes for this record
+      if (recordId) fetchChanges(recordId);
     }, 45000);
   };
 
@@ -56,6 +117,9 @@ export function UploadPage() {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-card-hover p-6">
         <DocumentUpload onUploadComplete={onComplete} />
       </div>
+
+      {/* Biomarker changes (shown after successful upload + processing) */}
+      {biomarkerChanges && <BiomarkerChanges changes={biomarkerChanges} />}
     </div>
   );
 }
