@@ -5,20 +5,21 @@ import { test, expect } from "@playwright/test";
  * status codes and response shapes, without a UI.
  */
 
-const BASE = process.env.BASE_URL || "https://healthweave-yu6rn.ondigitalocean.app";
-const API  = `${BASE}/api/v1`;
+const BASE    = process.env.BASE_URL || "https://healthweave-yu6rn.ondigitalocean.app";
+const API     = `${BASE}/api/v1`;
+const BACKEND = `${BASE}/api`;  // DO routes /api/* to FastAPI; /api strips the prefix
 
 test.describe("Backend Health & Routing", () => {
 
   test("GET /health returns healthy status", async ({ request }) => {
-    const res = await request.get(`${BASE}/health`);
+    const res = await request.get(`${BACKEND}/health`);
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("healthy");
   });
 
   test("GET / returns app root JSON", async ({ request }) => {
-    const res = await request.get(`${BASE}/`);
+    const res = await request.get(`${BACKEND}/`);
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.app).toBe("HealthWeave");
@@ -212,7 +213,7 @@ test.describe("Emergency API", () => {
 test.describe("Security Checks", () => {
 
   test("security headers are present on API responses", async ({ request }) => {
-    const res = await request.get(`${BASE}/health`);
+    const res = await request.get(`${BACKEND}/health`);
     expect(res.headers()["x-content-type-options"]).toBe("nosniff");
     expect(res.headers()["x-frame-options"]).toBe("DENY");
     expect(res.headers()["strict-transport-security"]).toContain("max-age");

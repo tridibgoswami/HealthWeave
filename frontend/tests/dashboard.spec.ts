@@ -8,7 +8,7 @@ test.describe("Dashboard", () => {
   });
 
   test("dashboard loads and shows greeting", async ({ page }) => {
-    await expect(page.locator("text=Good morning, , text=Good afternoon, , text=Good evening,").first()).toBeVisible({ timeout: 8000 });
+    await expect(page.locator("text=/Good (morning|afternoon|evening),/").first()).toBeVisible({ timeout: 8000 });
   });
 
   test("shows organ health scores section", async ({ page }) => {
@@ -16,12 +16,12 @@ test.describe("Dashboard", () => {
   });
 
   test("shows quick action cards", async ({ page }) => {
-    await expect(page.locator("text=Upload Record")).toBeVisible();
-    await expect(page.locator("text=Ask AI")).toBeVisible();
+    await expect(page.locator("text=Upload Record").first()).toBeVisible();
+    await expect(page.locator("text=Ask AI").first()).toBeVisible();
   });
 
   test("shows health alerts section", async ({ page }) => {
-    await expect(page.locator("text=Health Alerts")).toBeVisible();
+    await expect(page.locator("text=Health Alerts").first()).toBeVisible();
   });
 
   test("shows recent records section", async ({ page }) => {
@@ -33,12 +33,12 @@ test.describe("Dashboard", () => {
   });
 
   test("upload record quick action navigates correctly", async ({ page }) => {
-    await page.locator("a[href='/upload']").first().click();
+    await page.locator("a.hw-card[href='/upload']").click();
     await expect(page).toHaveURL(/\/upload/);
   });
 
   test("ask AI quick action navigates correctly", async ({ page }) => {
-    await page.locator("a[href='/chat']").first().click();
+    await page.locator("a.hw-card[href='/chat']").click();
     await expect(page).toHaveURL(/\/chat/);
   });
 

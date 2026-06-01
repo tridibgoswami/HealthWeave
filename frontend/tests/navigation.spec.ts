@@ -23,7 +23,7 @@ test.describe("Navigation — all pages load", () => {
   for (const { path, text } of PAGES) {
     test(`${path} loads without error`, async ({ page }) => {
       await page.goto(path);
-      await page.waitForLoadState("domcontentloaded");
+      await page.waitForLoadState("networkidle");
       // No full-page error boundary
       await expect(page.locator("text=Something went wrong").first()).not.toBeVisible({ timeout: 3000 }).catch(() => {});
       // Page has some content
@@ -34,7 +34,7 @@ test.describe("Navigation — all pages load", () => {
 
   test("unknown route does not show blank screen", async ({ page }) => {
     await page.goto("/this-page-does-not-exist-xyz");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(10);
   });
@@ -67,7 +67,7 @@ test.describe("Navigation — mobile bottom nav", () => {
   test("More button opens sheet", async ({ page }) => {
     await page.goto("/dashboard");
     await page.click("button:has-text('More')");
-    await expect(page.locator("text=Health Timeline")).toBeVisible({ timeout: 3000 });
+    await expect(page.locator("text=Health Timeline").first()).toBeVisible({ timeout: 3000 });
   });
 
   test("mobile header is visible", async ({ page }) => {
@@ -106,7 +106,7 @@ test.describe("Navigation — desktop sidebar", () => {
       "Send Report", "Emergency Passport",
     ];
     for (const link of links) {
-      await expect(page.locator(`aside >> text=${link}`)).toBeVisible();
+      await expect(page.locator(`aside a:has-text('${link}')`).first()).toBeVisible();
     }
   });
 

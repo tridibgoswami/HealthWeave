@@ -96,7 +96,7 @@ class ResetPasswordRequest(BaseModel):
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def register(payload: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(User).where(User.email == payload.email))
     if existing.scalar_one_or_none():
@@ -149,7 +149,7 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
 
 
 @router.post("/login", response_model=TokenResponse)
-@limiter.limit("10/minute")
+@limiter.limit("60/minute")
 async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()

@@ -107,7 +107,7 @@ test.describe("Biomarker Trends", () => {
   });
 
   test("biomarker page loads", async ({ page }) => {
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(50);
   });
@@ -122,7 +122,7 @@ test.describe("Risk Predictions", () => {
   });
 
   test("risk page loads", async ({ page }) => {
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(50);
   });
@@ -141,7 +141,7 @@ test.describe("Emergency Passport", () => {
   });
 
   test("shows QR code section or setup prompt", async ({ page }) => {
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(50);
   });
@@ -156,7 +156,7 @@ test.describe("Health Intelligence", () => {
   });
 
   test("insights page loads", async ({ page }) => {
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(50);
   });
@@ -171,7 +171,7 @@ test.describe("Consents", () => {
   });
 
   test("consent page loads", async ({ page }) => {
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     const body = await page.locator("body").innerText();
     expect(body.length).toBeGreaterThan(50);
   });

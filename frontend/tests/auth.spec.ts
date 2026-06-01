@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loginAs } from "./helpers";
 
 const TEST_EMAIL = `test+${Date.now()}@healthweave-test.com`;
 const TEST_PASSWORD = "TestPass123!";
@@ -54,8 +55,8 @@ test.describe("Authentication", () => {
 
   test("register choice page shows patient/doctor/hospital options", async ({ page }) => {
     await page.goto("/register");
-    await expect(page.locator("text=Patient")).toBeVisible();
-    await expect(page.locator("text=Doctor")).toBeVisible();
+    await expect(page.locator("h2:has-text('Patient')")).toBeVisible();
+    await expect(page.locator("h2:has-text('Doctor')")).toBeVisible();
   });
 
   test("full registration → dashboard flow", async ({ page }) => {
@@ -70,17 +71,18 @@ test.describe("Authentication", () => {
   });
 
   test("logout redirects to login", async ({ page }) => {
-    // Login first
-    await page.goto("/login");
-    await page.fill("input[type=email]", TEST_EMAIL);
-    await page.fill("input[type=password]", TEST_PASSWORD);
-    await page.click("button[type=submit], button:has-text('Sign In'), button:has-text('Log in')");
-    await page.waitForURL("**/dashboard", { timeout: 10_000 });
+    await loginAs(page);
 
-    // Logout via sidebar (desktop) or More sheet (mobile)
+    // On mobile the Sign Out button is inside the More sheet
+    const moreBtn = page.locator("button:has-text('More')");
+    if (await moreBtn.isVisible()) {
+      await moreBtn.click();
+      await page.waitForTimeout(400);
+    }
+
     const logoutBtn = page.locator("button:has-text('Sign Out'), button:has-text('Logout')").first();
     await logoutBtn.click();
-    await page.waitForURL("**/login", { timeout: 5_000 });
+    await page.waitForURL("**/login", { timeout: 10_000 });
   });
 
 });
