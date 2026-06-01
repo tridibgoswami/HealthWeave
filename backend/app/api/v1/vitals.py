@@ -16,14 +16,14 @@ from app.models.vitals import ManualVitalEntry
 router = APIRouter(prefix="/vitals", tags=["Vitals"])
 
 PRESET_VITALS = [
-    {"name": "blood_glucose",            "label": "Blood Sugar",        "unit": "mg/dL",  "normal_low": 70,  "normal_high": 100},
-    {"name": "blood_pressure_systolic",  "label": "BP Systolic",        "unit": "mmHg",   "normal_low": 90,  "normal_high": 120},
-    {"name": "blood_pressure_diastolic", "label": "BP Diastolic",       "unit": "mmHg",   "normal_low": 60,  "normal_high": 80},
-    {"name": "weight",                   "label": "Weight",             "unit": "kg",     "normal_low": None,"normal_high": None},
-    {"name": "heart_rate",               "label": "Heart Rate",         "unit": "bpm",    "normal_low": 60,  "normal_high": 100},
-    {"name": "oxygen_saturation",        "label": "SpO2",               "unit": "%",      "normal_low": 95,  "normal_high": 100},
-    {"name": "temperature",              "label": "Body Temperature",   "unit": "°C",     "normal_low": 36.1,"normal_high": 37.2},
-    {"name": "blood_glucose_pp",         "label": "Blood Sugar (PP)",   "unit": "mg/dL",  "normal_low": 70,  "normal_high": 140},
+    {"biomarker_name": "blood_glucose",            "display_name": "Blood Sugar",        "unit": "mg/dL",  "reference_range_min": 70,   "reference_range_max": 100},
+    {"biomarker_name": "blood_pressure_systolic",  "display_name": "BP Systolic",        "unit": "mmHg",   "reference_range_min": 90,   "reference_range_max": 120},
+    {"biomarker_name": "blood_pressure_diastolic", "display_name": "BP Diastolic",       "unit": "mmHg",   "reference_range_min": 60,   "reference_range_max": 80},
+    {"biomarker_name": "weight",                   "display_name": "Weight",             "unit": "kg",     "reference_range_min": None, "reference_range_max": None},
+    {"biomarker_name": "heart_rate",               "display_name": "Heart Rate",         "unit": "bpm",    "reference_range_min": 60,   "reference_range_max": 100},
+    {"biomarker_name": "oxygen_saturation",        "display_name": "SpO2",               "unit": "%",      "reference_range_min": 95,   "reference_range_max": 100},
+    {"biomarker_name": "temperature",              "display_name": "Body Temperature",   "unit": "°C",     "reference_range_min": 36.1, "reference_range_max": 37.2},
+    {"biomarker_name": "blood_glucose_pp",         "display_name": "Blood Sugar (PP)",   "unit": "mg/dL",  "reference_range_min": 70,   "reference_range_max": 140},
 ]
 
 

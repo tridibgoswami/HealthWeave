@@ -168,7 +168,7 @@ async def auto_update_passport_from_records(
     """
     from sqlalchemy import text
 
-    # Get active medicines
+    # Get active medicines — pass uuid.UUID so asyncpg binary protocol handles it correctly
     meds_sql = text("""
         SELECT raw_name, canonical_name, dosage, frequency
         FROM medicine_entries
@@ -176,7 +176,7 @@ async def auto_update_passport_from_records(
         ORDER BY prescribed_date DESC
         LIMIT 10
     """)
-    meds_result = await db.execute(meds_sql, {"user_id": user_id})
+    meds_result = await db.execute(meds_sql, {"user_id": uuid.UUID(user_id)})
     critical_meds = [
         f"{m['canonical_name'] or m['raw_name']} {m['dosage'] or ''} {m['frequency'] or ''}".strip()
         for m in meds_result.mappings().all()
