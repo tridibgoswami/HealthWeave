@@ -49,9 +49,11 @@ test.describe("AI Chat", () => {
   });
 
   test("shows chat input or loading state", async ({ page }) => {
-    // Either loading spinner or input box should be present
-    const hasInput   = await page.locator("input[type=text], textarea").isVisible().catch(() => false);
-    const hasLoading = await page.locator("text=Starting AI session").isVisible().catch(() => false);
+    // Session creation is async — wait up to 8s for the input or any loading indicator
+    const hasInput = await page.locator("input[type=text], textarea")
+      .waitFor({ state: "visible", timeout: 8000 }).then(() => true).catch(() => false);
+    const hasLoading = !hasInput &&
+      await page.locator("text=Starting AI session").isVisible().catch(() => false);
     expect(hasInput || hasLoading).toBeTruthy();
   });
 

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { loginAs } from "./helpers";
 
-const TEST_EMAIL = `test+${Date.now()}@healthweave-test.com`;
+const TEST_EMAIL    = `test+${Date.now()}.${Math.random().toString(36).slice(2, 8)}@healthweave-test.com`;
 const TEST_PASSWORD = "TestPass123!";
 const TEST_NAME = { first: "Test", last: "User" };
 
@@ -76,12 +76,14 @@ test.describe("Authentication", () => {
     // On mobile the Sign Out button is inside the More sheet
     const moreBtn = page.locator("button:has-text('More')");
     if (await moreBtn.isVisible()) {
+      // Mobile: Sign Out lives inside the More sheet (rounded-t-3xl container)
       await moreBtn.click();
       await page.waitForTimeout(400);
+      await page.locator("[class*='rounded-t-3xl'] button:has-text('Sign Out')").click();
+    } else {
+      // Desktop: Sign Out is directly in the sidebar
+      await page.locator("aside button:has-text('Sign Out')").click();
     }
-
-    const logoutBtn = page.locator("button:has-text('Sign Out'), button:has-text('Logout')").first();
-    await logoutBtn.click();
     await page.waitForURL("**/login", { timeout: 10_000 });
   });
 

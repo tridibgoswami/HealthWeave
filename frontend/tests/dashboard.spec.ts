@@ -38,7 +38,8 @@ test.describe("Dashboard", () => {
   });
 
   test("ask AI quick action navigates correctly", async ({ page }) => {
-    await page.locator("a.hw-card[href='/chat']").click();
+    // quick-action card has rounded-2xl; the "Ask AI Assistant" CTA at bottom does not
+    await page.locator("a.hw-card.rounded-2xl[href='/chat']").click();
     await expect(page).toHaveURL(/\/chat/);
   });
 
