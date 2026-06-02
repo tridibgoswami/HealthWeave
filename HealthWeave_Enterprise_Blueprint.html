@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthWeave — Enterprise Architecture Blueprint v1.0</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#060D1F;--navy2:#0A1628;--navy3:#0F2040;
+  --blue:#2563EB;--blue2:#3B82F6;--blue3:#60A5FA;
+  --cyan:#0891B2;--cyan2:#06B6D4;--cyan3:#22D3EE;
+  --gold:#D97706;--gold2:#F59E0B;
+  --green:#059669;--green2:#10B981;
+  --red:#DC2626;
+  --s900:#0F172A;--s800:#1E293B;--s700:#334155;--s600:#475569;
+  --s500:#64748B;--s400:#94A3B8;--s300:#CBD5E1;--s200:#E2E8F0;
+  --s100:#F1F5F9;--s50:#F8FAFC;--white:#FFFFFF;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono","Fira Code",Consolas,"Courier New",monospace;
+}
+body{font-family:var(--font);color:var(--s800);background:#E8EDF5;font-size:15px;line-height:1.65;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{max-width:1020px;margin:0 auto 32px;background:var(--white);box-shadow:0 2px 32px rgba(0,0,0,.10)}
+
+/* ── COVER ── */
+.cover{min-height:100vh;background:linear-gradient(145deg,#020814 0%,#060D1F 40%,#091428 70%,#0A1F3D 100%);display:flex;flex-direction:column;position:relative;overflow:hidden;padding:0}
+.cover-decor{position:absolute;inset:0;pointer-events:none}
+.cover-decor svg{width:100%;height:100%;opacity:.07}
+.cover-body{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:72px 80px 60px}
+.cover-top{display:flex;align-items:center;gap:14px;margin-bottom:auto}
+.logo-box{width:52px;height:52px;background:linear-gradient(135deg,var(--blue),var(--cyan2));border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(37,99,235,.5)}
+.logo-box svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.brand-name{color:#fff;font-size:22px;font-weight:800;letter-spacing:-.5px}
+.brand-sub{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.cover-hero{padding:120px 0 60px}
+.cover-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.35);border-radius:100px;padding:5px 16px;margin-bottom:32px}
+.cover-eyebrow span{color:var(--blue3);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.cover-eyebrow .dot{width:6px;height:6px;background:var(--cyan3);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.cover-title{font-size:62px;font-weight:900;line-height:1.05;letter-spacing:-2px;color:#fff;margin-bottom:16px}
+.cover-title .gradient{background:linear-gradient(135deg,var(--blue3),var(--cyan3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cover-subtitle{font-size:18px;color:rgba(255,255,255,.55);max-width:520px;line-height:1.6;margin-bottom:56px}
+.cover-meta-row{display:flex;gap:48px}
+.cover-meta-item{border-left:2px solid rgba(37,99,235,.5);padding-left:16px}
+.cover-meta-label{font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.cover-meta-value{font-size:14px;color:rgba(255,255,255,.75);font-weight:600}
+.cover-footer{position:relative;z-index:2;padding:24px 80px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center}
+.cover-footer-left{font-size:12px;color:rgba(255,255,255,.3)}
+.cover-badge{display:flex;align-items:center;gap:6px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:6px;padding:4px 12px}
+.cover-badge span{font-size:11px;font-weight:700;color:#FCA5A5;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── TOC ── */
+.toc-page{padding:72px 80px}
+.toc-page h2{font-size:28px;font-weight:800;color:var(--s900);letter-spacing:-.5px;margin-bottom:8px}
+.toc-page .toc-intro{font-size:14px;color:var(--s500);margin-bottom:40px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toc-item{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1px solid var(--s200);border-radius:12px;text-decoration:none;transition:all .15s}
+.toc-item:hover{border-color:var(--blue2);background:var(--s50)}
+.toc-num{width:36px;height:36px;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:rgba(255,255,255,.7);flex-shrink:0}
+.toc-text strong{display:block;font-size:13px;font-weight:700;color:var(--s800)}
+.toc-text span{font-size:12px;color:var(--s500)}
+
+/* ── SECTION DIVIDERS ── */
+.section-div{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);padding:60px 80px 56px;position:relative;overflow:hidden}
+.section-div::before{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(37,99,235,.15),transparent 70%);border-radius:50%}
+.section-div-num{font-size:72px;font-weight:900;color:rgba(255,255,255,.05);position:absolute;right:80px;top:50%;transform:translateY(-50%);letter-spacing:-4px}
+.section-div-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--cyan3);margin-bottom:12px}
+.section-div h2{font-size:38px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.1;max-width:600px}
+.section-div p{font-size:15px;color:rgba(255,255,255,.5);margin-top:14px;max-width:540px}
+
+/* ── CONTENT ── */
+.content{padding:56px 80px}
+.content h3{font-size:22px;font-weight:800;color:var(--s900);letter-spacing:-.4px;margin:40px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--s100)}
+.content h3:first-child{margin-top:0}
+.content h4{font-size:16px;font-weight:700;color:var(--s800);margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.content h4::before{content:'';display:block;width:4px;height:18px;background:linear-gradient(to bottom,var(--blue),var(--cyan2));border-radius:2px}
+.content p{color:var(--s700);margin-bottom:14px;font-size:15px}
+.content ul{list-style:none;margin:0 0 20px;padding:0}
+.content ul li{padding:5px 0 5px 20px;position:relative;color:var(--s700);font-size:14.5px}
+.content ul li::before{content:'›';position:absolute;left:4px;color:var(--blue2);font-weight:700}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:20px 0 28px;border-radius:12px;border:1px solid var(--s200)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead tr{background:linear-gradient(135deg,var(--navy),var(--navy3))}
+thead th{padding:13px 16px;text-align:left;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--s100)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:nth-child(even){background:var(--s50)}
+tbody td{padding:12px 16px;color:var(--s700);vertical-align:top}
+tbody td:first-child{color:var(--s900);font-weight:600}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:100px;font-size:11.5px;font-weight:700}
+.badge-blue{background:rgba(37,99,235,.1);color:var(--blue)}
+.badge-green{background:rgba(5,150,105,.1);color:var(--green)}
+.badge-gold{background:rgba(217,119,6,.1);color:var(--gold)}
+.badge-red{background:rgba(220,38,38,.1);color:var(--red)}
+
+/* ── CARDS ── */
+.card-grid{display:grid;gap:16px;margin:20px 0 28px}
+.card-grid-3{grid-template-columns:repeat(3,1fr)}
+.card-grid-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--white);border:1px solid var(--s200);border-radius:14px;padding:24px;position:relative;overflow:hidden}
+.card-accent{position:absolute;top:0;left:0;right:0;height:4px}
+.card-accent-blue{background:linear-gradient(90deg,var(--blue),var(--cyan2))}
+.card-accent-gold{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.card-accent-green{background:linear-gradient(90deg,var(--green),var(--green2))}
+.card-accent-red{background:linear-gradient(90deg,var(--red),#F87171)}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px}
+.card-icon-blue{background:rgba(37,99,235,.1)}
+.card-icon-gold{background:rgba(217,119,6,.1)}
+.card-icon-green{background:rgba(5,150,105,.1)}
+.card-icon-red{background:rgba(220,38,38,.1)}
+.card h5{font-size:14px;font-weight:800;color:var(--s900);margin-bottom:8px}
+.card p{font-size:13px;color:var(--s600);margin:0;line-height:1.5}
+.card .metric{font-size:28px;font-weight:900;color:var(--s900);letter-spacing:-1px;margin-bottom:2px}
+.card .metric-label{font-size:12px;color:var(--s500)}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:12px;padding:20px 24px;margin:20px 0;display:flex;gap:16px}
+.callout-blue{background:rgba(37,99,235,.05);border-left:4px solid var(--blue)}
+.callout-gold{background:rgba(217,119,6,.05);border-left:4px solid var(--gold)}
+.callout-green{background:rgba(5,150,105,.05);border-left:4px solid var(--green)}
+.callout-red{background:rgba(220,38,38,.05);border-left:4px solid var(--red)}
+.callout-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.callout-title{font-size:13px;font-weight:800;color:var(--s900);margin-bottom:4px}
+.callout-body{font-size:13.5px;color:var(--s600);line-height:1.6}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:24px auto;max-width:480px}
+.flow-box{background:var(--white);border:1.5px solid var(--s200);border-radius:10px;padding:10px 24px;text-align:center;font-size:13px;font-weight:600;color:var(--s800);width:100%}
+.flow-box-dark{background:linear-gradient(135deg,var(--navy),var(--navy3));color:rgba(255,255,255,.9);border-color:var(--navy3)}
+.flow-box-blue{background:rgba(37,99,235,.08);border-color:var(--blue2);color:var(--blue)}
+.flow-arrow{font-size:20px;color:var(--s400);line-height:1;padding:4px 0;text-align:center}
+.flow-split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%}
+.flow-split-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+
+/* ── PHASE TIMELINE ── */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:20px 0 28px;border-radius:14px;overflow:hidden;border:1px solid var(--s200)}
+.timeline-phase{padding:20px 18px;border-right:1px solid var(--s200);position:relative}
+.timeline-phase:last-child{border-right:none}
+.timeline-phase:nth-child(1){background:linear-gradient(180deg,rgba(37,99,235,.06),transparent)}
+.timeline-phase:nth-child(2){background:linear-gradient(180deg,rgba(6,182,212,.06),transparent)}
+.timeline-phase:nth-child(3){background:linear-gradient(180deg,rgba(5,150,105,.06),transparent)}
+.timeline-phase:nth-child(4){background:linear-gradient(180deg,rgba(217,119,6,.06),transparent)}
+.phase-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.phase-label-blue{color:var(--blue)}
+.phase-label-cyan{color:var(--cyan)}
+.phase-label-green{color:var(--green)}
+.phase-label-gold{color:var(--gold)}
+.phase-name{font-size:14px;font-weight:800;color:var(--s900);margin-bottom:8px}
+.phase-detail{font-size:12.5px;color:var(--s600)}
+.phase-cost{margin-top:10px;font-size:11px;font-weight:700;color:var(--s500)}
+
+/* ── ROLES TABLE ── */
+.roles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 24px}
+.role-card{border:1px solid var(--s200);border-radius:10px;padding:14px 16px}
+.role-title{font-size:12px;font-weight:800;color:var(--s900);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.role-badge{font-size:10px;font-weight:700;padding:1px 8px;border-radius:100px;background:var(--s100);color:var(--s500)}
+.role-desc{font-size:12px;color:var(--s600)}
+
+/* ── LAYER CARDS ── */
+.layer-list{display:flex;flex-direction:column;gap:12px;margin:16px 0 24px}
+.layer-item{display:flex;gap:16px;padding:18px 20px;border:1px solid var(--s200);border-radius:12px;align-items:flex-start}
+.layer-num{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:rgba(255,255,255,.9);flex-shrink:0}
+.layer-content h5{font-size:14px;font-weight:800;color:var(--s900);margin-bottom:4px}
+.layer-content p{font-size:13px;color:var(--s600);margin:0}
+
+/* ── DECISION CARD ── */
+.decision-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:16px;padding:28px 32px;margin:24px 0;position:relative;overflow:hidden}
+.decision-card::before{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(37,99,235,.2),transparent 70%);border-radius:50%}
+.decision-card h4{font-size:16px;font-weight:800;color:#fff;margin-bottom:10px}
+.decision-card h4::before{display:none}
+.decision-card p{font-size:14px;color:rgba(255,255,255,.65);margin:0;line-height:1.65}
+.decision-card .decision-num{position:absolute;top:20px;right:28px;font-size:48px;font-weight:900;color:rgba(255,255,255,.05);letter-spacing:-2px}
+
+/* ── FOOTER ── */
+.page-footer{border-top:1px solid var(--s100);padding:14px 80px;display:flex;justify-content:space-between;align-items:center;background:var(--s50)}
+.footer-brand{font-size:12px;font-weight:700;color:var(--s400)}
+.footer-confidential{font-size:11px;color:var(--s400)}
+.footer-version{font-size:11px;color:var(--s400)}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff}
+  .page{box-shadow:none;margin:0;max-width:100%}
+  .cover{min-height:100vh}
+  .section-div,.content,.toc-page{page-break-before:auto}
+  .decision-card,.callout{page-break-inside:avoid}
+  tr{page-break-inside:avoid}
+}
+
+/* ── CHECKLIST ── */
+.checklist{list-style:none;padding:0;margin:12px 0 20px}
+.checklist li{padding:6px 0 6px 28px;position:relative;font-size:14px;color:var(--s700)}
+.checklist li::before{content:'✓';position:absolute;left:4px;color:var(--green2);font-weight:700}
+.checklist li.pending::before{content:'○';color:var(--s400)}
+
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0 28px}
+.stat-box{background:var(--s50);border:1px solid var(--s200);border-radius:10px;padding:16px 14px;text-align:center}
+.stat-val{font-size:20px;font-weight:900;color:var(--s900);letter-spacing:-.5px}
+.stat-lbl{font-size:11px;color:var(--s500);margin-top:3px}
+.stat-sub{font-size:11.5px;font-weight:600;color:var(--blue);margin-top:2px}
+
+.arch-diagram{background:var(--s50);border:1px solid var(--s200);border-radius:12px;padding:24px;margin:16px 0 24px;font-family:var(--mono);font-size:12.5px;color:var(--s700);line-height:1.8;white-space:pre}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:16px 0}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER PAGE ═══════════════ -->
+<div class="page">
+<div class="cover">
+  <div class="cover-decor">
+    <svg viewBox="0 0 1020 900" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="800" cy="150" r="300" fill="rgba(37,99,235,0.08)"/>
+      <circle cx="900" cy="700" r="200" fill="rgba(6,182,212,0.06)"/>
+      <circle cx="100" cy="600" r="180" fill="rgba(37,99,235,0.04)"/>
+      <line x1="0" y1="450" x2="1020" y2="450" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+      <line x1="510" y1="0" x2="510" y2="900" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+      <path d="M200,100 Q400,300 200,500 Q0,700 200,800" stroke="rgba(37,99,235,0.12)" stroke-width="1.5" fill="none"/>
+      <path d="M250,100 Q450,300 250,500 Q50,700 250,800" stroke="rgba(6,182,212,0.08)" stroke-width="1" fill="none"/>
+      <circle cx="200" cy="100" r="4" fill="rgba(37,99,235,0.4)"/>
+      <circle cx="200" cy="300" r="3" fill="rgba(6,182,212,0.4)"/>
+      <circle cx="200" cy="500" r="4" fill="rgba(37,99,235,0.4)"/>
+      <circle cx="200" cy="700" r="3" fill="rgba(6,182,212,0.3)"/>
+      <circle cx="200" cy="800" r="4" fill="rgba(37,99,235,0.3)"/>
+    </svg>
+  </div>
+  <div class="cover-body">
+    <div class="cover-top">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24"><path d="M12 2C9 2 7 4 7 7v10c0 3 2 5 5 5s5-2 5-5V7c0-3-2-5-5-5z"/><path d="M7 9h10M7 12h10M7 15h10" stroke-width="1.5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">HealthWeave</div>
+        <div class="brand-sub">AI Health Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="cover-hero">
+      <div class="cover-eyebrow">
+        <div class="dot"></div>
+        <span>Enterprise Architecture Blueprint</span>
+      </div>
+      <div class="cover-title">
+        Build to Scale.<br>
+        <span class="gradient">Built to Trust.</span>
+      </div>
+      <div class="cover-subtitle">
+        A complete technical and strategic design guide covering infrastructure, security, multi-tenancy, integrations, compliance, and commercial architecture for the HealthWeave platform.
+      </div>
+      <div class="cover-meta-row">
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Version</div>
+          <div class="cover-meta-value">1.0 — June 2026</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Audience</div>
+          <div class="cover-meta-value">C-Suite · Engineering · Investors</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Coverage</div>
+          <div class="cover-meta-value">12 Architecture Domains</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Horizon</div>
+          <div class="cover-meta-value">Phase 0 → 1M+ Users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <div class="cover-footer-left">© 2026 HealthWeave Technologies Pvt. Ltd. · All Rights Reserved · DPDP 2023 Compliant · AES-256 Encrypted</div>
+    <div class="cover-badge">
+      <span>🔒 Confidential — Internal Strategy Document</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ TABLE OF CONTENTS ═══════════════ -->
+<div class="page">
+<div class="toc-page">
+  <h2>Table of Contents</h2>
+  <p class="toc-intro">This blueprint is organized into 12 architecture domains spanning strategy, infrastructure, security, integrations, compliance, and commercial design.</p>
+  <div class="toc-grid">
+    <a class="toc-item" href="#s1"><div class="toc-num">01</div><div class="toc-text"><strong>Client Segments &amp; Deployment Philosophy</strong><span>Enterprise · SMB · B2C archetypes and deployment models</span></div></a>
+    <a class="toc-item" href="#s2"><div class="toc-num">02</div><div class="toc-text"><strong>Access Channels</strong><span>How each client type uses and interacts with the platform</span></div></a>
+    <a class="toc-item" href="#s3"><div class="toc-num">03</div><div class="toc-text"><strong>Multi-Tenancy Architecture</strong><span>Silo vs pool vs bridge — the isolation strategy</span></div></a>
+    <a class="toc-item" href="#s4"><div class="toc-num">04</div><div class="toc-text"><strong>Security Architecture</strong><span>7-layer defense: network to audit trail</span></div></a>
+    <a class="toc-item" href="#s5"><div class="toc-num">05</div><div class="toc-text"><strong>Infrastructure Architecture</strong><span>Full stack: compute, data, AI, CI/CD, observability</span></div></a>
+    <a class="toc-item" href="#s6"><div class="toc-num">06</div><div class="toc-text"><strong>Scalability Architecture</strong><span>Traffic projections, caching, async processing, AI cost</span></div></a>
+    <a class="toc-item" href="#s7"><div class="toc-num">07</div><div class="toc-text"><strong>Integration Architecture</strong><span>HL7 FHIR, DICOM, ABDM, marketplace connectors</span></div></a>
+    <a class="toc-item" href="#s8"><div class="toc-num">08</div><div class="toc-text"><strong>Enterprise Onboarding &amp; Commercial</strong><span>Sales journey, pricing tiers, SLA structure</span></div></a>
+    <a class="toc-item" href="#s9"><div class="toc-num">09</div><div class="toc-text"><strong>Compliance &amp; Regulatory Roadmap</strong><span>DPDP 2023, ABDM, HIPAA, ISO 27001, SOC 2</span></div></a>
+    <a class="toc-item" href="#s10"><div class="toc-num">10</div><div class="toc-text"><strong>Product Evolution Roadmap</strong><span>Phase 1 → 3 feature and technical milestones</span></div></a>
+    <a class="toc-item" href="#s11"><div class="toc-num">11</div><div class="toc-text"><strong>Team Structure for Scale</strong><span>Hiring plan from 6 to 30+ people</span></div></a>
+    <a class="toc-item" href="#s12"><div class="toc-num">12</div><div class="toc-text"><strong>Architecture Decision Matrix</strong><span>Technology choices by phase · Build vs Buy analysis</span></div></a>
+  </div>
+</div>
+<div class="page-footer">
+  <span class="footer-brand">HealthWeave</span>
+  <span class="footer-confidential">Confidential — Internal Strategy Document</span>
+  <span class="footer-version">v1.0 · June 2026</span>
+</div>
+</div>
+
+<!-- ═══════════════ SECTION 1 ═══════════════ -->
+<div class="page" id="s1">
+<div class="section-div">
+  <div class="section-div-num">01</div>
+  <div class="section-div-label">Part One</div>
+  <h2>Client Segments &amp; Deployment Philosophy</h2>
+  <p>Understanding who pays, how they consume data, and what they legally require — before choosing any infrastructure.</p>
+</div>
+<div class="content">
+  <h3>1.1 The Three Core Client Archetypes</h3>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <div class="card-accent card-accent-blue"></div>
+      <div class="card-icon card-icon-blue">🏥</div>
+      <h5>Archetype A — Enterprise</h5>
+      <p>Hospitals, diagnostic chains, corporates. 50–50,000+ users. Compliance officers, IT departments, existing HIS/LIS/EMR systems. Demand contractual SLAs, data residency, white-label, audit trails.</p>
+    </div>
+    <div class="card">
+      <div class="card-accent card-accent-cyan" style="background:linear-gradient(90deg,var(--cyan),var(--cyan3))"></div>
+      <div class="card-icon" style="background:rgba(8,145,178,.1)">👨‍⚕️</div>
+      <h5>Archetype B — SMB Doctors</h5>
+      <p>Solo practitioners or small clinics with 1–20 staff. No IT team. Want simplicity, fast setup, affordable monthly billing, mobile access during rounds, patient record sharing.</p>
+    </div>
+    <div class="card">
+      <div class="card-accent card-accent-green"></div>
+      <div class="card-icon card-icon-green">👤</div>
+      <h5>Archetype C — Patients (B2C)</h5>
+      <p>Consumers managing their own health. Expect Gmail/Dropbox UX. Want free tier, mobile-first, family health, report uploads, doctor sharing, and emergency QR code access.</p>
+    </div>
+  </div>
+
+  <h3>1.2 Deployment Model Decision Matrix</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Client Type</th><th>Model</th><th>Hosted By</th><th>Data Location</th><th>Tier</th></tr></thead>
+      <tbody>
+        <tr><td>Large Hospital Chain (500+ beds)</td><td>Dedicated SaaS / Private Cloud</td><td>HealthWeave — isolated env</td><td>Client's chosen region</td><td><span class="badge badge-red">Tier 3</span></td></tr>
+        <tr><td>Diagnostic Chain (Apollo, SRL)</td><td>Dedicated SaaS Tenant</td><td>HealthWeave</td><td>India region</td><td><span class="badge badge-gold">Tier 2</span></td></tr>
+        <tr><td>Corporate Wellness</td><td>Shared SaaS multi-tenant</td><td>HealthWeave</td><td>India region</td><td><span class="badge badge-blue">Tier 1</span></td></tr>
+        <tr><td>Government Hospital</td><td>On-Premise / Private Cloud</td><td>Client NIC/data center</td><td>Client-controlled</td><td><span class="badge badge-red">Tier 3</span></td></tr>
+        <tr><td>Individual Doctor</td><td>Shared SaaS multi-tenant</td><td>HealthWeave</td><td>India region</td><td><span class="badge badge-blue">Tier 1</span></td></tr>
+        <tr><td>Individual Patient</td><td>Shared SaaS multi-tenant</td><td>HealthWeave</td><td>India region</td><td><span class="badge badge-blue">Tier 1</span></td></tr>
+        <tr><td>International Hospitals</td><td>Regional SaaS deployment</td><td>HealthWeave — region-specific</td><td>Client's country</td><td><span class="badge badge-gold">Tier 2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-gold">
+    <div class="callout-icon">⚡</div>
+    <div><div class="callout-title">Guiding Principle</div><div class="callout-body">Start with a well-architected multi-tenant SaaS. Build the ability to "eject" any tenant into an isolated environment when they demand it. Never build on-premise first — it will kill startup velocity. The answer to "can we host it ourselves?" is a confident no with a compelling alternative.</div></div>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 2 ═══════════════ -->
+<div class="page" id="s2">
+<div class="section-div">
+  <div class="section-div-num">02</div>
+  <div class="section-div-label">Part Two</div>
+  <h2>Access Channels</h2>
+  <p>How each client archetype uses and interacts with the HealthWeave platform — from patient PWA to enterprise embedded widgets.</p>
+</div>
+<div class="content">
+  <h3>2.1 Patients — B2C Channel</h3>
+  <div class="callout callout-blue"><div class="callout-icon">📱</div><div><div class="callout-title">Primary Access: Progressive Web App (PWA) + Native Mobile App</div><div class="callout-body">85% of Indian users access health apps on mobile. The PWA installs to the home screen without App Store friction. Phase 2 adds native iOS/Android (React Native) with push notifications, biometric login, and offline emergency passport.</div></div></div>
+  <h4>Patient Freemium Structure</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Free</th><th>Pro (₹299/mo)</th><th>Family (₹699/mo)</th></tr></thead>
+      <tbody>
+        <tr><td>Record Uploads</td><td>10 records</td><td>Unlimited</td><td>Unlimited</td></tr>
+        <tr><td>AI Chat Sessions</td><td>3/day</td><td>Unlimited</td><td>Unlimited</td></tr>
+        <tr><td>Health Score</td><td>Basic</td><td>Full intelligence suite</td><td>Full intelligence suite</td></tr>
+        <tr><td>Emergency Passport</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Family Members</td><td>Self only</td><td>Self only</td><td>Up to 6 members</td></tr>
+        <tr><td>Processing Priority</td><td>Standard</td><td>Priority</td><td>Priority</td></tr>
+        <tr><td>Caregiver Access</td><td>—</td><td>—</td><td>✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.2 Doctors / Small Clinics — SMB Channel</h3>
+  <p>Doctors visit <strong>clinic.healthweave.in</strong> or a white-labeled <strong>yourname.healthweave.in</strong>. Works like a CRM — no installation, any browser, any device.</p>
+  <h4>Clinic Workflow in 6 Steps</h4>
+  <div class="flow">
+    <div class="flow-box flow-box-dark">Patient walks in → Doctor opens HealthWeave dashboard</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">Patient shares records via consent (one-time OTP on phone)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">Doctor sees AI-summarized history · biomarker trends · last 5 visits</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">Doctor adds clinical notes · requests labs · writes prescriptions</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">All data auto-populates in patient's lifetime timeline</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-dark">Follow-up reminder sent automatically to patient</div>
+  </div>
+
+  <h3>2.3 Hospitals — Enterprise Channel</h3>
+  <div class="card-grid card-grid-3">
+    <div class="card"><div class="card-accent card-accent-blue"></div><div class="card-icon card-icon-blue" style="font-size:18px">🏗️</div><h5>Mode 1 — Primary System</h5><p>Greenfield hospitals. HealthWeave becomes the core patient data platform. Accessed via hospital's own domain or full white-label.</p></div>
+    <div class="card"><div class="card-accent" style="background:linear-gradient(90deg,var(--cyan),var(--cyan3));position:absolute;top:0;left:0;right:0;height:4px"></div><div class="card-icon" style="background:rgba(8,145,178,.1);font-size:18px">🧠</div><h5>Mode 2 — Intelligence Layer</h5><p>Hospitals with existing HIS. HealthWeave connects via FHIR and adds AI intelligence on top. Doctors keep familiar systems.</p></div>
+    <div class="card"><div class="card-accent card-accent-gold"></div><div class="card-icon card-icon-gold" style="font-size:18px">🔲</div><h5>Mode 3 — Embedded Widget</h5><p>AI summaries and risk scores embedded into hospital's existing software via iFrame or Web Components. Zero workflow disruption.</p></div>
+  </div>
+
+  <h3>2.4 Corporate Wellness Programs</h3>
+  <div class="card-grid card-grid-2">
+    <div class="callout callout-blue" style="margin:0"><div class="callout-icon">🏢</div><div><div class="callout-title">Employee Experience</div><div class="callout-body">SSO via Azure AD / Google Workspace. Employees get full private health records. AI-explained annual health check results same day. Individual data is never visible to HR.</div></div></div>
+    <div class="callout callout-green" style="margin:0"><div class="callout-icon">📊</div><div><div class="callout-title">HR Dashboard</div><div class="callout-body">Anonymized aggregate population health dashboards for HR teams. Identify department-level health trends. No individual employee data exposed. DPDP 2023 compliant by design.</div></div></div>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 3 ═══════════════ -->
+<div class="page" id="s3">
+<div class="section-div">
+  <div class="section-div-num">03</div>
+  <div class="section-div-label">Part Three</div>
+  <h2>Multi-Tenancy Architecture</h2>
+  <p>Pooled multi-tenancy with isolated tiers — the gold standard for healthcare SaaS that balances cost efficiency with enterprise data isolation demands.</p>
+</div>
+<div class="content">
+  <h3>3.1 Three-Tier Tenancy Strategy</h3>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card"><div class="card-accent card-accent-blue"></div><div class="card-icon card-icon-blue">🏊</div><h5>Tier 1 — Shared Pool</h5><p>B2C patients + SMB clinics. Shared database, application servers, infrastructure. Row-level security via <code style="font-family:var(--mono);font-size:12px;background:var(--s100);padding:1px 5px;border-radius:4px">organization_id</code>. Cost-efficient. Covers 95% of clients.</p></div>
+    <div class="card"><div class="card-accent card-accent-gold"></div><div class="card-icon card-icon-gold">🗄️</div><h5>Tier 2 — Dedicated Database</h5><p>Hospital chains with 1K–10K patients. Own isolated PostgreSQL DB, shared app servers. Data never touches another tenant's database. Custom workflows per tenant.</p></div>
+    <div class="card"><div class="card-accent card-accent-red"></div><div class="card-icon card-icon-red">🏛️</div><h5>Tier 3 — Fully Isolated</h5><p>Government hospitals, highly regulated enterprises. Separate K8s namespace, separate DB, separate AI pipeline. Physical data isolation. ₹50L+ annual contracts.</p></div>
+  </div>
+
+  <h3>3.2 Tenant Routing Architecture</h3>
+  <div class="flow" style="max-width:560px">
+    <div class="flow-box flow-box-dark">Incoming Request (subdomain or JWT claim)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">API Gateway → Tenant Router</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-split">
+      <div class="flow-box" style="font-size:12px;text-align:center"><strong>Tier 1</strong><br><span style="color:var(--s500)">Shared Pool<br>B2C + SMB</span></div>
+      <div class="flow-box" style="font-size:12px;text-align:center"><strong>Tier 2</strong><br><span style="color:var(--s500)">Dedicated DB<br>Mid-Market</span></div>
+      <div class="flow-box" style="font-size:12px;text-align:center"><strong>Tier 3</strong><br><span style="color:var(--s500)">Isolated<br>Enterprise</span></div>
+    </div>
+  </div>
+
+  <h3>3.3 Organization Data Hierarchy</h3>
+  <div class="arch-diagram">HealthWeave Platform
+│
+├── Organization (Hospital / Clinic / Diagnostic Center / Corporate)
+│   ├── Organization Members (Doctors, Admins, Nurses, Billing Staff)
+│   ├── Departments (Cardiology, Radiology, Pathology)
+│   ├── Patients (with consent-based access controls)
+│   └── Organization Settings (branding, workflows, integrations)
+│
+├── Individual Doctors (solo practitioners, not part of an org)
+│
+└── Individual Patients (B2C self-managed accounts)</div>
+
+  <div class="callout callout-red">
+    <div class="callout-icon">🔒</div>
+    <div><div class="callout-title">Critical Invariant</div><div class="callout-body">Every piece of data — health record, AI result, chat message — carries an <code style="font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.08);padding:1px 5px;border-radius:4px">owner_user_id</code> and an optional <code style="font-family:var(--mono);font-size:12px;background:rgba(0,0,0,.08);padding:1px 5px;border-radius:4px">organization_id</code>. Access control checks both before returning any data. An audit finding a data leak between tenants ends the business immediately in healthcare.</div></div>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 4 ═══════════════ -->
+<div class="page" id="s4">
+<div class="section-div">
+  <div class="section-div-num">04</div>
+  <div class="section-div-label">Part Four</div>
+  <h2>Security Architecture</h2>
+  <p>A single breach ends the company. Security in healthcare is a product feature, a sales lever, and a legal obligation simultaneously.</p>
+</div>
+<div class="content">
+  <h3>4.1 Seven-Layer Security Model</h3>
+  <div class="layer-list">
+    <div class="layer-item"><div class="layer-num">1</div><div class="layer-content"><h5>Network Security</h5><p>Cloudflare Enterprise WAF (OWASP Top 10 blocking) · DDoS protection at network edge · Private VPC — API servers and databases never on public internet · Port 5432 accessible only from API server's private subnet</p></div></div>
+    <div class="layer-item"><div class="layer-num">2</div><div class="layer-content"><h5>Identity &amp; Authentication</h5><p>JWT (15-min access / 7-day refresh with rotation) · MFA mandatory for all clinical staff and admins · FIDO2/WebAuthn for super-admins · SSO via SAML 2.0 / OIDC for enterprise (Azure AD, Okta, Google Workspace) · Geographic anomaly detection</p></div></div>
+    <div class="layer-item"><div class="layer-num">3</div><div class="layer-content"><h5>Authorization &amp; Access Control</h5><p>RBAC with fine-grained permissions · ABAC for sensitive records (HIV status visible only to specific specializations with explicit consent) · Consent management per record category · Break-glass access for critical care with full audit trail</p></div></div>
+    <div class="layer-item"><div class="layer-num">4</div><div class="layer-content"><h5>Data Encryption</h5><p>TLS 1.3 everywhere in transit · AES-256 at rest · Field-level encryption for HIV/mental health/reproductive data (per-patient KMS key) · Pre-signed time-limited URLs for documents · 90-day automatic key rotation · Envelope encryption</p></div></div>
+    <div class="layer-item"><div class="layer-num">5</div><div class="layer-content"><h5>Application Security</h5><p>Pydantic validation on every endpoint · ORM-only SQL (no raw string queries in production) · CORS whitelist · Rate limiting per-IP/per-user/per-org · ClamAV virus scanning on uploads · AI prompt injection prevention · Dependabot + Snyk dependency scanning</p></div></div>
+    <div class="layer-item"><div class="layer-num">6</div><div class="layer-content"><h5>Audit &amp; Compliance</h5><p>Immutable write-once audit log for every data access/modification/deletion · Separate append-only storage (S3 Object Lock) · Patient-downloadable access reports · DPDP 2023: right to access, correction, erasure, consent · ISO 27001 target Year 2 · SOC 2 Type II target Year 2</p></div></div>
+    <div class="layer-item"><div class="layer-num">7</div><div class="layer-content"><h5>Infrastructure Security</h5><p>HashiCorp Vault / AWS KMS for secrets (no secrets in code or env files) · Trivy/Snyk container scanning before every deploy · Quarterly external pen test · Zero-trust mTLS for all internal service-to-service communication · Immutable infrastructure — no SSH to production, all changes via CI/CD · Terraform IaC</p></div></div>
+  </div>
+
+  <h3>4.2 Role-Based Access Control Matrix</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Role</th><th>Description</th><th>Key Permissions</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-red">super_admin</span></td><td>HealthWeave platform administrator</td><td>Everything — all tenants, all data</td></tr>
+        <tr><td><span class="badge badge-gold">hospital_admin</span></td><td>Manages org settings and members</td><td>Org-scoped full access</td></tr>
+        <tr><td><span class="badge badge-blue">doctor</span></td><td>Clinical care provider</td><td>Consented patient records + clinical notes</td></tr>
+        <tr><td><span class="badge badge-blue">nurse</span></td><td>Clinical support</td><td>Limited clinical access — no AI insights</td></tr>
+        <tr><td><span class="badge badge-blue">radiologist</span></td><td>Radiology specialist</td><td>Scan records only</td></tr>
+        <tr><td><span class="badge badge-green">patient</span></td><td>Record owner</td><td>Full access to own records — controls all consent</td></tr>
+        <tr><td><span class="badge badge-green">caregiver</span></td><td>Family member or proxy</td><td>Patient-controlled delegated permissions</td></tr>
+        <tr><td><span class="badge" style="background:rgba(100,116,139,.1);color:var(--s600)">billing_staff</span></td><td>Financial operations</td><td>Insurance documents only — no clinical data</td></tr>
+        <tr><td><span class="badge" style="background:rgba(100,116,139,.1);color:var(--s600)">diagnostic_tech</span></td><td>Lab/radiology technician</td><td>Uploads results — cannot read AI analysis</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.3 Data Residency Strategy</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Market</th><th>Regulation</th><th>AWS Region</th><th>Timeline</th></tr></thead>
+      <tbody>
+        <tr><td>India 🇮🇳</td><td>DPDP 2023</td><td>Mumbai (ap-south-1)</td><td><span class="badge badge-green">Active</span></td></tr>
+        <tr><td>European Union 🇪🇺</td><td>GDPR</td><td>Frankfurt (eu-central-1)</td><td><span class="badge badge-gold">Year 2–3</span></td></tr>
+        <tr><td>United States 🇺🇸</td><td>HIPAA</td><td>US East (us-east-1)</td><td><span class="badge badge-gold">Year 2</span></td></tr>
+        <tr><td>Middle East 🇦🇪</td><td>Local sovereignty</td><td>Bahrain / UAE</td><td><span class="badge badge-blue">Year 3</span></td></tr>
+        <tr><td>Southeast Asia 🌏</td><td>Local regulations</td><td>Singapore (ap-southeast-1)</td><td><span class="badge badge-blue">Year 3</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 5 ═══════════════ -->
+<div class="page" id="s5">
+<div class="section-div">
+  <div class="section-div-num">05</div>
+  <div class="section-div-label">Part Five</div>
+  <h2>Infrastructure Architecture</h2>
+  <p>Phased evolution from DigitalOcean App Platform to multi-region AWS — with the complete target-state stack defined for Phase 2.</p>
+</div>
+<div class="content">
+  <h3>5.1 Phased Infrastructure Evolution</h3>
+  <div class="timeline">
+    <div class="timeline-phase">
+      <div class="phase-label phase-label-blue">Phase 0 — Now</div>
+      <div class="phase-name">DigitalOcean App Platform</div>
+      <div class="phase-detail">Static Site + Web Service. Fast to deploy. Minimal ops overhead. Sufficient for early traction.</div>
+      <div class="phase-cost">₹8K–15K / month · 0–1,000 users</div>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-label phase-label-cyan">Phase 1 — Month 3–6</div>
+      <div class="phase-name">DO / AWS Kubernetes</div>
+      <div class="phase-detail">Move to EKS or DO Kubernetes. Add Redis, SQS, proper auto-scaling. Begin MFA and SSO work.</div>
+      <div class="phase-cost">₹40K–80K / month · 1K–10K users</div>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-label phase-label-green">Phase 2 — Month 6–18</div>
+      <div class="phase-name">AWS EKS Production-Grade</div>
+      <div class="phase-detail">Multi-AZ RDS, ElastiCache, CloudFront, LLM gateway, full observability, ISO 27001 initiation.</div>
+      <div class="phase-cost">₹2L–8L / month · 10K–100K users</div>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-label phase-label-gold">Phase 3 — Month 18–36</div>
+      <div class="phase-name">Multi-Region AWS</div>
+      <div class="phase-detail">Mumbai primary + Singapore DR. Active-passive failover. 99.99% SLA capability. SOC 2 Type II.</div>
+      <div class="phase-cost">₹15L–50L / month · 100K–1M+ users</div>
+    </div>
+  </div>
+
+  <h3>5.2 Phase 2 Target Stack — Networking &amp; Entry</h3>
+  <div class="flow" style="max-width:500px">
+    <div class="flow-box flow-box-dark">Internet Traffic</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">Cloudflare (DNS · CDN · WAF · DDoS · SSL termination)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">AWS Application Load Balancer</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">Kubernetes Ingress Controller (NGINX / AWS ALB Ingress)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-dark">Kubernetes Services → Pods</div>
+  </div>
+
+  <h3>5.3 Application Services</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Service</th><th>Technology</th><th>Auto-Scaling Policy</th></tr></thead>
+      <tbody>
+        <tr><td>API Service</td><td>FastAPI (Python)</td><td>HPA: 2–20 pods · CPU + request rate</td></tr>
+        <tr><td>Background Workers</td><td>Celery</td><td>2–50 pods · queue depth trigger</td></tr>
+        <tr><td>AI Processing Service</td><td>Celery + Claude API</td><td>Queue-based scaling on queue length</td></tr>
+        <tr><td>Notification Service</td><td>Isolated microservice</td><td>2–10 pods · independent pool</td></tr>
+        <tr><td>Scheduler</td><td>Celery Beat</td><td>Single pod with leader election</td></tr>
+        <tr><td>WebSocket Service</td><td>FastAPI WebSockets</td><td>Sticky sessions · 2–10 pods</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.4 Data Layer</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Component</th><th>Technology</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Primary Database</td><td>AWS RDS PostgreSQL (Multi-AZ)</td><td>All structured data</td></tr>
+        <tr><td>Read Replicas</td><td>RDS Read Replicas (1–5)</td><td>Reporting, analytics, heavy reads</td></tr>
+        <tr><td>Cache</td><td>AWS ElastiCache Redis (Multi-AZ)</td><td>Sessions, rate limits, API caching</td></tr>
+        <tr><td>Document Storage</td><td>AWS S3 + CloudFront</td><td>PDFs, images, scans — encrypted</td></tr>
+        <tr><td>Full-Text Search</td><td>AWS OpenSearch</td><td>Record search across all content</td></tr>
+        <tr><td>Vector / Semantic Search</td><td>pgvector on RDS</td><td>AI similarity search, RAG retrieval</td></tr>
+        <tr><td>Connection Pool</td><td>PgBouncer / RDS Proxy</td><td>Multiplexes 1,000 → 50 DB connections</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.5 CI/CD Pipeline</h3>
+  <div class="flow" style="max-width:500px">
+    <div class="flow-box flow-box-dark">Developer pushes code to GitHub</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">GitHub Actions: unit tests · integration tests · Playwright E2E</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">Docker build + push to AWS ECR (container registry)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">ArgoCD detects new image tag in GitOps repo</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">Kubernetes rolling update (zero downtime — 1 pod at a time)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-split-2">
+      <div class="flow-box" style="font-size:12px;background:rgba(5,150,105,.08);border-color:var(--green);color:var(--green)">✓ Health checks pass → Deploy complete</div>
+      <div class="flow-box" style="font-size:12px;background:rgba(220,38,38,.06);border-color:var(--red);color:var(--red)">✗ Health checks fail → Auto-rollback</div>
+    </div>
+  </div>
+
+  <h3>5.6 High Availability — 99.99% Uptime Targets</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>Target</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Recovery Time Objective (RTO)</td><td>15 minutes</td><td>Multi-AZ automatic failover</td></tr>
+        <tr><td>Recovery Point Objective (RPO)</td><td>5 minutes</td><td>Continuous RDS replication</td></tr>
+        <tr><td>Primary Region</td><td>AWS Mumbai</td><td>ap-south-1</td></tr>
+        <tr><td>DR Region</td><td>AWS Singapore</td><td>ap-southeast-1</td></tr>
+        <tr><td>Backup Frequency</td><td>Continuous + daily</td><td>RDS PITR — restore to any second (35-day window)</td></tr>
+        <tr><td>Backup Testing</td><td>Weekly automated</td><td>Automated test restore every 7 days</td></tr>
+        <tr><td>Failover Mode</td><td>Manual → Automatic</td><td>Manual Year 1 · Automatic Year 2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 6 ═══════════════ -->
+<div class="page" id="s6">
+<div class="section-div">
+  <div class="section-div-num">06</div>
+  <div class="section-div-label">Part Six</div>
+  <h2>Scalability Architecture</h2>
+  <p>Traffic projections, horizontal vs vertical scaling decisions, caching strategy, async processing pipeline, and AI cost management at scale.</p>
+</div>
+<div class="content">
+  <h3>6.1 Traffic &amp; Infrastructure Scaling Projections</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>1,000 Users</th><th>10,000 Users</th><th>100,000 Users</th><th>1M Users</th></tr></thead>
+      <tbody>
+        <tr><td>Peak concurrent users</td><td>50</td><td>500</td><td>5,000</td><td>50,000</td></tr>
+        <tr><td>API requests / second</td><td>10</td><td>100</td><td>1,000</td><td>10,000</td></tr>
+        <tr><td>DB connections needed</td><td>20</td><td>200</td><td>2,000</td><td>20,000</td></tr>
+        <tr><td>AI API calls / day</td><td>500</td><td>5,000</td><td>50,000</td><td>500,000</td></tr>
+        <tr><td>Document storage</td><td>100 GB</td><td>1 TB</td><td>10 TB</td><td>100 TB</td></tr>
+        <tr><td>Infrastructure cost</td><td>₹15K/mo</td><td>₹80K/mo</td><td>₹5L/mo</td><td>₹40L/mo</td></tr>
+        <tr><td>Claude API cost</td><td>₹5K/mo</td><td>₹50K/mo</td><td>₹4L/mo</td><td>₹35L/mo</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>6.2 Scale Horizontally</h3>
+      <ul>
+        <li>API servers (stateless FastAPI pods)</li>
+        <li>Background workers (Celery)</li>
+        <li>AI processing workers</li>
+        <li>Database read replicas</li>
+      </ul>
+      <h3 style="margin-top:24px">Scale Vertically</h3>
+      <ul>
+        <li>Primary PostgreSQL (RAM = query cache)</li>
+        <li>Redis (single node handles millions of ops/sec)</li>
+        <li>Scale vertically first, then add replicas</li>
+      </ul>
+    </div>
+    <div>
+      <h3>6.3 Caching Strategy</h3>
+      <div class="table-wrap" style="margin:12px 0">
+        <table>
+          <thead><tr><th>Cache Target</th><th>TTL</th></tr></thead>
+          <tbody>
+            <tr><td>User profile (/auth/me)</td><td>5 min</td></tr>
+            <tr><td>Health scores</td><td>1 hour</td></tr>
+            <tr><td>Risk predictions</td><td>6 hours</td></tr>
+            <tr><td>Org settings</td><td>30 min</td></tr>
+            <tr><td>Biomarker trends</td><td>2 hours</td></tr>
+            <tr><td>Alert list</td><td>15 min</td></tr>
+            <tr><td>Health records list</td><td><strong>No cache</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h3>6.4 Async Document Processing Pipeline</h3>
+  <div class="callout callout-blue" style="margin-bottom:16px"><div class="callout-icon">⚡</div><div><div class="callout-title">Core Principle: Never Make Users Wait for Heavy Operations</div><div class="callout-body">Every document upload returns in under 200ms. All processing happens asynchronously via queue workers. The user gets a push notification when results are ready.</div></div></div>
+  <div class="flow">
+    <div class="flow-box flow-box-dark">User uploads PDF → API accepts in &lt; 200ms → returns {status: "processing"}</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-blue">Document → SQS Queue</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">OCR Worker picks up → extracts text (30–90 seconds)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">AI Analysis Worker → Claude analyzes, extracts biomarkers (20–40 seconds)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box">Intelligence Worker → updates health score + risk predictions (5–10 seconds)</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box flow-box-dark">Notification Worker → push notification + email · Patient opens app → sees full results</div>
+  </div>
+
+  <h3>6.5 AI Cost Management at Scale</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Strategy</th><th>Description</th><th>Cost Reduction</th></tr></thead>
+      <tbody>
+        <tr><td>Prompt Caching</td><td>Cache system prompts at Anthropic (already configured)</td><td><span class="badge badge-green">70–90%</span> on cached tokens</td></tr>
+        <tr><td>Model Tiering</td><td>Smaller model for simple classification tasks</td><td><span class="badge badge-green">80%</span> for eligible tasks</td></tr>
+        <tr><td>Batch Processing</td><td>Non-urgent AI jobs scheduled 2–6 AM off-peak</td><td><span class="badge badge-gold">50%</span> scheduling savings</td></tr>
+        <tr><td>Per-Tenant Budgets</td><td>Track and throttle AI spend per client</td><td>Prevents cost surprise overruns</td></tr>
+        <tr><td>Preprocessing</td><td>Extract simple numeric values before sending to LLM</td><td>Eliminates unnecessary LLM calls</td></tr>
+        <tr><td>Result Caching</td><td>Cache AI results — don't re-process unchanged data</td><td>Significant repeat-access savings</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 7 ═══════════════ -->
+<div class="page" id="s7">
+<div class="section-div">
+  <div class="section-div-num">07</div>
+  <div class="section-div-label">Part Seven</div>
+  <h2>Integration Architecture</h2>
+  <p>HL7 FHIR R4, legacy HL7 v2, DICOM radiology, ABDM national health infrastructure, and the integration marketplace that unlocks enterprise hospital contracts.</p>
+</div>
+<div class="content">
+  <h3>7.1 HL7 FHIR R4 — Primary Standard</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Endpoint</th><th>Direction</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">GET /fhir/Patient/{id}</code></td><td><span class="badge badge-blue">Outbound</span></td><td>Patient demographics in FHIR format</td></tr>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">POST /fhir/DiagnosticReport</code></td><td><span class="badge badge-green">Inbound</span></td><td>Lab reports from LIS systems</td></tr>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">GET /fhir/Observation/{id}</code></td><td><span class="badge badge-blue">Outbound</span></td><td>Biomarker readings and measurements</td></tr>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">POST /fhir/MedicationRequest</code></td><td><span class="badge badge-gold">Both</span></td><td>Prescription integration</td></tr>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">GET /fhir/Condition</code></td><td><span class="badge badge-blue">Outbound</span></td><td>Diagnoses and conditions</td></tr>
+        <tr><td><code style="font-family:var(--mono);font-size:12px">POST /fhir/DocumentReference</code></td><td><span class="badge badge-green">Inbound</span></td><td>Document uploads from any hospital system</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-gold"><div class="callout-icon">🏥</div><div><div class="callout-title">HL7 v2 — Legacy Indian Hospitals</div><div class="callout-body">Many Indian hospitals still use HL7 v2 over MLLP. An HL7 v2 adapter translates old-format messages into HealthWeave's internal format. This one adapter unlocks a majority of large hospital contracts in India that cannot upgrade their core HIS.</div></div></div>
+
+  <h3>7.2 DICOM Radiology Integration</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Component</th><th>Technology</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>DICOM Storage</td><td>AWS HealthImaging</td><td>Store CT, MRI, X-ray images at scale</td></tr>
+        <tr><td>DICOM Viewer</td><td>Cornerstone.js (frontend)</td><td>Display medical images in browser — no install</td></tr>
+        <tr><td>DICOM Worklist</td><td>Custom adapter</td><td>Receive imaging orders from PACS</td></tr>
+        <tr><td>AI on DICOM</td><td>Separate AI pipeline</td><td>Radiology report analysis and interpretation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.3 ABDM Integration — India National Health Infrastructure</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ABDM Component</th><th>What It Means for HealthWeave</th><th>Timeline</th></tr></thead>
+      <tbody>
+        <tr><td>ABHA ID Integration</td><td>Patients link their national health ID to HealthWeave</td><td><span class="badge badge-blue">Phase 1</span></td></tr>
+        <tr><td>PHR App Certification</td><td>HealthWeave certified as a Personal Health Record app</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>Health Locker Registration</td><td>HealthWeave becomes an ABDM-registered health locker</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>HIU Registration</td><td>Hospitals can request patient records via ABDM network</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>HIP Registration</td><td>HealthWeave provides records back to ABDM ecosystem</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>Consent Manager</td><td>Manage consent across full ABDM healthcare ecosystem</td><td><span class="badge badge-red">Year 2+</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.4 Integration Marketplace — One-Click Connectors</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Connector</th><th>Type</th><th>Value to User</th></tr></thead>
+      <tbody>
+        <tr><td>Thyrocare Direct</td><td>Lab Results API</td><td>Auto-post when lab results ready</td></tr>
+        <tr><td>Apollo LIS</td><td>Internal integration</td><td>Apollo hospital chain direct link</td></tr>
+        <tr><td>ABDM / ABHA ID</td><td>India national health ID</td><td>Regulatory compliance + user trust</td></tr>
+        <tr><td>TPA Integration</td><td>Insurance APIs</td><td>Cashless pre-authorization</td></tr>
+        <tr><td>Google Fit / Apple Health</td><td>Wearables</td><td>Step count, heart rate, sleep data</td></tr>
+        <tr><td>WhatsApp Business</td><td>Messaging</td><td>Patient notifications and reminders</td></tr>
+        <tr><td>Practo Connect</td><td>Appointment data</td><td>Patient visit history integration</td></tr>
+        <tr><td>Aarogya Setu</td><td>Government health platform</td><td>Vaccination records</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 8 ═══════════════ -->
+<div class="page" id="s8">
+<div class="section-div">
+  <div class="section-div-num">08</div>
+  <div class="section-div-label">Part Eight</div>
+  <h2>Enterprise Onboarding &amp; Commercial Architecture</h2>
+  <p>The enterprise sales journey, technical onboarding timeline, multi-tier pricing architecture, and SLA structure from Standard to Mission Critical.</p>
+</div>
+<div class="content">
+  <h3>8.1 Enterprise Sales &amp; Technical Onboarding Journey</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Phase</th><th>Duration</th><th>Key Activities</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-blue">Discovery</span></td><td>Week 1–2</td><td>CTO meeting · understand current systems · security questionnaire</td></tr>
+        <tr><td><span class="badge badge-blue">Proof of Concept</span></td><td>Week 3–6</td><td>Sandbox environment · integration test · AI demo on their own data</td></tr>
+        <tr><td><span class="badge badge-gold">Contracting</span></td><td>Week 7–10</td><td>MSA · DPA · SLA agreement · BAA (if HIPAA) · legal review</td></tr>
+        <tr><td><span class="badge badge-gold">Implementation</span></td><td>Week 11–20</td><td>Integration development · staff training · parallel running</td></tr>
+        <tr><td><span class="badge badge-green">Go-Live</span></td><td>Week 20</td><td>Cutover with documented rollback plan · hypercare support</td></tr>
+        <tr><td><span class="badge badge-green">Ongoing</span></td><td>Continuous</td><td>Quarterly business reviews · dedicated Customer Success Manager</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-blue"><div class="callout-icon">📄</div><div><div class="callout-title">Required Documents for Enterprise Contracts</div><div class="callout-body">MSA (Master Services Agreement) · DPA (Data Processing Agreement) · SLA Agreement with penalty clauses · BAA for HIPAA clients · Security questionnaire responses · Pen test report (last 6 months) · ISO 27001 / SOC 2 certificate · Data flow diagram showing exactly where patient data is stored and processed</div></div></div>
+
+  <h3>8.2 Pricing Architecture</h3>
+  <div class="two-col">
+    <div>
+      <h4>B2C — Patient Plans</h4>
+      <div class="table-wrap" style="margin:8px 0">
+        <table>
+          <thead><tr><th>Plan</th><th>Price</th></tr></thead>
+          <tbody>
+            <tr><td>Free</td><td>₹0</td></tr>
+            <tr><td>Pro</td><td>₹299 / month</td></tr>
+            <tr><td>Family (6 members)</td><td>₹699 / month</td></tr>
+            <tr><td>Annual Pro</td><td>₹2,990 / year</td></tr>
+            <tr><td>Annual Family</td><td>₹6,990 / year</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>B2B — Doctor / Clinic Plans</h4>
+      <div class="table-wrap" style="margin:8px 0">
+        <table>
+          <thead><tr><th>Plan</th><th>Price</th><th>Seats</th></tr></thead>
+          <tbody>
+            <tr><td>Solo Practice</td><td>₹1,999/mo</td><td>1 doctor</td></tr>
+            <tr><td>Small Clinic</td><td>₹4,999/mo</td><td>Up to 5</td></tr>
+            <tr><td>Large Clinic</td><td>₹9,999/mo</td><td>Up to 15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h4>Enterprise — Hospitals &amp; Diagnostics</h4>
+      <div class="table-wrap" style="margin:8px 0">
+        <table>
+          <thead><tr><th>Tier</th><th>Pricing</th></tr></thead>
+          <tbody>
+            <tr><td>Small Hospital (&lt;100 beds)</td><td>₹50,000/month</td></tr>
+            <tr><td>Medium Hospital (100–500 beds)</td><td>₹1.5L–5L/month</td></tr>
+            <tr><td>Large Chain (500+ beds)</td><td>₹10L+/month custom</td></tr>
+            <tr><td>Diagnostic Center</td><td>₹2–5 per report</td></tr>
+            <tr><td>Corporate Wellness</td><td>₹100–200 per employee/yr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h3>8.3 SLA Tiers</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tier</th><th>Uptime SLA</th><th>Support Response</th><th>Price Premium</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge" style="background:var(--s100);color:var(--s600)">Standard</span></td><td>99.5%</td><td>Email · 48 hours</td><td>Included</td></tr>
+        <tr><td><span class="badge badge-blue">Professional</span></td><td>99.9%</td><td>Email + chat · 8 hours</td><td>+20%</td></tr>
+        <tr><td><span class="badge badge-gold">Enterprise</span></td><td>99.95%</td><td>Dedicated CSM · 4 hours</td><td>+50%</td></tr>
+        <tr><td><span class="badge badge-red">Mission Critical</span></td><td>99.99%</td><td>Dedicated 24/7 · 1 hour</td><td>Custom</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 9 ═══════════════ -->
+<div class="page" id="s9">
+<div class="section-div">
+  <div class="section-div-num">09</div>
+  <div class="section-div-label">Part Nine</div>
+  <h2>Compliance &amp; Regulatory Roadmap</h2>
+  <p>Compliance is a product feature, a sales lever, and a moat. Start in Year 1 — it takes 12–18 months to certify, and you want the certificate ready when the first ₹1Cr contract is on the table.</p>
+</div>
+<div class="content">
+  <h3>9.1 India-Specific Compliance — DPDP Act 2023</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Requirement</th><th>Implementation</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Consent management</td><td>PatientConsent model with field-level controls</td><td><span class="badge badge-green">✓ In Schema</span></td></tr>
+        <tr><td>Data Principal rights (access, correction, erasure)</td><td>API endpoints for data portability</td><td><span class="badge badge-gold">Phase 1</span></td></tr>
+        <tr><td>Data Fiduciary registration</td><td>DPBI registration on rule notification</td><td><span class="badge badge-gold">On Notification</span></td></tr>
+        <tr><td>Data Protection Officer</td><td>Hire or designate DPO</td><td><span class="badge badge-blue">Year 1</span></td></tr>
+        <tr><td>Breach notification (72-hour rule)</td><td>Incident response plan + alerting</td><td><span class="badge badge-blue">Year 1</span></td></tr>
+        <tr><td>Data retention policies</td><td>Automated deletion jobs per category</td><td><span class="badge badge-blue">Phase 2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>9.2 ABDM Compliance Milestones</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Milestone</th><th>Description</th><th>Timeline</th></tr></thead>
+      <tbody>
+        <tr><td>ABHA ID Integration</td><td>Patient links national health ID to HealthWeave</td><td><span class="badge badge-blue">Phase 1</span></td></tr>
+        <tr><td>PHR App Certification</td><td>Certified as a Personal Health Record application</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>HIU Registration</td><td>Can request patient records via ABDM network</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>HIP Registration</td><td>Can provide records to ABDM ecosystem</td><td><span class="badge badge-gold">Phase 2</span></td></tr>
+        <tr><td>Consent Manager</td><td>Full consent management across ABDM ecosystem</td><td><span class="badge badge-red">Year 2+</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>9.3 International Compliance Targets</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Standard</th><th>Market</th><th>Timeline</th><th>Key Requirements</th></tr></thead>
+      <tbody>
+        <tr><td><strong>HIPAA</strong></td><td>United States</td><td><span class="badge badge-gold">Year 2</span></td><td>BAA with AWS · audit controls · breach notification</td></tr>
+        <tr><td><strong>GDPR</strong></td><td>European Union</td><td><span class="badge badge-blue">Year 2–3</span></td><td>DPIA · right to erasure · Standard Contractual Clauses</td></tr>
+        <tr><td><strong>ISO 27001</strong></td><td>Global enterprise</td><td><span class="badge badge-gold">Year 2</span></td><td>ISMS implementation · 6–12 month certification process</td></tr>
+        <tr><td><strong>SOC 2 Type II</strong></td><td>US / Global enterprise</td><td><span class="badge badge-gold">Year 2</span></td><td>Security · availability · confidentiality controls</td></tr>
+        <tr><td><strong>PIPEDA</strong></td><td>Canada</td><td><span class="badge badge-blue">Year 3</span></td><td>Privacy policy · consent · breach notification</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-green"><div class="callout-icon">🏆</div><div><div class="callout-title">Telemedicine Practice Guidelines 2020 — Already Compliant</div><div class="callout-body">AI includes clear disclaimers that it is not a replacement for medical advice ✓ · Clinical decision support cannot override physician judgment — UI reinforces this ✓ · All AI-generated insights are clearly labeled as AI-generated ✓</div></div></div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 10 ═══════════════ -->
+<div class="page" id="s10">
+<div class="section-div">
+  <div class="section-div-num">10</div>
+  <div class="section-div-label">Part Ten</div>
+  <h2>Product Evolution Roadmap</h2>
+  <p>Three phases across 36 months — from core foundation to enterprise scale with AI model fine-tuning, multi-region deployment, and genomics integration.</p>
+</div>
+<div class="content">
+  <h3>Phase 1 — Foundation (Now to Month 6)</h3>
+  <div class="two-col">
+    <div>
+      <h4>Core Features (Built)</h4>
+      <ul class="checklist">
+        <li>Core record management</li>
+        <li>AI document analysis</li>
+        <li>Health intelligence dashboard</li>
+        <li>Emergency passport (QR-based)</li>
+        <li>Doctor portal</li>
+        <li>Consent management</li>
+        <li>Vitals manual entry</li>
+        <li>Comments on records</li>
+        <li>Biomarker comparison table</li>
+        <li>Visit segregation</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Technical Targets</h4>
+      <ul class="checklist">
+        <li class="pending">100% E2E test coverage</li>
+        <li class="pending">Sub-2-second API response p99</li>
+        <li class="pending">DPDP-compliant consent flows</li>
+        <li class="pending">ABDM ABHA ID basic integration</li>
+        <li>Mobile-responsive PWA</li>
+        <li class="pending">LCP &lt; 3 seconds on mobile</li>
+        <li class="pending">Email delivery (SendGrid/SES)</li>
+        <li class="pending">Sentry error tracking</li>
+        <li class="pending">Alembic database migrations</li>
+        <li class="pending">Audit log persistence</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Phase 2 — Growth (Month 6–18)</h3>
+  <div class="card-grid card-grid-2">
+    <div class="card"><div class="card-accent card-accent-blue"></div><h5>Product Features</h5><p>Native iOS/Android app (React Native) · HL7 FHIR R4 API · Diagnostic center bulk pipeline · WhatsApp bot · Telemedicine video · Radiology report AI · Offline emergency passport · Multi-language (Hindi, Tamil, Telugu, Bengali) · DICOM viewer · Family accounts · Wearable integration</p></div>
+    <div class="card"><div class="card-accent card-accent-green"></div><h5>Technical Targets</h5><p>Migrate to AWS EKS Kubernetes · ISO 27001 certification initiation · ABDM PHR App certification · External penetration test &amp; remediation · Automated disaster recovery testing · LLM gateway with prompt caching · Per-tenant AI cost tracking</p></div>
+  </div>
+
+  <h3>Phase 3 — Enterprise Scale (Month 18–36)</h3>
+  <div class="card-grid card-grid-2">
+    <div class="card"><div class="card-accent card-accent-gold"></div><h5>Product Features</h5><p>Multi-region deployment (India primary, Singapore DR) · ABDM Consent Manager · HIPAA compliance for US hospitals · AI fine-tuning on anonymized Indian health data · Predictive hospital operations analytics · Medical device Bluetooth integration · Population health analytics · Genomics data integration (basic)</p></div>
+    <div class="card"><div class="card-accent card-accent-red"></div><h5>Technical Targets</h5><p>99.99% uptime SLA capability · Active-passive multi-region architecture · ISO 27001 certification complete · SOC 2 Type II audit complete · Sub-500ms API response p99 · IPO-readiness: financial audit trails · Full observability stack (Datadog / Grafana)</p></div>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 11 ═══════════════ -->
+<div class="page" id="s11">
+<div class="section-div">
+  <div class="section-div-num">11</div>
+  <div class="section-div-label">Part Eleven</div>
+  <h2>Team Structure for Scale</h2>
+  <p>Hiring plan from a lean 6-person founding team to a 22-person scale organization — structured around product verticals, not functional silos.</p>
+</div>
+<div class="content">
+  <h3>Year 1 — Founding Team (0 to 50K Users)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Role</th><th>Count</th><th>Primary Focus</th></tr></thead>
+      <tbody>
+        <tr><td>Full-Stack Engineer</td><td>2</td><td>Product features · frontend + backend</td></tr>
+        <tr><td>Backend Engineer (Python)</td><td>1</td><td>API architecture · AI integration</td></tr>
+        <tr><td>DevOps / Cloud (part-time)</td><td>1</td><td>Infrastructure · CI/CD · security</td></tr>
+        <tr><td>Product Manager</td><td>1</td><td>Roadmap · customer research · prioritization</td></tr>
+        <tr><td>Designer (UI/UX)</td><td>1</td><td>User experience · design system</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>6</strong></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Year 2 — Scale Team (50K to 500K Users)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Team</th><th>Count</th><th>Focus Area</th></tr></thead>
+      <tbody>
+        <tr><td>Platform (infra · security · observability)</td><td>3</td><td>Reliability · scale · zero-downtime deploys</td></tr>
+        <tr><td>Patient Experience</td><td>3</td><td>B2C product · mobile app · PWA</td></tr>
+        <tr><td>Doctor Portal</td><td>2</td><td>B2B SMB product · clinic workflows</td></tr>
+        <tr><td>Enterprise Integrations</td><td>3</td><td>Hospital / LIS / FHIR connectors</td></tr>
+        <tr><td>AI / ML</td><td>2</td><td>Prompt engineering · fine-tuning · RAG</td></tr>
+        <tr><td>QA Automation</td><td>2</td><td>Test coverage · performance testing</td></tr>
+        <tr><td>DevOps / SRE</td><td>2</td><td>Operations · incident response · on-call</td></tr>
+        <tr><td>Sales Engineering</td><td>2</td><td>Pre-sales technical support · PoC builds</td></tr>
+        <tr><td>Customer Success</td><td>3</td><td>Enterprise onboarding · QBRs · retention</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>22</strong></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue"><div class="callout-icon">🚀</div><div><div class="callout-title">Year 3 Additions (500K+ Users)</div><div class="callout-body">Dedicated security team (3) · Compliance / legal (2) · Data engineering team (3) · Regional teams per geography (5+ per region for sales, support, and integration) · Head of Enterprise Sales · VP Engineering</div></div></div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ SECTION 12 ═══════════════ -->
+<div class="page" id="s12">
+<div class="section-div">
+  <div class="section-div-num">12</div>
+  <div class="section-div-label">Part Twelve</div>
+  <h2>Architecture Decision Matrix</h2>
+  <p>Technology choices phase-by-phase and the Build vs. Buy analysis that protects engineering resources while maximizing competitive differentiation.</p>
+</div>
+<div class="content">
+  <h3>12.1 Technology Choices by Phase</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Decision</th><th>Phase 0 — Now</th><th>Phase 1 — 6 months</th><th>Phase 2 — 18 months</th></tr></thead>
+      <tbody>
+        <tr><td>Hosting</td><td>DigitalOcean App Platform</td><td>DO / AWS EKS Kubernetes</td><td>Multi-region AWS</td></tr>
+        <tr><td>Database</td><td>DO Managed PostgreSQL</td><td>AWS RDS Multi-AZ</td><td>RDS + Read Replicas</td></tr>
+        <tr><td>Storage</td><td>DO Spaces / S3</td><td>AWS S3 + CloudFront</td><td>S3 Multi-region replication</td></tr>
+        <tr><td>Search</td><td>pgvector</td><td>pgvector + OpenSearch</td><td>OpenSearch cluster</td></tr>
+        <tr><td>Queue</td><td>Celery / Redis</td><td>AWS SQS + Celery</td><td>AWS SQS + ECS Workers</td></tr>
+        <tr><td>Auth</td><td>JWT + slowapi</td><td>JWT + MFA + SSO (SAML)</td><td>Full IAM + FIDO2</td></tr>
+        <tr><td>Multi-tenancy</td><td>org_id row-level security</td><td>Dedicated DB option</td><td>Full isolated tier</td></tr>
+        <tr><td>AI Layer</td><td>Direct Claude API</td><td>LLM Gateway + caching</td><td>Fine-tuned + multi-model</td></tr>
+        <tr><td>Compliance</td><td>Basic security headers</td><td>DPDP + ABDM</td><td>HIPAA + ISO 27001</td></tr>
+        <tr><td>Deployment</td><td>Manual + DO CI</td><td>GitOps + ArgoCD</td><td>Blue-green + Canary</td></tr>
+        <tr><td>Monitoring</td><td>Basic (Sentry)</td><td>Datadog or Grafana</td><td>Full observability stack</td></tr>
+        <tr><td>Infra Cost</td><td>₹8K/month</td><td>₹80K/month</td><td>₹5L–15L/month</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>12.2 Build vs. Buy Matrix</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Component</th><th>Decision</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Core health record logic</td><td><span class="badge badge-red">✦ Build</span></td><td>Competitive differentiator — core IP</td></tr>
+        <tr><td>AI analysis prompts</td><td><span class="badge badge-red">✦ Build</span></td><td>Core IP — Indian-specific medical context</td></tr>
+        <tr><td>Biomarker extraction engine</td><td><span class="badge badge-red">✦ Build</span></td><td>Indian lab format specific — no existing solution</td></tr>
+        <tr><td>LLM (language model)</td><td><span class="badge badge-green">✓ Buy (Claude API)</span></td><td>Not core competency — best-in-class available</td></tr>
+        <tr><td>Email delivery</td><td><span class="badge badge-green">✓ Buy (AWS SES / SendGrid)</span></td><td>Commodity infrastructure</td></tr>
+        <tr><td>SMS notifications</td><td><span class="badge badge-green">✓ Buy (Twilio / MSG91)</span></td><td>Commodity — regulatory compliance handled</td></tr>
+        <tr><td>Payment processing</td><td><span class="badge badge-green">✓ Buy (Razorpay)</span></td><td>PCI-DSS compliance burden eliminated</td></tr>
+        <tr><td>Video consultation</td><td><span class="badge badge-green">✓ Buy (Daily.co / Whereby)</span></td><td>Complex infrastructure — solved problem</td></tr>
+        <tr><td>OCR</td><td><span class="badge badge-green">✓ Buy (AWS Textract / Vision)</span></td><td>Better accuracy than custom training</td></tr>
+        <tr><td>DICOM viewing</td><td><span class="badge badge-green">✓ Buy (Cornerstone.js)</span></td><td>Complex open standard — solved problem</td></tr>
+        <tr><td>Monitoring</td><td><span class="badge badge-green">✓ Buy (Datadog / Grafana)</span></td><td>Operational complexity — not product value</td></tr>
+        <tr><td>SSO / Enterprise Auth</td><td><span class="badge badge-gold">Augment (Auth0 + own JWT)</span></td><td>Own core JWT, buy enterprise SSO layer</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ STRATEGIC DECISIONS ═══════════════ -->
+<div class="page">
+<div class="section-div" style="background:linear-gradient(135deg,#0A0F1E 0%,#0D1B3E 100%)">
+  <div class="section-div-label" style="color:var(--gold2)">The Non-Negotiables</div>
+  <h2>Four Architecture Decisions That Cannot Be Undone</h2>
+  <p>These are not preferences. They are foundational bets that shape every other decision for the next five years.</p>
+</div>
+<div class="content">
+  <div class="decision-card">
+    <div class="decision-num">01</div>
+    <h4>SaaS First. On-Premise Never (in Year 1)</h4>
+    <p>Do not let any enterprise client convince you to build on-premise software in Year 1. It will bifurcate the codebase, triple support burden, and kill the ability to ship product improvements. The answer to "can we host it ourselves?" is: <em style="color:rgba(255,255,255,.8)">"We offer a dedicated, fully isolated cloud environment that meets your data residency requirements — it is more secure than your own data center because our team monitors it 24/7 and applies security patches within hours."</em></p>
+  </div>
+  <div class="decision-card" style="margin-top:16px">
+    <div class="decision-num">02</div>
+    <h4>Multi-Tenancy Right from Day One — No Exceptions</h4>
+    <p>Row-level security with <code style="font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px">organization_id</code> on every table, every query scoped, every API response filtered. An audit finding a data leak between tenants ends the business immediately in healthcare. There is no recovery from a healthcare data breach in India.</p>
+  </div>
+  <div class="decision-card" style="margin-top:16px">
+    <div class="decision-num">03</div>
+    <h4>The AI Data Strategy Is the Moat</h4>
+    <p>Every record processed, every biomarker extracted, every interaction pattern — with appropriate anonymization and explicit consent — builds understanding no competitor has. At 1 million records, HealthWeave understands Indian diet patterns, Indian lab reference ranges, Indian medication brands, and Indian disease prevalence better than any American or European model. This is defensible, compounding, and irreplaceable. <em style="color:rgba(255,255,255,.8)">Guard and grow this asset. It is worth more than the code.</em></p>
+  </div>
+  <div class="decision-card" style="margin-top:16px">
+    <div class="decision-num">04</div>
+    <h4>Compliance Is a Product Feature, Not a Tax</h4>
+    <p>Hospitals and enterprise clients do not buy software. They buy trust. The ISO 27001 certificate, DPDP compliance, and ABDM certification are not checkboxes — they are sales collateral and moat. Start compliance work in Year 1 even when it feels premature. Certification takes 12–18 months. You want the certificate ready when the first ₹1 crore annual contract is on the table.</p>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ GLOSSARY ═══════════════ -->
+<div class="page">
+<div class="content">
+  <h3>Glossary of Terms</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+      <tbody>
+        <tr><td>HIS</td><td>Hospital Information System — core hospital management software</td></tr>
+        <tr><td>LIS</td><td>Laboratory Information System — manages lab orders and results</td></tr>
+        <tr><td>PACS</td><td>Picture Archiving and Communication System — stores medical images</td></tr>
+        <tr><td>EMR / EHR</td><td>Electronic Medical / Health Record</td></tr>
+        <tr><td>HL7 FHIR</td><td>Health Level 7 Fast Healthcare Interoperability Resources — modern data standard</td></tr>
+        <tr><td>DICOM</td><td>Digital Imaging and Communications in Medicine — imaging standard</td></tr>
+        <tr><td>ABDM</td><td>Ayushman Bharat Digital Mission — India's national digital health initiative</td></tr>
+        <tr><td>ABHA</td><td>Ayushman Bharat Health Account — India's national health ID</td></tr>
+        <tr><td>DPDP</td><td>Digital Personal Data Protection Act 2023 (India)</td></tr>
+        <tr><td>HIPAA</td><td>Health Insurance Portability and Accountability Act (United States)</td></tr>
+        <tr><td>GDPR</td><td>General Data Protection Regulation (European Union)</td></tr>
+        <tr><td>BAA</td><td>Business Associate Agreement — HIPAA-required contract with vendors</td></tr>
+        <tr><td>DPA</td><td>Data Processing Agreement — GDPR / DPDP-required contract</td></tr>
+        <tr><td>MSA</td><td>Master Services Agreement — enterprise contract framework</td></tr>
+        <tr><td>SLA</td><td>Service Level Agreement — uptime and support guarantees</td></tr>
+        <tr><td>RTO</td><td>Recovery Time Objective — how fast to restore after a failure</td></tr>
+        <tr><td>RPO</td><td>Recovery Point Objective — maximum acceptable data loss window</td></tr>
+        <tr><td>MFA</td><td>Multi-Factor Authentication</td></tr>
+        <tr><td>SSO</td><td>Single Sign-On</td></tr>
+        <tr><td>SAML</td><td>Security Assertion Markup Language — enterprise SSO protocol</td></tr>
+        <tr><td>OIDC</td><td>OpenID Connect — modern SSO / identity protocol</td></tr>
+        <tr><td>WAF</td><td>Web Application Firewall</td></tr>
+        <tr><td>mTLS</td><td>Mutual TLS — both parties verify each other's identity</td></tr>
+        <tr><td>KMS</td><td>Key Management Service — manages encryption keys</td></tr>
+        <tr><td>RBAC</td><td>Role-Based Access Control</td></tr>
+        <tr><td>ABAC</td><td>Attribute-Based Access Control</td></tr>
+        <tr><td>HPA</td><td>Horizontal Pod Autoscaler (Kubernetes)</td></tr>
+        <tr><td>EKS</td><td>Elastic Kubernetes Service — AWS managed Kubernetes</td></tr>
+        <tr><td>RDS</td><td>Relational Database Service — AWS managed PostgreSQL</td></tr>
+        <tr><td>CDN</td><td>Content Delivery Network</td></tr>
+        <tr><td>PWA</td><td>Progressive Web App — installable browser application</td></tr>
+        <tr><td>LCP</td><td>Largest Contentful Paint — core web performance metric</td></tr>
+        <tr><td>PITR</td><td>Point-In-Time Recovery — restore DB to any past second</td></tr>
+        <tr><td>CSM</td><td>Customer Success Manager</td></tr>
+        <tr><td>TPA</td><td>Third Party Administrator (insurance)</td></tr>
+        <tr><td>NIC</td><td>National Informatics Centre — Indian government IT infrastructure</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="page-footer"><span class="footer-brand">HealthWeave</span><span class="footer-confidential">Confidential — Internal Strategy Document</span><span class="footer-version">v1.0 · June 2026</span></div>
+</div>
+
+<!-- ═══════════════ BACK COVER ═══════════════ -->
+<div class="page">
+<div class="cover" style="min-height:60vh;justify-content:center;align-items:center;text-align:center">
+  <div class="cover-decor"><svg viewBox="0 0 1020 600" xmlns="http://www.w3.org/2000/svg"><circle cx="510" cy="300" r="400" fill="rgba(37,99,235,0.04)"/><circle cx="510" cy="300" r="250" fill="rgba(37,99,235,0.04)"/><circle cx="510" cy="300" r="120" fill="rgba(37,99,235,0.06)"/></svg></div>
+  <div style="position:relative;z-index:2;padding:60px">
+    <div style="display:flex;justify-content:center;margin-bottom:24px">
+      <div class="logo-box" style="width:64px;height:64px;border-radius:18px"><svg viewBox="0 0 24 24" style="width:34px;height:34px"><path d="M12 2C9 2 7 4 7 7v10c0 3 2 5 5 5s5-2 5-5V7c0-3-2-5-5-5z" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M7 9h10M7 12h10M7 15h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    </div>
+    <div style="font-size:32px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:12px">HealthWeave</div>
+    <div style="font-size:16px;color:rgba(255,255,255,.45);margin-bottom:40px">AI Health Intelligence Platform</div>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan3));margin:0 auto 40px"></div>
+    <div style="font-size:13px;color:rgba(255,255,255,.35);line-height:1.8">
+      Enterprise Architecture Blueprint v1.0 · June 2026<br>
+      © 2026 HealthWeave Technologies Pvt. Ltd.<br>
+      Confidential — For Internal Strategy Use Only<br>
+      DPDP 2023 Compliant · AES-256 Encrypted
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
