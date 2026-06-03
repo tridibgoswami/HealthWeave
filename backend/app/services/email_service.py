@@ -1,19 +1,13 @@
 """
-HealthWeave – Email Delivery Service (SendGrid)
-Handles all transactional email: password reset, welcome, verification.
+HealthWeave – Email Delivery Service (Resend)
+Handles all transactional email: password reset, welcome.
+Free tier: 3,000 emails/month, no expiry — resend.com
 """
 
 import logging
 from typing import Optional
 
 logger = logging.getLogger(__name__)
-
-
-def _client():
-    """Lazily import SendGrid to avoid crashing when key is not configured."""
-    from sendgrid import SendGridAPIClient
-    from app.core.config import settings
-    return SendGridAPIClient(settings.SENDGRID_API_KEY), settings
 
 
 async def send_password_reset(email: str, reset_token: str, first_name: str = "") -> bool:
@@ -23,8 +17,8 @@ async def send_password_reset(email: str, reset_token: str, first_name: str = ""
     """
     from app.core.config import settings
 
-    if not settings.SENDGRID_API_KEY:
-        logger.warning("SENDGRID_API_KEY not configured — password reset email not sent for %s", email)
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured — password reset email not sent for %s", email)
         return False
 
     reset_url = f"{settings.APP_BASE_URL}/reset-password?token={reset_token}"
@@ -64,19 +58,10 @@ async def send_password_reset(email: str, reset_token: str, first_name: str = ""
     </html>
     """
 
-    plain_body = (
-        f"{greeting}\n\n"
-        f"We received a request to reset your HealthWeave password.\n\n"
-        f"Reset your password here (link expires in 2 hours):\n{reset_url}\n\n"
-        f"If you didn't request this, ignore this email — your password won't change.\n\n"
-        f"— The HealthWeave Team"
-    )
-
     return await _send(
         to_email=email,
         subject="Reset your HealthWeave password",
         html_body=html_body,
-        plain_body=plain_body,
     )
 
 
@@ -84,8 +69,8 @@ async def send_welcome(email: str, first_name: str) -> bool:
     """Send welcome email after successful registration."""
     from app.core.config import settings
 
-    if not settings.SENDGRID_API_KEY:
-        logger.debug("SENDGRID_API_KEY not configured — welcome email skipped for %s", email)
+    if not settings.RESEND_API_KEY:
+        logger.debug("RESEND_API_KEY not configured — welcome email skipped for %s", email)
         return False
 
     app_url = settings.APP_BASE_URL
@@ -125,50 +110,30 @@ async def send_welcome(email: str, first_name: str) -> bool:
     </html>
     """
 
-    plain_body = (
-        f"Welcome to HealthWeave, {first_name}!\n\n"
-        f"Your account is ready. Visit {app_url} to get started.\n\n"
-        f"What you can do:\n"
-        f"• Upload health records (lab reports, prescriptions, scans)\n"
-        f"• Chat with your AI health assistant\n"
-        f"• Set up your Emergency Passport\n"
-        f"• Track vitals over time\n\n"
-        f"HealthWeave AI is for informational purposes only and does not replace medical advice.\n\n"
-        f"— The HealthWeave Team"
-    )
-
     return await _send(
         to_email=email,
         subject=f"Welcome to HealthWeave, {first_name}!",
         html_body=html_body,
-        plain_body=plain_body,
     )
 
 
-async def _send(to_email: str, subject: str, html_body: str, plain_body: str) -> bool:
-    """Core delivery function — wraps SendGrid API call."""
+async def _send(to_email: str, subject: str, html_body: str) -> bool:
+    """Core delivery via Resend API."""
     try:
-        from sendgrid import SendGridAPIClient
-        from sendgrid.helpers.mail import Mail, Email, To, Content
+        import resend
         from app.core.config import settings
 
-        message = Mail(
-            from_email=Email(settings.FROM_EMAIL, settings.FROM_NAME),
-            to_emails=To(to_email),
-            subject=subject,
-        )
-        message.add_content(Content("text/plain", plain_body))
-        message.add_content(Content("text/html", html_body))
+        resend.api_key = settings.RESEND_API_KEY
 
-        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-        response = sg.send(message)
-
-        if response.status_code in (200, 202):
-            logger.info("Email sent to %s (subject: %s)", to_email, subject)
-            return True
-        else:
-            logger.error("SendGrid returned %s for %s", response.status_code, to_email)
-            return False
+        params: resend.Emails.SendParams = {
+            "from": f"{settings.FROM_NAME} <{settings.FROM_EMAIL}>",
+            "to": [to_email],
+            "subject": subject,
+            "html": html_body,
+        }
+        email = resend.Emails.send(params)
+        logger.info("Email sent to %s via Resend (id=%s)", to_email, email.get("id"))
+        return True
 
     except Exception as exc:
         logger.error("Failed to send email to %s: %s", to_email, exc)

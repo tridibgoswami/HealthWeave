@@ -53,7 +53,7 @@ structlog==24.4.0
 fhirclient==4.2.0
 
 # Email
-sendgrid==6.11.0
+resend==2.7.0
 
 # Error tracking & observability
 sentry-sdk[fastapi]==2.20.0
