@@ -56,6 +56,17 @@ async def get_emergency_passport_by_qr(
     if not passport:
         raise HTTPException(status_code=404, detail="Emergency passport not found or expired")
 
+    from app.services.audit_service import log_event
+    await log_event(
+        db,
+        action="emergency_passport.public_read",
+        resource="emergency_passport",
+        user_id=str(passport.user_id),
+        resource_id=str(passport.id),
+        request=request,
+        extra={"qr_token_prefix": qr_token[:6]},
+    )
+
     # Return minimal critical data only
     return {
         "blood_group": passport.blood_group,

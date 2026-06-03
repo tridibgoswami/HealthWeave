@@ -141,6 +141,9 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
 
     await db.commit()
 
+    from app.services.email_service import send_welcome
+    await send_welcome(email=str(user.email), first_name=payload.first_name)
+
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
         refresh_token=create_refresh_token(str(user.id)),
@@ -172,6 +175,10 @@ async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depe
         .values(last_login_at=datetime.now(timezone.utc))
     )
 
+    from app.services.audit_service import log_event
+    await log_event(db, action="login", resource="user", user_id=str(user.id),
+                    resource_id=str(user.id), request=request)
+
     return TokenResponse(
         access_token=create_access_token(str(user.id)),
         refresh_token=create_refresh_token(str(user.id)),
@@ -200,13 +207,13 @@ async def refresh(payload: RefreshRequest, request: Request):
 @limiter.limit("5/minute")
 async def forgot_password(payload: ForgotPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
     import secrets
-    import logging
     from datetime import timedelta
-    from app.core.config import settings
+    from app.services.email_service import send_password_reset
 
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
+    # Always return the same response — never leak whether the email exists
     if not user:
         return {"message": "If that email exists, a reset link has been sent."}
 
@@ -220,12 +227,18 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request, db: 
     )
     await db.commit()
 
-    if settings.DEBUG:
-        logging.getLogger(__name__).debug(
-            "PASSWORD RESET token for %s (DEBUG only): %s", payload.email, reset_token
-        )
+    profile_result = await db.execute(
+        select(UserProfile).where(UserProfile.user_id == user.id)
+    )
+    profile = profile_result.scalar_one_or_none()
+    first_name = profile.first_name if profile else ""
 
-    # TODO: deliver reset_token via email (SendGrid / SES) before go-live
+    await send_password_reset(
+        email=str(user.email),
+        reset_token=reset_token,
+        first_name=first_name,
+    )
+
     return {"message": "If that email exists, a reset link has been sent."}
 
 
@@ -258,6 +271,7 @@ async def reset_password(payload: ResetPasswordRequest, request: Request, db: As
 
 @router.get("/me")
 async def get_me(
+    request: Request,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -280,6 +294,10 @@ async def get_me(
         org = org_result.scalar_one_or_none()
         if org:
             org_info = {"id": str(org.id), "name": org.name, "org_type": org.org_type}
+
+    from app.services.audit_service import log_event
+    await log_event(db, action="profile.read", resource="user", user_id=user_id,
+                    resource_id=user_id, request=request)
 
     return {
         "id": str(user.id),

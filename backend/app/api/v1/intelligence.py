@@ -6,7 +6,7 @@ Health scores, predictions, correlations, comparisons, and doctor summaries.
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,11 +27,15 @@ router = APIRouter(prefix="/intelligence", tags=["AI Intelligence"])
 
 @router.get("/health-scores")
 async def get_health_scores(
+    request: Request,
     limit: int = Query(30, ge=1, le=365),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Get health score time series."""
+    from app.services.audit_service import log_event
+    await log_event(db, action="health_scores.read", resource="health_score",
+                    user_id=user_id, request=request)
     from sqlalchemy import desc
     result = await db.execute(
         select(HealthScore)

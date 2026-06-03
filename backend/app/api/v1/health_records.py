@@ -7,7 +7,7 @@ import uuid
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status, BackgroundTasks
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -299,6 +299,7 @@ async def _process_document_background(
 
 @router.get("/")
 async def list_records(
+    request: Request,
     record_type: Optional[str] = Query(None),
     from_date: Optional[str] = Query(None),
     to_date: Optional[str] = Query(None),
@@ -307,6 +308,10 @@ async def list_records(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
+    from app.services.audit_service import log_event
+    await log_event(db, action="records.list", resource="health_record",
+                    user_id=user_id, request=request,
+                    extra={"record_type": record_type, "page": page})
     from sqlalchemy import and_, desc
     conditions = [HealthRecord.user_id == uuid.UUID(user_id), HealthRecord.is_archived == False]
 

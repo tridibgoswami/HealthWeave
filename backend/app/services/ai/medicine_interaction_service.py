@@ -48,8 +48,7 @@ class MedicineInteractionService:
         Saves results to MedicineInteractionAlert table.
         Returns list of found interactions.
         """
-        from app.models.health_record import MedicineEntry
-        from app.models.medicine import MedicineInteractionAlert
+        from app.models.medicine import MedicineEntry, MedicineInteractionAlert
 
         # Get all active medicines
         result = await self.db.execute(
@@ -174,8 +173,7 @@ Return as JSON array. If no significant interactions, return empty array [].
 
     async def get_interactions(self, user_id: UUID) -> list[dict]:
         """Return all unacknowledged medicine interactions for a patient."""
-        from app.models.medicine import MedicineInteractionAlert
-        from app.models.health_record import MedicineEntry
+        from app.models.medicine import MedicineInteractionAlert, MedicineEntry
 
         result = await self.db.execute(
             select(

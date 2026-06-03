@@ -103,6 +103,16 @@ class Settings(BaseSettings):
     TWILIO_TOKEN: str = ""
     TWILIO_PHONE: str = ""
 
+    # ── Email delivery (SendGrid) ─────────────────────────────────────────────
+    SENDGRID_API_KEY: str = ""
+    FROM_EMAIL: str = "noreply@healthweave.in"
+    FROM_NAME: str = "HealthWeave"
+    APP_BASE_URL: str = "https://app.healthweave.in"
+
+    # ── Observability ─────────────────────────────────────────────────────────
+    SENTRY_DSN: str = ""
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.2
+
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_PER_MINUTE: int = 100
     AI_RATE_LIMIT_PER_MINUTE: int = 30

@@ -16,6 +16,7 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.limiter import limiter
+import app.models.audit  # noqa: F401 — ensures AuditLog table is created by init_db
 from app.api.v1.auth import router as auth_router
 from app.api.v1.health_records import router as records_router
 from app.api.v1.ai_chat import router as chat_router
@@ -33,6 +34,22 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# ── Sentry (must init before app creation) ────────────────────────────────────
+if settings.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+        environment=settings.APP_ENV,
+        release=settings.APP_VERSION,
+        # Never send PHI to Sentry — strip request bodies
+        send_default_pii=False,
+    )
+    logger.info("Sentry initialised (env=%s)", settings.APP_ENV)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

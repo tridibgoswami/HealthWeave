@@ -52,8 +52,15 @@ structlog==24.4.0
 # Healthcare data standards
 fhirclient==4.2.0
 
+# Email
+sendgrid==6.11.0
+
+# Error tracking & observability
+sentry-sdk[fastapi]==2.20.0
+
 # Testing
 pytest==8.3.4
 pytest-asyncio==0.24.0
+pytest-mock==3.14.0
 httpx==0.27.2
 factory-boy==3.3.1
