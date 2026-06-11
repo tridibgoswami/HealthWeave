@@ -103,8 +103,8 @@ class Settings(BaseSettings):
     TWILIO_TOKEN: str = ""
     TWILIO_PHONE: str = ""
 
-    # ── Email delivery (SendGrid) ─────────────────────────────────────────────
-    SENDGRID_API_KEY: str = ""
+    # ── Email delivery (Resend) ───────────────────────────────────────────────
+    RESEND_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@healthweave.in"
     FROM_NAME: str = "HealthWeave"
     APP_BASE_URL: str = "https://app.healthweave.in"

@@ -89,6 +89,10 @@ async def upload_health_document(
     db.add(doc)
     await db.commit()
 
+    # Persist file to object storage (non-blocking — failure logged, not raised)
+    from app.services.storage_service import upload_file as storage_upload
+    await storage_upload(file_bytes, storage_key, file.content_type)
+
     # Process in background
     background_tasks.add_task(
         _process_document_background,
@@ -415,6 +419,46 @@ async def get_record(
             for bv in biomarkers
         ],
         "created_at": str(record.created_at),
+    }
+
+
+@router.get("/{record_id}/file")
+async def get_document_download_url(
+    record_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a short-lived presigned URL to download the original uploaded file."""
+    from app.services.storage_service import get_presigned_url
+
+    result = await db.execute(
+        select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    doc_result = await db.execute(
+        select(HealthDocument).where(
+            HealthDocument.record_id == uuid.UUID(record_id),
+            HealthDocument.user_id == uuid.UUID(user_id),
+        ).limit(1)
+    )
+    doc = doc_result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="No file attached to this record")
+
+    url = await get_presigned_url(doc.storage_key, expires_in=3600)
+    if not url:
+        raise HTTPException(status_code=503, detail="File storage not configured or unavailable")
+
+    return {
+        "url": url,
+        "file_name": doc.file_name,
+        "mime_type": doc.mime_type,
+        "expires_in_seconds": 3600,
     }
 
 
