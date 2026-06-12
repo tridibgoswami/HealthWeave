@@ -129,7 +129,7 @@ class LabAnalysisService:
         - Risk summary
         - Actionable recommendations
         """
-        history = await self._get_biomarker_history(user_id, biomarkers)
+        history = await self._get_biomarker_history(user_id, biomarkers, exclude_record_id=record_id)
         profile = await self._get_profile(user_id)
 
         prompt = _build_analysis_prompt(biomarkers, history, profile)
@@ -262,13 +262,34 @@ class LabAnalysisService:
             biomarker_name, rows, delta, delta_pct
         )
 
+        # Compute time span
+        try:
+            from datetime import datetime
+            d1 = rows[0]["measured_at"] if isinstance(rows[0]["measured_at"], date) else date.fromisoformat(str(rows[0]["measured_at"])[:10])
+            d2 = rows[-1]["measured_at"] if isinstance(rows[-1]["measured_at"], date) else date.fromisoformat(str(rows[-1]["measured_at"])[:10])
+            span_days = (d2 - d1).days
+            span_label = f"{span_days // 365} years" if span_days >= 365 else f"{span_days // 30} months"
+        except Exception:
+            span_label = "unknown period"
+
         return {
             "biomarker": biomarker_name,
-            "readings": rows,
+            "readings": [
+                {
+                    "value": r["value_numeric"],
+                    "unit": r["unit"],
+                    "status": r["status"],
+                    "date": str(r["measured_at"])[:10],
+                    "report": r.get("report_title", ""),
+                    "lab": r.get("hospital_name", ""),
+                }
+                for r in rows
+            ],
             "summary": {
-                "first_reading": {"value": first_val, "date": str(rows[0]["measured_at"])},
-                "latest_reading": {"value": last_val, "date": str(rows[-1]["measured_at"])},
+                "first_reading": {"value": first_val, "date": str(rows[0]["measured_at"])[:10]},
+                "latest_reading": {"value": last_val, "date": str(rows[-1]["measured_at"])[:10]},
                 "total_readings": len(rows),
+                "time_span": span_label,
                 "delta": delta,
                 "delta_pct": delta_pct,
                 "trend_direction": "improving" if _is_improving(biomarker_name, delta) else "worsening" if delta != 0 else "stable",
@@ -283,21 +304,40 @@ class LabAnalysisService:
     # Private helpers
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def _get_biomarker_history(self, user_id: UUID, current_biomarkers: list[dict]) -> dict:
-        """For each biomarker in the current report, fetch all previous readings."""
+    async def _get_biomarker_history(
+        self,
+        user_id: UUID,
+        current_biomarkers: list[dict],
+        exclude_record_id: Optional[str] = None,
+    ) -> dict:
+        """For each biomarker in the current report, fetch all PREVIOUS readings."""
         names = [b.get("canonical_name") for b in current_biomarkers if b.get("canonical_name")]
         if not names:
             return {}
 
-        sql = text("""
-            SELECT canonical_name, value_numeric, unit, status, measured_at
-            FROM biomarker_values
-            WHERE user_id = :uid
-              AND canonical_name = ANY(:names)
-              AND value_numeric IS NOT NULL
-            ORDER BY canonical_name, measured_at ASC
-        """)
-        result = await self.db.execute(sql, {"uid": str(user_id), "names": names})
+        if exclude_record_id:
+            sql = text("""
+                SELECT canonical_name, value_numeric, unit, status, measured_at
+                FROM biomarker_values
+                WHERE user_id = :uid
+                  AND canonical_name = ANY(:names)
+                  AND record_id != :rid
+                  AND value_numeric IS NOT NULL
+                ORDER BY canonical_name, measured_at ASC
+            """)
+            result = await self.db.execute(sql, {
+                "uid": str(user_id), "names": names, "rid": exclude_record_id,
+            })
+        else:
+            sql = text("""
+                SELECT canonical_name, value_numeric, unit, status, measured_at
+                FROM biomarker_values
+                WHERE user_id = :uid
+                  AND canonical_name = ANY(:names)
+                  AND value_numeric IS NOT NULL
+                ORDER BY canonical_name, measured_at ASC
+            """)
+            result = await self.db.execute(sql, {"uid": str(user_id), "names": names})
         rows = result.mappings().all()
 
         history: dict[str, list] = {}
