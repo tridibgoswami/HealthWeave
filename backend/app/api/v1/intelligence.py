@@ -186,17 +186,97 @@ async def run_correlation_analysis(
 
 @router.get("/doctor-summary")
 async def get_doctor_summary(
+    specialization: str = Query(None, description="e.g. cardiologist, endocrinologist, general_physician"),
+    days_back: int = Query(180, ge=30, le=730),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """Generate pre-consultation doctor summary."""
-    engine = PredictionEngine(db)
-    summary = await engine.generate_doctor_summary(uuid.UUID(user_id))
-    return {
-        "summary": summary,
-        "generated_at": date.today().isoformat(),
-        "note": "For informational use only. Always consult your healthcare provider.",
-    }
+    """
+    Generate a pre-consultation summary tailored to the doctor's specialization.
+    Filters and emphasises only the biomarkers relevant to that specialty.
+    """
+    from app.services.ai.lab_analysis_service import LabAnalysisService
+    service = LabAnalysisService(db)
+    result = await service.generate_doctor_summary(
+        user_id=uuid.UUID(user_id),
+        specialization=specialization,
+        days_back=days_back,
+    )
+    result["generated_at"] = date.today().isoformat()
+    return result
+
+
+@router.get("/lab-analysis/{record_id}")
+async def get_lab_analysis(
+    record_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Comprehensive AI analysis for a specific lab report:
+    panel-level interpretation, historical comparison, pattern recognition,
+    risk summary, and actionable recommendations.
+    """
+    from app.models.health_record import BiomarkerValue
+    from sqlalchemy import select as sa_select
+
+    # Verify ownership
+    from app.models.health_record import HealthRecord
+    rec_result = await db.execute(
+        sa_select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    if not rec_result.scalar_one_or_none():
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    bv_result = await db.execute(
+        sa_select(BiomarkerValue).where(BiomarkerValue.record_id == uuid.UUID(record_id))
+    )
+    biomarkers = [
+        {
+            "name": bv.name,
+            "canonical_name": bv.canonical_name,
+            "value_numeric": bv.value_numeric,
+            "unit": bv.unit,
+            "status": bv.status,
+            "reference_range": bv.reference_range_text,
+            "reference_low": bv.reference_range_low,
+            "reference_high": bv.reference_range_high,
+        }
+        for bv in bv_result.scalars().all()
+    ]
+
+    from app.services.ai.lab_analysis_service import LabAnalysisService
+    service = LabAnalysisService(db)
+    result = await service.generate_comprehensive_analysis(
+        user_id=uuid.UUID(user_id),
+        record_id=record_id,
+        biomarkers=biomarkers,
+    )
+    result["record_id"] = record_id
+    result["generated_at"] = date.today().isoformat()
+    return result
+
+
+@router.get("/biomarker-trend/{biomarker_name}")
+async def get_biomarker_longitudinal_trend(
+    biomarker_name: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Full longitudinal analysis for one biomarker across all records.
+    Shows every reading, trend direction, rate of change, and AI interpretation.
+    """
+    from app.services.ai.lab_analysis_service import LabAnalysisService
+    service = LabAnalysisService(db)
+    return await service.compare_test_over_time(
+        user_id=uuid.UUID(user_id),
+        biomarker_name=biomarker_name,
+    )
 
 
 @router.get("/timeline")

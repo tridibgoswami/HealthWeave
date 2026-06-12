@@ -255,29 +255,116 @@ class OCRPipeline:
 
     # Map of common Indian lab report names → canonical forms
     BIOMARKER_ALIASES = {
+        # ── Hemoglobin / CBC ──────────────────────────────────────────────
         "hb": "hemoglobin", "haemoglobin": "hemoglobin",
+        "pcv": "hematocrit", "hematocrit (pcv)": "hematocrit",
+        "tlc": "white_blood_cells", "wbc": "white_blood_cells",
+        "total leucocyte count (wbc)": "white_blood_cells",
+        "rbc": "red_blood_cells", "total rbc": "red_blood_cells",
+        "plt": "platelets", "platelet count": "platelets",
+        "mcv": "mcv", "mean corpuscular volume": "mcv",
+        "mch": "mch", "mean corpuscular hemoglobin (mch)": "mch",
+        "mchc": "mchc", "mean corp.hemo. conc (mchc)": "mchc",
+        "rdw-cv": "rdw_cv", "rdw cv": "rdw_cv",
+        "red cell distribution width (rdw - cv)": "rdw_cv",
+        "rdw-sd": "rdw_sd", "rdw sd": "rdw_sd",
+        "red cell distribution width - sd (rdw-sd)": "rdw_sd",
+        "neutrophils percentage": "neutrophils_pct",
+        "lymphocytes percentage": "lymphocytes_pct",
+        "monocytes percentage": "monocytes_pct",
+        "eosinophils percentage": "eosinophils_pct",
+        "basophils percentage": "basophils_pct",
+        "neutrophils - absolute count": "neutrophils_abs",
+        "lymphocytes - absolute count": "lymphocytes_abs",
+
+        # ── Blood chemistry ────────────────────────────────────────────────
         "s. creatinine": "creatinine", "serum creatinine": "creatinine",
+        "creatinine - serum": "creatinine",
         "s. urea": "blood_urea", "blood urea": "blood_urea",
-        "s. uric acid": "uric_acid",
+        "urea (calculated)": "blood_urea",
+        "blood urea nitrogen (bun)": "blood_urea_nitrogen", "bun": "blood_urea_nitrogen",
+        "bun / sr.creatinine ratio": "bun_creatinine_ratio",
+        "urea / sr.creatinine ratio": "urea_creatinine_ratio",
+        "s. uric acid": "uric_acid", "uric acid": "uric_acid",
+        "egfr": "egfr", "est. glomerular filtration rate (egfr)": "egfr",
+        "calcium": "calcium", "phosphorous": "phosphorous", "phosphorus": "phosphorous",
+        "magnesium": "magnesium",
+        "sodium": "sodium", "chloride": "chloride", "potassium": "potassium",
+
+        # ── Glucose / Diabetes ────────────────────────────────────────────
         "fbs": "fasting_glucose", "fasting blood sugar": "fasting_glucose",
+        "fasting blood sugar(glucose)": "fasting_glucose",
         "ppbs": "postprandial_glucose", "post prandial glucose": "postprandial_glucose",
         "hba1c": "hba1c", "glycated haemoglobin": "hba1c", "a1c": "hba1c",
+        "average blood glucose (abg)": "average_blood_glucose",
+
+        # ── Lipid ────────────────────────────────────────────────────────
         "total cholesterol": "total_cholesterol", "cholesterol total": "total_cholesterol",
-        "hdl": "hdl_cholesterol", "hdl cholesterol": "hdl_cholesterol",
-        "ldl": "ldl_cholesterol", "ldl cholesterol": "ldl_cholesterol",
+        "hdl": "hdl_cholesterol", "hdl cholesterol - direct": "hdl_cholesterol",
+        "ldl": "ldl_cholesterol", "ldl cholesterol - direct": "ldl_cholesterol",
         "tg": "triglycerides", "triglyceride": "triglycerides",
-        "alt": "alt", "sgpt": "alt",
-        "ast": "ast", "sgot": "ast",
-        "t3": "t3_total", "t4": "t4_total", "tsh": "tsh",
-        "wbc": "white_blood_cells", "tlc": "white_blood_cells",
-        "rbc": "red_blood_cells",
-        "plt": "platelets", "platelet count": "platelets",
-        "mcv": "mcv", "mch": "mch", "mchc": "mchc",
-        "vitamin d": "vitamin_d", "25-oh vitamin d": "vitamin_d",
-        "vitamin b12": "vitamin_b12",
-        "ferritin": "ferritin",
-        "esr": "esr",
+        "vldl cholesterol": "vldl_cholesterol",
+        "non-hdl cholesterol": "non_hdl_cholesterol",
+        "tc/ hdl cholesterol ratio": "tc_hdl_ratio",
+        "trig / hdl ratio": "trig_hdl_ratio",
+        "ldl / hdl ratio": "ldl_hdl_ratio",
+        "hdl / ldl ratio": "hdl_ldl_ratio",
+        "apolipoprotein - a1 (apo-a1)": "apo_a1",
+        "apolipoprotein - b (apo-b)": "apo_b",
+        "apo b / apo a1 ratio (apo b/a1)": "apo_b_a1_ratio",
+        "lipoprotein (a) [lp(a)]": "lp_a",
+
+        # ── Liver ────────────────────────────────────────────────────────
+        "alt": "alt", "sgpt": "alt", "alanine transaminase (sgpt)": "alt",
+        "ast": "ast", "sgot": "ast", "aspartate aminotransferase (sgot )": "ast",
+        "sgot / sgpt ratio": "sgot_sgpt_ratio",
+        "ggt": "ggt", "gamma glutamyl transferase (ggt)": "ggt",
+        "alkaline phosphatase": "alkaline_phosphatase",
+        "bilirubin - total": "bilirubin_total", "bilirubin total": "bilirubin_total",
+        "bilirubin -direct": "bilirubin_direct", "bilirubin (indirect)": "bilirubin_indirect",
+        "protein - total": "protein_total", "albumin - serum": "albumin",
+        "serum globulin": "globulin", "serum alb/globulin ratio": "albumin_globulin_ratio",
+
+        # ── Thyroid ──────────────────────────────────────────────────────
+        "t3": "t3_total", "t4": "t4_total",
+        "tsh": "tsh", "tsh - ultrasensitive": "tsh",
+        "ft3": "ft3", "free triiodothyronine (ft3)": "ft3",
+        "ft4": "ft4", "free thyroxine (ft4)": "ft4",
+
+        # ── Iron ────────────────────────────────────────────────────────
+        "iron": "iron", "serum iron": "iron",
+        "tibc": "tibc", "total iron binding capacity (tibc)": "tibc",
+        "ferritin": "ferritin", "serum ferritin": "ferritin",
+        "% transferrin saturation": "transferrin_saturation",
+        "unsat.iron-binding capacity(uibc)": "uibc",
+
+        # ── Vitamins ─────────────────────────────────────────────────────
+        "vitamin d": "vitamin_d", "25-oh vitamin d (total)": "vitamin_d",
+        "25(oh)d": "vitamin_d",
+        "vitamin b12": "vitamin_b12", "vitamin b-12": "vitamin_b12",
+        "folate": "folate", "folic acid": "folate",
+
+        # ── Cardiac risk ─────────────────────────────────────────────────
+        "homocysteine": "homocysteine",
+        "high sensitivity c-reactive protein (hs-crp)": "hs_crp",
+        "hs-crp": "hs_crp", "hscrp": "hs_crp",
         "crp": "c_reactive_protein", "c reactive protein": "c_reactive_protein",
+        "esr": "esr",
+
+        # ── Hormones ────────────────────────────────────────────────────
+        "testosterone": "testosterone",
+        "prostate specific antigen (psa)": "psa", "psa": "psa",
+
+        # ── Autoimmune ───────────────────────────────────────────────────
+        "anti nuclear antibodies (ana)": "ana", "ana": "ana",
+        "anti ccp (accp)": "anti_ccp", "anti-ccp": "anti_ccp", "accp": "anti_ccp",
+        "rheumatoid factor": "rheumatoid_factor", "rf": "rheumatoid_factor",
+
+        # ── Tumor markers ────────────────────────────────────────────────
+        "carcino embryonic antigen (cea)": "cea", "cea": "cea",
+        "ca-125": "ca125", "ca 125": "ca125",
+        "ca-19-9": "ca199", "ca 19-9": "ca199",
+        "psa": "psa",
     }
 
     def _canonicalize_biomarker(self, name: str) -> str:
