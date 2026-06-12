@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit import AuditLog
+from app.models.user import AuditLog
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,7 @@ async def log_event(
             resource_id=str(resource_id) if resource_id else None,
             ip_address=ip,
             user_agent=ua,
-            outcome=outcome,
-            extra=extra or {},
+            extra_data={"outcome": outcome, **(extra or {})},
         )
         db.add(entry)
         # Use flush (not commit) — the route's own commit at session close handles it.

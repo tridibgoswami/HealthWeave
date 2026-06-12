@@ -16,7 +16,6 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.limiter import limiter
-import app.models.audit  # noqa: F401 — ensures AuditLog table is created by init_db
 from app.api.v1.auth import router as auth_router
 from app.api.v1.health_records import router as records_router
 from app.api.v1.ai_chat import router as chat_router
