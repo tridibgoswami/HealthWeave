@@ -5,6 +5,7 @@ Degrades gracefully when credentials are not configured (dev mode).
 """
 
 import logging
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ async def upload_file(file_bytes: bytes, storage_key: str, content_type: str) ->
         return False
 
 
-async def get_presigned_url(storage_key: str, expires_in: int = 3600) -> str | None:
+async def get_presigned_url(storage_key: str, expires_in: int = 3600) -> Optional[str]:
     """
     Generate a presigned GET URL for temporary file access.
     Returns None if storage is not configured or generation fails.
