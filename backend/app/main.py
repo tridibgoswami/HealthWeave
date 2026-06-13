@@ -27,6 +27,7 @@ from app.api.v1.consent import router as consent_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.vitals import router as vitals_router
 from app.api.v1.visits import router as visits_router
+from app.api.v1.family import router as family_router
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -127,6 +128,7 @@ app.include_router(consent_router, prefix=settings.API_V1_PREFIX)
 app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
 app.include_router(vitals_router, prefix=settings.API_V1_PREFIX)
 app.include_router(visits_router, prefix=settings.API_V1_PREFIX)
+app.include_router(family_router, prefix=settings.API_V1_PREFIX)
 
 
 # ── Health & Meta ──────────────────────────────────────────────────────────────
