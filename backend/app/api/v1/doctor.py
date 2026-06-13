@@ -17,6 +17,7 @@ from app.models.user import User, UserProfile, UserRole
 from app.models.organization import (
     PatientConsent, ConsentStatus,
     ClinicalNote, LabRequest, DoctorProfile,
+    Notification, NotificationType,
 )
 from app.models.health_record import HealthRecord, BiomarkerValue
 from app.models.intelligence import HealthScore, PredictiveAlert
@@ -54,6 +55,14 @@ async def search_doctors(
             "email": u.email,
             "name": f"Dr. {p.first_name} {p.last_name}" if p else u.email,
             "specialization": d.specialization if d else None,
+            "sub_specialization": d.sub_specialization if d else None,
+            "qualifications": d.qualifications if d else [],
+            "experience_years": d.experience_years if d else None,
+            "consultation_fee": d.consultation_fee if d else None,
+            "available_days": d.available_days if d else [],
+            "available_hours": d.available_hours if d else None,
+            "bio": d.bio if d else None,
+            "languages_spoken": d.languages_spoken if d else [],
             "organization_id": str(u.organization_id) if u.organization_id else None,
         }
         for u, p, d in rows
@@ -224,6 +233,134 @@ async def list_my_patients(
         }
         for c, u, p in rows
     ]
+
+
+@router.get("/requests")
+async def list_connection_requests(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Doctor lists all pending patient connection requests awaiting their approval."""
+    await _require_doctor(user_id, db)
+
+    result = await db.execute(
+        select(PatientConsent, User, UserProfile)
+        .join(User, User.id == PatientConsent.patient_id)
+        .join(UserProfile, UserProfile.user_id == User.id, isouter=True)
+        .where(
+            PatientConsent.doctor_id == uuid.UUID(user_id),
+            PatientConsent.status == ConsentStatus.PENDING,
+        )
+        .order_by(desc(PatientConsent.granted_at))
+    )
+    rows = result.all()
+
+    return [
+        {
+            "consent_id": str(c.id),
+            "patient_id": str(u.id),
+            "name": f"{p.first_name} {p.last_name}" if p else u.email,
+            "email": u.email,
+            "blood_group": p.blood_group if p else None,
+            "date_of_birth": str(p.date_of_birth) if p and p.date_of_birth else None,
+            "chronic_conditions": p.chronic_conditions if p else [],
+            "purpose": c.purpose,
+            "requested_at": str(c.granted_at),
+            "share_full_history": c.share_full_history,
+            "share_biomarkers": c.share_biomarkers,
+            "share_lab_reports": c.share_lab_reports,
+            "share_prescriptions": c.share_prescriptions,
+            "share_scans": c.share_scans,
+        }
+        for c, u, p in rows
+    ]
+
+
+@router.post("/requests/{consent_id}/accept")
+async def accept_connection_request(
+    consent_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Doctor accepts a patient's connection request, granting themselves access."""
+    await _require_doctor(user_id, db)
+
+    result = await db.execute(
+        select(PatientConsent).where(
+            PatientConsent.id == uuid.UUID(consent_id),
+            PatientConsent.doctor_id == uuid.UUID(user_id),
+            PatientConsent.status == ConsentStatus.PENDING,
+        )
+    )
+    consent = result.scalar_one_or_none()
+    if not consent:
+        raise HTTPException(status_code=404, detail="Pending connection request not found")
+
+    consent.status = ConsentStatus.ACTIVE
+
+    # Fetch doctor name for the notification
+    doc_result = await db.execute(
+        select(User, UserProfile)
+        .join(UserProfile, UserProfile.user_id == User.id, isouter=True)
+        .where(User.id == uuid.UUID(user_id))
+    )
+    doc_row = doc_result.first()
+    doc_name = "Your doctor"
+    if doc_row:
+        _, dp = doc_row
+        if dp and dp.first_name:
+            doc_name = f"Dr. {dp.first_name} {dp.last_name}"
+
+    notif = Notification(
+        user_id=consent.patient_id,
+        type=NotificationType.CONSENT_GRANTED,
+        title="Doctor accepted your connection request",
+        body=f"{doc_name} has accepted your request and can now view your shared health records.",
+        action_url="/my-doctors",
+        extra_data={"consent_id": consent_id, "doctor_id": user_id},
+    )
+    db.add(notif)
+    await db.commit()
+
+    return {"status": "accepted", "consent_id": consent_id}
+
+
+@router.post("/requests/{consent_id}/reject")
+async def reject_connection_request(
+    consent_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Doctor declines a patient's connection request."""
+    from datetime import datetime, timezone
+    await _require_doctor(user_id, db)
+
+    result = await db.execute(
+        select(PatientConsent).where(
+            PatientConsent.id == uuid.UUID(consent_id),
+            PatientConsent.doctor_id == uuid.UUID(user_id),
+            PatientConsent.status == ConsentStatus.PENDING,
+        )
+    )
+    consent = result.scalar_one_or_none()
+    if not consent:
+        raise HTTPException(status_code=404, detail="Pending connection request not found")
+
+    consent.status = ConsentStatus.REVOKED
+    consent.revoked_at = datetime.now(timezone.utc)
+
+    notif = Notification(
+        user_id=consent.patient_id,
+        type=NotificationType.CONSENT_REVOKED,
+        title="Doctor declined your connection request",
+        body="The doctor was unable to accept your connection request at this time. You can try another doctor or reach out directly.",
+        action_url="/find-doctors",
+        extra_data={"consent_id": consent_id},
+    )
+    db.add(notif)
+    await db.commit()
+
+    return {"status": "rejected", "consent_id": consent_id}
 
 
 @router.get("/patients/{patient_id}/summary")

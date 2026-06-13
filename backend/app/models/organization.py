@@ -34,6 +34,7 @@ class InvitationStatus(str, Enum):
 
 
 class ConsentStatus(str, Enum):
+    PENDING = "pending"
     ACTIVE = "active"
     REVOKED = "revoked"
     EXPIRED = "expired"

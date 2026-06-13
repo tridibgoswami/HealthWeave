@@ -76,13 +76,13 @@ async def grant_consent(
             detail=f"No doctor account found with email {payload.doctor_email}",
         )
 
-    # Revoke any existing consent to same doctor
+    # Cancel any existing pending/active consent to same doctor
     await db.execute(
         update(PatientConsent)
         .where(
             PatientConsent.patient_id == uuid.UUID(user_id),
             PatientConsent.doctor_id == doctor.id,
-            PatientConsent.status == ConsentStatus.ACTIVE,
+            PatientConsent.status.in_([ConsentStatus.ACTIVE, ConsentStatus.PENDING]),
         )
         .values(status=ConsentStatus.REVOKED, revoked_at=datetime.now(timezone.utc))
     )
@@ -92,9 +92,18 @@ async def grant_consent(
         from datetime import timedelta
         valid_until = date.today() + timedelta(days=payload.valid_days)
 
+    patient_name = me.email
+    p_result = await db.execute(
+        select(UserProfile).where(UserProfile.user_id == uuid.UUID(user_id))
+    )
+    p = p_result.scalar_one_or_none()
+    if p and p.first_name:
+        patient_name = f"{p.first_name} {p.last_name}"
+
     consent = PatientConsent(
         patient_id=uuid.UUID(user_id),
         doctor_id=doctor.id,
+        status=ConsentStatus.PENDING,
         share_full_history=payload.share_full_history,
         share_biomarkers=payload.share_biomarkers,
         share_prescriptions=payload.share_prescriptions,
@@ -106,13 +115,14 @@ async def grant_consent(
     )
     db.add(consent)
 
-    # Notify doctor
+    # Notify doctor — they must accept before gaining access
     notif = Notification(
         user_id=doctor.id,
-        type=NotificationType.CONSENT_GRANTED,
-        title="Patient shared health records",
-        body=f"A patient has granted you access to their health records.",
-        action_url="/doctor/patients",
+        type=NotificationType.DOCTOR_ACCESS_REQUEST,
+        title="Patient requesting connection",
+        body=f"{patient_name} would like to connect and share their health records with you.",
+        action_url="/doctor/requests",
+        extra_data={"patient_id": user_id, "consent_id": str(consent.id)},
     )
     db.add(notif)
 
@@ -120,7 +130,8 @@ async def grant_consent(
     return {
         "consent_id": str(consent.id),
         "doctor_email": payload.doctor_email,
-        "status": "active",
+        "status": "pending",
+        "message": "Connection request sent. Your records will be shared once the doctor accepts.",
         "valid_until": str(valid_until) if valid_until else None,
     }
 
@@ -130,14 +141,14 @@ async def list_my_consents(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """Patient lists all their active consents."""
+    """Patient lists all their pending and active consents."""
     result = await db.execute(
         select(PatientConsent, User, UserProfile)
         .join(User, User.id == PatientConsent.doctor_id, isouter=True)
         .join(UserProfile, UserProfile.user_id == User.id, isouter=True)
         .where(
             PatientConsent.patient_id == uuid.UUID(user_id),
-            PatientConsent.status == ConsentStatus.ACTIVE,
+            PatientConsent.status.in_([ConsentStatus.PENDING, ConsentStatus.ACTIVE]),
         )
         .order_by(desc(PatientConsent.granted_at))
     )
@@ -146,6 +157,7 @@ async def list_my_consents(
     return [
         {
             "consent_id": str(c.id),
+            "status": c.status.value,
             "doctor_id": str(u.id) if u else None,
             "doctor_name": f"Dr. {p.first_name} {p.last_name}" if p else (u.email if u else "Unknown"),
             "doctor_email": u.email if u else None,
