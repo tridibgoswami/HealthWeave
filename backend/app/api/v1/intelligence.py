@@ -323,13 +323,13 @@ async def get_biomarker_trends(
         WITH ranked AS (
             SELECT
                 canonical_name,
-                display_name,
+                name,
                 value_numeric,
                 unit,
                 status,
                 measured_at,
-                reference_range_min,
-                reference_range_max,
+                reference_range_low,
+                reference_range_high,
                 COUNT(*) OVER (PARTITION BY canonical_name) AS total_readings
             FROM biomarker_values
             WHERE user_id = :user_id
@@ -339,13 +339,13 @@ async def get_biomarker_trends(
         )
         SELECT
             canonical_name,
-            MAX(display_name) AS display_name,
+            MAX(name) AS display_name,
             MAX(unit) AS unit,
             array_agg(value_numeric ORDER BY measured_at) AS values,
             array_agg(measured_at ORDER BY measured_at) AS dates,
             array_agg(status ORDER BY measured_at) AS statuses,
-            MAX(reference_range_min) AS ref_min,
-            MAX(reference_range_max) AS ref_max,
+            MAX(reference_range_low) AS ref_min,
+            MAX(reference_range_high) AS ref_max,
             total_readings
         FROM ranked
         WHERE total_readings >= 1
