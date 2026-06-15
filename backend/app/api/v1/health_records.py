@@ -118,19 +118,20 @@ async def _process_document_background(
     doc_id: str,
     user_id: str,
 ):
-    """Background task: OCR → AI extraction → embedding → timeline event → score recompute."""
+    """Background task: OCR → biomarker save (committed first) → timeline → score recompute."""
     import logging
     from app.core.database import get_db_context
 
     _log = logging.getLogger(__name__)
     processing_succeeded = False
+    biomarker_count = 0
 
     async with get_db_context() as db:
         try:
-            # OCR extraction
+            # Step 1: OCR extraction
             extraction = await ocr_pipeline.process_document(file_bytes, mime_type)
 
-            # Update health record with extracted data
+            # Step 2: Build record update payload
             updates: dict = {
                 "structured_data": extraction,
                 "ai_summary": extraction.get("summary"),
@@ -176,30 +177,57 @@ async def _process_document_background(
                 .values(**updates)
             )
 
-            # Create biomarker values
+            # Step 3: Persist biomarker values with explicit type coercion
             record_uuid = uuid.UUID(record_id)
             user_uuid = uuid.UUID(user_id)
+            record_date = updates.get("record_date", date.today())
+            source_lab = updates.get("hospital_name")
+
             for bm in extraction.get("biomarkers", []):
                 if not bm.get("canonical_name"):
                     continue
+                # Coerce to float — LLMs sometimes emit strings despite instructions
+                value_numeric = bm.get("value_numeric")
+                if isinstance(value_numeric, str):
+                    try:
+                        value_numeric = float(value_numeric)
+                    except (ValueError, TypeError):
+                        value_numeric = None
+                ref_low = bm.get("reference_low")
+                if isinstance(ref_low, str):
+                    try:
+                        ref_low = float(ref_low)
+                    except (ValueError, TypeError):
+                        ref_low = None
+                ref_high = bm.get("reference_high")
+                if isinstance(ref_high, str):
+                    try:
+                        ref_high = float(ref_high)
+                    except (ValueError, TypeError):
+                        ref_high = None
+
                 bv = BiomarkerValue(
                     record_id=record_uuid,
                     user_id=user_uuid,
                     name=bm.get("name", bm["canonical_name"]),
                     canonical_name=bm["canonical_name"],
-                    value_numeric=bm.get("value_numeric"),
+                    value_numeric=value_numeric,
                     value_text=bm.get("value_text"),
                     unit=bm.get("unit"),
-                    reference_range_low=bm.get("reference_low"),
-                    reference_range_high=bm.get("reference_high"),
+                    reference_range_low=ref_low,
+                    reference_range_high=ref_high,
                     reference_range_text=bm.get("reference_range"),
                     status=bm.get("status"),
-                    measured_at=updates.get("record_date", date.today()),
-                    source_lab=updates.get("hospital_name"),
+                    measured_at=record_date,
+                    source_lab=source_lab,
                 )
                 db.add(bv)
+                biomarker_count += 1
 
-            # Auto-compare: find previous readings for the same biomarkers
+            # Step 4: Flush so the auto-compare query below can see prior records
+            await db.flush()
+
+            # Step 5: Auto-compare with previous readings for the same biomarkers
             new_biomarkers = extraction.get("biomarkers", [])
             if new_biomarkers:
                 from sqlalchemy import desc as _desc
@@ -207,6 +235,11 @@ async def _process_document_background(
                 for bm in new_biomarkers:
                     cname = bm.get("canonical_name")
                     new_val = bm.get("value_numeric")
+                    if isinstance(new_val, str):
+                        try:
+                            new_val = float(new_val)
+                        except (ValueError, TypeError):
+                            new_val = None
                     if not cname or new_val is None:
                         continue
                     prev_result = await db.execute(
@@ -241,7 +274,7 @@ async def _process_document_background(
                         .values(biomarker_changes=changes)
                     )
 
-            # Generate content embedding for semantic search
+            # Step 6: Content embedding (optional — failure is safe)
             llm = get_llm_client()
             embed_text = f"{updates.get('ai_summary', '')} {extraction.get('clinical_notes', '')}"
             if embed_text.strip():
@@ -255,7 +288,7 @@ async def _process_document_background(
                 except Exception:
                     pass
 
-            # Update document status
+            # Step 7: Mark document as processed
             await db.execute(
                 update(HealthDocument)
                 .where(HealthDocument.id == uuid.UUID(doc_id))
@@ -266,39 +299,59 @@ async def _process_document_background(
                 )
             )
 
-            # Create timeline event
+            # ── COMMIT CORE DATA HERE ────────────────────────────────────────
+            # Biomarkers, record updates, and document status are durable now.
+            # Timeline creation runs AFTER this point — its failure cannot
+            # roll back the data we just saved.
+            await db.commit()
+            processing_succeeded = True
+            _log.info(
+                "Record %s processed: %d biomarkers extracted (doc=%s)",
+                record_id, biomarker_count, doc_id,
+            )
+
+        except Exception as exc:
+            _log.error("Document processing failed for record %s: %s", record_id, exc, exc_info=True)
+            try:
+                await db.execute(
+                    update(HealthDocument)
+                    .where(HealthDocument.id == uuid.UUID(doc_id))
+                    .values(status=DocumentStatus.FAILED)
+                )
+                await db.commit()
+            except Exception:
+                pass
+
+    if not processing_succeeded:
+        return
+
+    # Step 8: Timeline event (separate session — failure here cannot lose biomarker data)
+    async with get_db_context() as db:
+        try:
             result = await db.execute(
-                select(HealthRecord).where(HealthRecord.id == record_uuid)
+                select(HealthRecord).where(HealthRecord.id == uuid.UUID(record_id))
             )
             record = result.scalar_one_or_none()
             if record:
                 timeline_svc = TimelineService(db)
                 await timeline_svc.create_timeline_event_from_record(record)
-
-            await db.commit()
-            processing_succeeded = True
-
+                await db.commit()
         except Exception as exc:
-            _log.error("Document processing failed: %s", exc, exc_info=True)
-            await db.execute(
-                update(HealthDocument)
-                .where(HealthDocument.id == uuid.UUID(doc_id))
-                .values(status=DocumentStatus.FAILED)
+            _log.warning(
+                "Timeline event creation failed for record %s (biomarkers already saved): %s",
+                record_id, exc,
             )
-            await db.commit()
 
-    # After document processing completes, recompute health scores and alerts
-    # so the dashboard reflects new biomarker data immediately.
-    if processing_succeeded:
-        from app.api.v1.intelligence import _compute_scores_background, _generate_alerts_background
-        try:
-            await _compute_scores_background(user_id)
-        except Exception as exc:
-            _log.warning("Post-upload score computation failed: %s", exc)
-        try:
-            await _generate_alerts_background(user_id)
-        except Exception as exc:
-            _log.warning("Post-upload alert generation failed: %s", exc)
+    # Step 9: Recompute health scores and alerts with the new biomarker data
+    from app.api.v1.intelligence import _compute_scores_background, _generate_alerts_background
+    try:
+        await _compute_scores_background(user_id)
+    except Exception as exc:
+        _log.warning("Post-upload score computation failed: %s", exc)
+    try:
+        await _generate_alerts_background(user_id)
+    except Exception as exc:
+        _log.warning("Post-upload alert generation failed: %s", exc)
 
 
 @router.get("/")
@@ -460,6 +513,123 @@ async def get_document_download_url(
         "mime_type": doc.mime_type,
         "expires_in_seconds": 3600,
     }
+
+
+@router.post("/{record_id}/reprocess", status_code=status.HTTP_202_ACCEPTED)
+async def reprocess_record(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Re-run AI extraction on an existing record.
+    Tries S3 first; falls back to re-extracting from structured_data already in the DB.
+    Use this to fix records where biomarkers weren't saved due to earlier processing errors.
+    """
+    from sqlalchemy import delete as sa_delete
+
+    result = await db.execute(
+        select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    # Try to get the original file from object storage
+    doc_result = await db.execute(
+        select(HealthDocument)
+        .where(HealthDocument.record_id == uuid.UUID(record_id))
+        .limit(1)
+    )
+    doc = doc_result.scalar_one_or_none()
+
+    file_bytes: bytes | None = None
+    if doc:
+        from app.services.storage_service import get_file_bytes
+        file_bytes = await get_file_bytes(doc.storage_key)
+
+    if file_bytes:
+        # Full re-OCR from original file
+        await db.execute(
+            sa_delete(BiomarkerValue).where(BiomarkerValue.record_id == uuid.UUID(record_id))
+        )
+        if doc:
+            doc.status = DocumentStatus.PROCESSING
+        await db.commit()
+
+        background_tasks.add_task(
+            _process_document_background,
+            file_bytes=file_bytes,
+            mime_type=doc.mime_type if doc else "application/pdf",
+            record_id=record_id,
+            doc_id=str(doc.id) if doc else record_id,
+            user_id=user_id,
+        )
+        return {"status": "reprocessing", "method": "full_ocr", "record_id": record_id}
+
+    elif record.structured_data and record.structured_data.get("biomarkers"):
+        # Re-extract biomarkers from structured_data saved by previous OCR run
+        extraction = record.structured_data
+        await db.execute(
+            sa_delete(BiomarkerValue).where(BiomarkerValue.record_id == uuid.UUID(record_id))
+        )
+
+        record_uuid = uuid.UUID(record_id)
+        user_uuid = uuid.UUID(user_id)
+        saved = 0
+        for bm in extraction.get("biomarkers", []):
+            if not bm.get("canonical_name"):
+                continue
+            value_numeric = bm.get("value_numeric")
+            if isinstance(value_numeric, str):
+                try:
+                    value_numeric = float(value_numeric)
+                except (ValueError, TypeError):
+                    value_numeric = None
+            bv = BiomarkerValue(
+                record_id=record_uuid,
+                user_id=user_uuid,
+                name=bm.get("name", bm["canonical_name"]),
+                canonical_name=bm["canonical_name"],
+                value_numeric=value_numeric,
+                value_text=bm.get("value_text"),
+                unit=bm.get("unit"),
+                reference_range_low=bm.get("reference_low"),
+                reference_range_high=bm.get("reference_high"),
+                reference_range_text=bm.get("reference_range"),
+                status=bm.get("status"),
+                measured_at=record.record_date or date.today(),
+                source_lab=record.hospital_name,
+            )
+            db.add(bv)
+            saved += 1
+
+        await db.commit()
+
+        # Trigger score recompute
+        from app.api.v1.intelligence import _compute_scores_background, _generate_alerts_background
+        background_tasks.add_task(_compute_scores_background, user_id)
+        background_tasks.add_task(_generate_alerts_background, user_id)
+
+        return {
+            "status": "reprocessed",
+            "method": "structured_data",
+            "biomarkers_extracted": saved,
+            "record_id": record_id,
+        }
+
+    else:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Original file not available in storage and no structured data found. "
+                "Please re-upload the document."
+            ),
+        )
 
 
 @router.get("/biomarkers/trends")

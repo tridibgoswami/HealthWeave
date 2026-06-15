@@ -80,6 +80,33 @@ async def get_presigned_url(storage_key: str, expires_in: int = 3600) -> Optiona
         return None
 
 
+async def get_file_bytes(storage_key: str) -> Optional[bytes]:
+    """
+    Download file bytes from S3/Spaces.
+    Returns None if storage is not configured or download fails.
+    """
+    from app.core.config import settings
+
+    if not settings.S3_ACCESS_KEY or not settings.S3_SECRET_KEY:
+        return None
+
+    try:
+        import aioboto3
+        session = aioboto3.Session()
+        async with session.client(
+            "s3",
+            endpoint_url=settings.S3_ENDPOINT,
+            aws_access_key_id=settings.S3_ACCESS_KEY,
+            aws_secret_access_key=settings.S3_SECRET_KEY,
+            region_name=settings.S3_REGION,
+        ) as s3:
+            response = await s3.get_object(Bucket=settings.S3_BUCKET, Key=storage_key)
+            return await response["Body"].read()
+    except Exception as exc:
+        logger.error("Failed to download %s from object storage: %s", storage_key, exc)
+        return None
+
+
 async def delete_file(storage_key: str) -> bool:
     """Delete a file from object storage. Returns True on success."""
     from app.core.config import settings

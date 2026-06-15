@@ -43,49 +43,49 @@ Rules:
 
 EXTRACTION_PROMPT = """Extract structured medical information from this document.
 
-Return JSON with this structure:
-{{
+Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{
     "document_type": "lab_report|prescription|discharge_summary|scan_report|vaccination|health_package|other",
     "document_date": "YYYY-MM-DD or null",
     "hospital_name": "string or null",
     "doctor_name": "string or null",
     "doctor_specialization": "string or null",
     "patient_name": "string or null",
-    "patient_age": "number or null",
+    "patient_age": number or null,
     "patient_gender": "male|female|other|null",
 
     "biomarkers": [
-        {{
-            "name": "standardized name",
-            "raw_name": "as it appears in doc",
-            "value_numeric": number or null,
+        {
+            "name": "standardized test name",
+            "raw_name": "exactly as it appears in the document",
+            "value_numeric": 7.2,
             "value_text": "string or null",
-            "unit": "string",
-            "reference_range": "string",
-            "reference_low": number or null,
-            "reference_high": number or null,
+            "unit": "mg/dL",
+            "reference_range": "70-100 mg/dL",
+            "reference_low": 70,
+            "reference_high": 100,
             "status": "normal|high|low|critical|null",
-            "confidence": 0.0-1.0
-        }}
+            "confidence": 0.95
+        }
     ],
 
     "medicines": [
-        {{
+        {
             "raw_name": "as written",
             "dosage": "string",
             "frequency": "string",
             "duration": "string",
             "instructions": "string",
-            "confidence": 0.0-1.0
-        }}
+            "confidence": 0.9
+        }
     ],
 
     "diagnoses": [
-        {{
+        {
             "condition": "string",
             "icd10_suggestion": "string or null",
-            "confidence": 0.0-1.0
-        }}
+            "confidence": 0.8
+        }
     ],
 
     "procedures": ["string"],
@@ -93,11 +93,17 @@ Return JSON with this structure:
     "follow_up_date": "YYYY-MM-DD or null",
     "follow_up_instructions": "string or null",
     "clinical_notes": "string or null",
-    "summary": "2-3 sentence plain-language summary",
+    "summary": "2-3 sentence plain-language summary of findings",
     "risk_flags": ["string"],
-    "extraction_confidence": 0.0-1.0,
+    "extraction_confidence": 0.9,
     "language_detected": "en|hi|ta|te|bn|mr|kn|mixed"
-}}
+}
+
+CRITICAL RULES:
+- value_numeric MUST be a JSON number (e.g. 7.2), never a string (never "7.2")
+- reference_low and reference_high MUST be JSON numbers, never strings
+- Extract EVERY test result visible in the document — do not omit any
+- If a numeric value is present but unclear, include it with low confidence score
 """
 
 
