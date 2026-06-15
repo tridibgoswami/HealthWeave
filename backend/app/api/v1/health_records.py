@@ -436,12 +436,20 @@ async def get_record(
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
 
-    # Fetch biomarkers
+    # Fetch biomarkers and document status in parallel
     bv_result = await db.execute(
         select(BiomarkerValue).where(BiomarkerValue.record_id == uuid.UUID(record_id))
     )
     biomarkers = bv_result.scalars().all()
 
+    doc_result = await db.execute(
+        select(HealthDocument)
+        .where(HealthDocument.record_id == uuid.UUID(record_id))
+        .limit(1)
+    )
+    doc = doc_result.scalar_one_or_none()
+
+    structured = record.structured_data or {}
     return {
         "id": str(record.id),
         "record_type": record.record_type,
@@ -455,9 +463,11 @@ async def get_record(
         "ai_summary": record.ai_summary,
         "ai_tags": record.ai_tags,
         "ai_risk_flags": record.ai_risk_flags,
+        "key_findings": structured.get("key_findings", []),
         "ai_extracted_biomarkers": record.ai_extracted_biomarkers,
-        "structured_data": record.structured_data,
+        "structured_data": structured,
         "biomarker_changes": record.biomarker_changes or {},
+        "document_status": doc.status.value if doc else "processing",
         "visit_id": str(record.visit_id) if record.visit_id else None,
         "biomarkers": [
             {

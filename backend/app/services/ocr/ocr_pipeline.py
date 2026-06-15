@@ -94,6 +94,14 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
     "follow_up_instructions": "string or null",
     "clinical_notes": "string or null",
     "summary": "2-3 sentence plain-language summary of findings",
+    "key_findings": [
+        "Write 4-6 bullet points in plain English that a patient can understand",
+        "Each bullet covers ONE important test result — state the value, whether it is normal/abnormal, and what it may mean",
+        "Examples: 'Haemoglobin is 10.2 g/dL — below normal (12–16). This may indicate mild anaemia, which can cause fatigue.'",
+        "Examples: 'LDL cholesterol is 162 mg/dL — above the optimal level of 100. Elevated LDL increases cardiovascular risk.'",
+        "Examples: 'Vitamin D is 14 ng/mL — deficient (normal above 30). Supplementation and sunlight exposure are recommended.'",
+        "Always end with one bullet about what to discuss with your doctor"
+    ],
     "risk_flags": ["string"],
     "extraction_confidence": 0.9,
     "language_detected": "en|hi|ta|te|bn|mr|kn|mixed"
