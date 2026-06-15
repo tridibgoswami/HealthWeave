@@ -74,6 +74,11 @@ async def _run_migrations(conn) -> None:
             f"ALTER TYPE userrole ADD VALUE IF NOT EXISTS '{value}'"
         ))
 
+    # Add pending status to consentstatus enum (required for doctor-patient connection flow)
+    await conn.execute(text(
+        "ALTER TYPE consentstatus ADD VALUE IF NOT EXISTS 'pending'"
+    ))
+
     # Add organization_id FK column to users if not present
     await conn.execute(text("""
         ALTER TABLE users
