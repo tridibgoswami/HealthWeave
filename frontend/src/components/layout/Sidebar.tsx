@@ -3,7 +3,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, Activity, MessageSquare,
   Bell, ShieldAlert, LogOut, Dna, User, ShieldCheck, Home, Send, Brain, FlaskConical, X,
-  Stethoscope, Heart,
+  Stethoscope, Heart, FileText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -13,6 +13,7 @@ import { cn } from "../../utils/cn";
 const NAV = [
   { to: "/dashboard",   icon: LayoutDashboard, label: "Dashboard",          end: true  },
   { to: "/upload",      icon: Upload,          label: "Upload Records",      end: false },
+  { to: "/records",     icon: FileText,        label: "My Records",          end: false },
   { to: "/vitals",      icon: Heart,           label: "Daily Vitals",        end: false },
   { to: "/visits",      icon: Stethoscope,     label: "My Visits",           end: false },
   { to: "/timeline",    icon: Activity,        label: "Health Timeline",     end: false },

@@ -642,6 +642,50 @@ async def reprocess_record(
         )
 
 
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_record(
+    record_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Permanently delete a health record and all associated data.
+    Also removes the file from object storage.
+    """
+    from sqlalchemy import delete as sa_delete
+    from app.services.storage_service import delete_file
+
+    result = await db.execute(
+        select(HealthRecord).where(
+            HealthRecord.id == uuid.UUID(record_id),
+            HealthRecord.user_id == uuid.UUID(user_id),
+        )
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    # Fetch storage key before deleting
+    doc_result = await db.execute(
+        select(HealthDocument).where(HealthDocument.record_id == uuid.UUID(record_id)).limit(1)
+    )
+    doc = doc_result.scalar_one_or_none()
+    storage_key = doc.storage_key if doc else None
+
+    # Delete child rows in dependency order
+    await db.execute(sa_delete(BiomarkerValue).where(BiomarkerValue.record_id == uuid.UUID(record_id)))
+    await db.execute(sa_delete(TimelineEvent).where(TimelineEvent.record_id == uuid.UUID(record_id)))
+    await db.execute(sa_delete(HealthDocument).where(HealthDocument.record_id == uuid.UUID(record_id)))
+    await db.delete(record)
+
+    # Attempt S3 deletion (non-blocking — failure does not abort the DB delete)
+    if storage_key:
+        try:
+            await delete_file(storage_key)
+        except Exception as exc:
+            logger.warning("Could not delete file %s from storage: %s", storage_key, exc)
+
+
 @router.get("/biomarkers/trends")
 async def get_biomarker_trends(
     biomarker_name: str = Query(...),

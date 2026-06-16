@@ -34,6 +34,7 @@ const BiomarkerPage   = React.lazy(() => import("./pages/BiomarkerPage").then((m
 const RiskPage        = React.lazy(() => import("./pages/RiskPage").then((m) => ({ default: m.RiskPage })));
 const VitalsPage      = React.lazy(() => import("./pages/VitalsPage").then((m) => ({ default: m.VitalsPage })));
 const VisitsPage      = React.lazy(() => import("./pages/VisitsPage").then((m) => ({ default: m.VisitsPage })));
+const MyRecordsPage   = React.lazy(() => import("./pages/MyRecordsPage").then((m) => ({ default: m.MyRecordsPage })));
 
 // Doctor portal
 const DoctorDashboard   = React.lazy(() => import("./pages/doctor/DoctorDashboard").then((m) => ({ default: m.DoctorDashboard })));
@@ -117,6 +118,7 @@ function AppInner() {
           <Route path="/risk"        element={<Protected><RiskPage /></Protected>} />
           <Route path="/vitals"      element={<Protected><VitalsPage /></Protected>} />
           <Route path="/visits"      element={<Protected><VisitsPage /></Protected>} />
+          <Route path="/records"     element={<Protected><MyRecordsPage /></Protected>} />
 
           {/* Doctor portal */}
           <Route path="/doctor/dashboard"              element={<DoctorProtected><DoctorDashboard /></DoctorProtected>} />

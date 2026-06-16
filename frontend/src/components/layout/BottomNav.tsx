@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Upload, MessageSquare, Bell, MoreHorizontal,
   Activity, Brain, FlaskConical, ShieldAlert, ShieldCheck, Send,
-  LogOut, X, Home,
+  LogOut, X, Home, FileText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -18,6 +18,7 @@ const PRIMARY_NAV = [
 ];
 
 const MORE_NAV = [
+  { to: "/records",    icon: FileText,     label: "My Records" },
   { to: "/timeline",   icon: Activity,     label: "Health Timeline" },
   { to: "/insights",   icon: Brain,        label: "Health Intelligence" },
   { to: "/biomarkers", icon: FlaskConical, label: "Biomarker Trends" },
