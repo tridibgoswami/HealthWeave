@@ -4,6 +4,7 @@ Handles PDFs, scanned images, handwritten prescriptions.
 Multilingual support (English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada).
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -19,6 +20,16 @@ from app.core.config import settings
 from app.services.ai.llm_client import get_llm_client
 
 logger = logging.getLogger(__name__)
+
+# Transient failures worth retrying — rate limits and momentary overload,
+# not e.g. bad-request errors which will just fail again identically.
+_RETRYABLE_ANTHROPIC_ERRORS = (
+    anthropic.RateLimitError,
+    anthropic.APIConnectionError,
+    anthropic.InternalServerError,
+)
+_MAX_RETRIES = 3
+_BASE_BACKOFF_SECONDS = 2
 
 
 EXTRACTION_SYSTEM = """You are a medical document parser specializing in Indian healthcare documents.
@@ -124,6 +135,22 @@ class OCRPipeline:
         self.llm = get_llm_client()
         self._anthropic = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
+    async def _create_with_retry(self, **kwargs):
+        """Call Claude with exponential backoff on rate limits/transient overload —
+        a burst of uploads during patient onboarding shouldn't fail outright."""
+        for attempt in range(_MAX_RETRIES + 1):
+            try:
+                return await self._anthropic.messages.create(**kwargs)
+            except _RETRYABLE_ANTHROPIC_ERRORS as exc:
+                if attempt == _MAX_RETRIES:
+                    raise
+                delay = _BASE_BACKOFF_SECONDS * (2 ** attempt)
+                logger.warning(
+                    "Anthropic call failed (%s) — retrying in %ss [attempt %d/%d]",
+                    type(exc).__name__, delay, attempt + 1, _MAX_RETRIES,
+                )
+                await asyncio.sleep(delay)
+
     async def process_document(
         self,
         file_bytes: bytes,
@@ -153,7 +180,7 @@ class OCRPipeline:
         }
         media_type = media_type_map.get(mime_type, "image/jpeg")
 
-        response = await self._anthropic.messages.create(
+        response = await self._create_with_retry(
             model=settings.PRIMARY_LLM,
             max_tokens=16000,
             system=EXTRACTION_SYSTEM,
@@ -191,7 +218,7 @@ class OCRPipeline:
         """
         b64 = base64.standard_b64encode(pdf_bytes).decode()
 
-        response = await self._anthropic.messages.create(
+        response = await self._create_with_retry(
             model=settings.PRIMARY_LLM,
             max_tokens=16000,
             system=EXTRACTION_SYSTEM,

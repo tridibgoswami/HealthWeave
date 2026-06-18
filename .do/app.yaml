@@ -12,7 +12,7 @@ services:
       deploy_on_push: true
     http_port: 8080
     instance_count: 1
-    instance_size_slug: basic-xs   # 512MB RAM — ~$12/month; upgrade to basic-s if slow
+    instance_size_slug: basic-s   # 1GB RAM — ~$25/month; needed headroom for concurrent OCR (max_tokens=16000)
     routes:
       - path: /api
     health_check:
@@ -62,9 +62,9 @@ services:
       - key: CORS_ORIGINS
         value: ${frontend.PUBLIC_URL},https://app.healthweave.in
 
-      # Disable Redis for now (not required — rate limiter uses in-memory)
+      # Managed Redis — shared rate-limit store (correct across redeploys/instances)
       - key: REDIS_URL
-        value: ""
+        value: ${redis.DATABASE_URL}
 
 # ── Frontend (React/Vite static site) ────────────────────────────────────────
 static_sites:
@@ -89,6 +89,14 @@ databases:
   - name: db
     engine: PG
     version: "15"
-    size: db-s-1vcpu-1gb   # 1GB RAM, 10GB storage — ~$15/month
+    size: db-s-1vcpu-1gb   # 1GB RAM, 10GB storage — ~$15/month (single-node)
     num_nodes: 1
-    production: false        # set true when going live with real patients
+    production: true        # live with real patient data — enables daily backups + standby
+
+  # ── Managed Redis — shared rate-limit store ───────────────────────────────
+  - name: redis
+    engine: REDIS
+    version: "7"
+    size: db-s-1vcpu-1gb   # smallest managed tier — ~$15/month
+    num_nodes: 1
+    production: false
