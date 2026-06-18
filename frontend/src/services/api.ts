@@ -22,6 +22,15 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+// Clears both the raw JWT pair and the persisted Zustand auth store
+// ("hw-auth") so a stale isAuthenticated/user doesn't bounce the user
+// straight back into the app from /login with no valid token.
+function clearSession() {
+  localStorage.removeItem("hw_access_token");
+  localStorage.removeItem("hw_refresh_token");
+  localStorage.removeItem("hw-auth");
+}
+
 // Handle 401 — refresh token flow
 api.interceptors.response.use(
   (response) => response,
@@ -43,10 +52,12 @@ api.interceptors.response.use(
           }
           return api(original);
         } catch {
-          localStorage.removeItem("hw_access_token");
-          localStorage.removeItem("hw_refresh_token");
+          clearSession();
           window.location.href = "/login";
         }
+      } else {
+        clearSession();
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
