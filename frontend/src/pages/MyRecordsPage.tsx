@@ -158,13 +158,32 @@ function RecordRow({
   const [detailLoaded, setDetailLoaded] = useState(false);
   const [detail, setDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [reprocessing, setReprocessing] = useState(false);
 
   const Icon = TYPE_ICON[record.record_type] || FileText;
   const typeColor = TYPE_COLOR[record.record_type] || TYPE_COLOR.other;
-  const statusBadge = STATUS_BADGE[record.document_status || "processing"] || STATUS_BADGE.processing;
-  const statusLabel =
-    record.document_status === "processed"  ? "Analysed" :
-    record.document_status === "failed"     ? "Failed" : "Processing";
+
+  // Prefer the freshly-fetched detail status once loaded — the list endpoint
+  // status can be stale if processing finished between page loads.
+  const effectiveStatus: string = detail?.document_status ?? record.document_status ?? "processing";
+  const effectiveSummary: string = (detail?.ai_summary ?? record.ai_summary ?? "") as string;
+  const effectiveBiomarkerCount: number = detail?.biomarkers?.length ?? 0;
+
+  // The OCR pipeline can mark a document "processed" even when extraction
+  // produced nothing usable (e.g. response truncated on a very large panel).
+  // Treat that case as needing attention rather than "Analysed".
+  const parseIncomplete =
+    effectiveStatus === "processed" &&
+    (detailLoaded ? effectiveBiomarkerCount === 0 : false) &&
+    /could not be fully parsed/i.test(effectiveSummary);
+
+  const statusBadge = parseIncomplete
+    ? STATUS_BADGE.failed
+    : STATUS_BADGE[effectiveStatus] || STATUS_BADGE.processing;
+  const statusLabel = parseIncomplete
+    ? "Needs reprocessing"
+    : effectiveStatus === "processed" ? "Analysed" :
+      effectiveStatus === "failed"    ? "Failed" : "Processing";
 
   const handleExpand = async () => {
     if (!expanded && !detailLoaded) {
@@ -180,6 +199,27 @@ function RecordRow({
       }
     }
     setExpanded((v) => !v);
+  };
+
+  const handleReprocess = async () => {
+    setReprocessing(true);
+    try {
+      await recordsApi.reprocess(record.id);
+      toast.success("Re-analysis started — check back in a minute");
+      // Poll once after a delay to refresh the detail panel
+      setTimeout(async () => {
+        try {
+          const res = await recordsApi.get(record.id);
+          setDetail(res.data);
+        } catch {
+          // ignore
+        }
+      }, 15_000);
+    } catch {
+      toast.error("Could not start re-analysis. Try re-uploading the file.");
+    } finally {
+      setReprocessing(false);
+    }
   };
 
   const findings: string[] = detail?.key_findings ?? [];
@@ -255,7 +295,19 @@ function RecordRow({
             </div>
           )}
           {detailLoaded ? (
-            <KeyFindingsPanel findings={findings} riskFlags={riskFlags} summary={summary} />
+            <>
+              <KeyFindingsPanel findings={findings} riskFlags={riskFlags} summary={summary} />
+              {(parseIncomplete || effectiveStatus === "failed") && (
+                <button
+                  onClick={handleReprocess}
+                  disabled={reprocessing}
+                  className="mt-3 flex items-center gap-2 text-xs font-semibold text-brand-blue hover:text-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <RefreshCw size={12} className={reprocessing ? "animate-spin" : ""} />
+                  {reprocessing ? "Starting re-analysis…" : "Re-analyse this report"}
+                </button>
+              )}
+            </>
           ) : (
             <div className="flex items-center gap-2 py-3">
               <Loader2 size={14} className="animate-spin text-slate-400" />

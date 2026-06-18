@@ -89,6 +89,8 @@ export const recordsApi = {
 
   delete: (id: string) => api.delete(`/records/${id}`),
 
+  reprocess: (id: string) => api.post(`/records/${id}/reprocess`),
+
   getBiomarkerTrend: (biomarker: string, months = 24) =>
     api.get("/records/biomarkers/trends", { params: { biomarker_name: biomarker, months } }),
 };

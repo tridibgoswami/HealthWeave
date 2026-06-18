@@ -399,6 +399,17 @@ async def list_records(
     )
     records = result.scalars().all()
 
+    # Fetch document status for all records in one query (avoid N+1)
+    record_ids = [r.id for r in records]
+    status_by_record: dict = {}
+    if record_ids:
+        doc_result = await db.execute(
+            select(HealthDocument.record_id, HealthDocument.status)
+            .where(HealthDocument.record_id.in_(record_ids))
+        )
+        for rid, doc_status in doc_result.all():
+            status_by_record[rid] = doc_status.value
+
     return {
         "total": total,
         "page": page,
@@ -414,6 +425,7 @@ async def list_records(
                 "ai_summary": r.ai_summary,
                 "ai_tags": r.ai_tags,
                 "ai_risk_flags": r.ai_risk_flags,
+                "document_status": status_by_record.get(r.id, "processing"),
             }
             for r in records
         ],

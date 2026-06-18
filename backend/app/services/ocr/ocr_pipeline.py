@@ -155,7 +155,7 @@ class OCRPipeline:
 
         response = await self._anthropic.messages.create(
             model=settings.PRIMARY_LLM,
-            max_tokens=4096,
+            max_tokens=16000,
             system=EXTRACTION_SYSTEM,
             messages=[
                 {
@@ -178,6 +178,9 @@ class OCRPipeline:
             ],
         )
 
+        if response.stop_reason == "max_tokens":
+            logger.warning("OCR response for %s was truncated at max_tokens — attempting salvage", filename)
+
         raw_text = response.content[0].text
         return self._parse_extraction_response(raw_text, filename)
 
@@ -190,7 +193,7 @@ class OCRPipeline:
 
         response = await self._anthropic.messages.create(
             model=settings.PRIMARY_LLM,
-            max_tokens=4096,
+            max_tokens=16000,
             system=EXTRACTION_SYSTEM,
             messages=[
                 {
@@ -213,6 +216,9 @@ class OCRPipeline:
             ],
         )
 
+        if response.stop_reason == "max_tokens":
+            logger.warning("OCR response for %s was truncated at max_tokens — attempting salvage", filename)
+
         raw_text = response.content[0].text
         return self._parse_extraction_response(raw_text, filename)
 
@@ -226,16 +232,18 @@ class OCRPipeline:
                 clean = clean.split("```")[1].split("```")[0].strip()
             data = json.loads(clean)
         except Exception as exc:
-            logger.warning("OCR JSON parse failed for %s: %s", filename, exc)
-            data = {
-                "document_type": "other",
-                "extraction_confidence": 0.2,
-                "summary": "Document could not be fully parsed. Manual review recommended.",
-                "biomarkers": [],
-                "medicines": [],
-                "diagnoses": [],
-                "raw_llm_response": raw_text[:2000],
-            }
+            logger.warning("OCR JSON parse failed for %s: %s — attempting salvage", filename, exc)
+            data = self._salvage_truncated_json(raw_text)
+            if data is None:
+                data = {
+                    "document_type": "other",
+                    "extraction_confidence": 0.2,
+                    "summary": "Document could not be fully parsed. Manual review recommended.",
+                    "biomarkers": [],
+                    "medicines": [],
+                    "diagnoses": [],
+                    "raw_llm_response": raw_text[:2000],
+                }
 
         # Normalize dates
         for field in ("document_date", "follow_up_date"):
@@ -247,6 +255,88 @@ class OCRPipeline:
             bm["canonical_name"] = self._canonicalize_biomarker(bm.get("name", ""))
 
         return data
+
+    def _salvage_truncated_json(self, raw_text: str) -> Optional[dict]:
+        """
+        Best-effort recovery when the LLM response is valid JSON up to the point
+        it got cut off (e.g. max_tokens reached mid-array on a very large panel).
+        Walks the "biomarkers" array and keeps every object that closed cleanly
+        before the truncation point, instead of discarding the whole extraction.
+        """
+        clean = raw_text.strip()
+        if "```json" in clean:
+            clean = clean.split("```json")[1].split("```")[0].strip()
+        elif "```" in clean:
+            clean = clean.split("```")[1]
+
+        marker = '"biomarkers"'
+        idx = clean.find(marker)
+        if idx == -1:
+            return None
+
+        array_start = clean.find("[", idx)
+        if array_start == -1:
+            return None
+
+        biomarkers = []
+        pos = array_start + 1
+        depth = 0
+        obj_start = None
+        in_string = False
+        escape = False
+
+        for i in range(pos, len(clean)):
+            ch = clean[i]
+            if in_string:
+                if escape:
+                    escape = False
+                elif ch == "\\":
+                    escape = True
+                elif ch == '"':
+                    in_string = False
+                continue
+            if ch == '"':
+                in_string = True
+            elif ch == "{":
+                if depth == 0:
+                    obj_start = i
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0 and obj_start is not None:
+                    try:
+                        biomarkers.append(json.loads(clean[obj_start:i + 1]))
+                    except Exception:
+                        pass
+                    obj_start = None
+            elif ch == "]" and depth == 0:
+                break
+
+        if not biomarkers:
+            return None
+
+        # Best-effort grab of top-level string fields that appear before the array
+        def grab(field: str) -> Optional[str]:
+            m = re.search(rf'"{field}"\s*:\s*"([^"]*)"', clean[:idx])
+            return m.group(1) if m else None
+
+        return {
+            "document_type": grab("document_type") or "lab_report",
+            "document_date": grab("document_date"),
+            "hospital_name": grab("hospital_name"),
+            "doctor_name": grab("doctor_name"),
+            "extraction_confidence": 0.6,
+            "summary": (
+                f"AI extracted {len(biomarkers)} test result(s) from this report. "
+                "The response was very large and got cut off partway through, so a few "
+                "results near the end may be missing — re-run analysis if something looks incomplete."
+            ),
+            "key_findings": [],
+            "biomarkers": biomarkers,
+            "medicines": [],
+            "diagnoses": [],
+            "risk_flags": [],
+        }
 
     def _normalize_date(self, date_str: str) -> Optional[str]:
         """Convert various Indian date formats to YYYY-MM-DD."""
