@@ -532,11 +532,19 @@ async def get_knowledge_graph(
 # ── Background helpers ────────────────────────────────────────────────────────
 
 async def _compute_scores_background(user_id: str):
+    import json as _json
     from app.core.database import get_db_context
     async with get_db_context() as db:
         engine = PredictionEngine(db)
         result = await engine.compute_health_scores(uuid.UUID(user_id))
         scores_data = result.get("scores", {})
+        narrative = result.get("ai_narrative")
+        # ai_narrative is a Text column — structured narratives come back as a
+        # dict from the LLM and must be JSON-encoded for storage; the frontend
+        # JSON.parse()s it back out (and falls back to plain-text parsing for
+        # narratives stored before this structured format existed).
+        if isinstance(narrative, dict):
+            narrative = _json.dumps(narrative)
         score = HealthScore(
             user_id=uuid.UUID(user_id),
             scored_date=date.today(),
@@ -550,7 +558,7 @@ async def _compute_scores_background(user_id: str):
             preventive_score=scores_data.get("preventive_score"),
             thyroid_score=scores_data.get("thyroid_score"),
             blood_score=scores_data.get("blood_score"),
-            ai_narrative=result.get("ai_narrative"),
+            ai_narrative=narrative,
             confidence=result.get("confidence"),
             data_completeness=result.get("data_completeness"),
             contributing_factors=result.get("contributing_factors", {}),

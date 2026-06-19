@@ -70,7 +70,9 @@ Compute these scores (0-100, higher = healthier):
 - thyroid_score: thyroid function
 - blood_score: complete blood count indicators
 
-Return JSON:
+Return JSON. The "ai_narrative" field MUST be a structured object (not a single
+paragraph) so the UI can render it as distinct sections — do not put emoji
+headers or numbered lists inside plain strings, use the array fields instead:
 {{
     "scores": {{
         "overall_score": 72,
@@ -82,7 +84,16 @@ Return JSON:
     "contributing_factors": {{
         "heart_score": "Based on cholesterol (LDL elevated), BP (normal range)"
     }},
-    "ai_narrative": "Your overall health score is 72/100. Your metabolic health needs attention..."
+    "ai_narrative": {{
+        "disclaimer": "This is a preventive health risk assessment tool — NOT a diagnostic system. Findings are risk indicators only; consult a qualified healthcare professional.",
+        "summary": "One or two sentences on the overall score and what drives it.",
+        "key_areas": [
+            {{"title": "Liver Health", "score": 52, "status": "Needs Attention", "detail": "Why this area needs attention, in plain language."}}
+        ],
+        "reassuring_findings": ["Short reassuring finding 1", "Short reassuring finding 2"],
+        "next_steps": ["Concrete next step 1", "Concrete next step 2"],
+        "data_currency_warning": "Note on how recent/sparse the underlying data is, or empty string if not applicable."
+    }}
 }}
 """
         response = await self.llm.complete(
@@ -104,7 +115,9 @@ Return JSON:
                 "scores": {"overall_score": 50},
                 "data_completeness": 0.1,
                 "confidence": 0.3,
-                "ai_narrative": "Insufficient data for detailed scoring. Please upload more health records.",
+                "ai_narrative": {
+                    "summary": "Insufficient data for detailed scoring. Please upload more health records.",
+                },
             }
 
     async def generate_predictive_alerts(self, user_id: UUID) -> list[dict]:

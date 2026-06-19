@@ -456,7 +456,12 @@ export function InsightsPage() {
           {!corrLoading && biomarkerFindings.length === 0 && (
             <div className="text-center py-12 bg-white rounded-3xl border border-slate-100 shadow-card">
               <FlaskConical size={28} className="text-slate-200 mx-auto mb-2" />
-              <p className="text-sm text-slate-400">No patterns found yet. Upload lab reports then run analysis.</p>
+              <p className="text-sm text-slate-500 font-semibold mb-1">No patterns found yet</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                Trend detection needs the same biomarker measured at least twice, on different dates, then
+                "Run Analysis" above. A single lab panel isn't enough to show a trend yet — upload another
+                report from a different date to unlock this.
+              </p>
             </div>
           )}
           {biomarkerFindings.sort((a,b) => (b.confidence ?? 0) - (a.confidence ?? 0)).map((f, i) => (

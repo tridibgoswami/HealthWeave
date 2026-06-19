@@ -6,6 +6,7 @@ import {
   AlertCircle, TrendingUp, Pill, FlaskConical, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { doctorApi } from "../../services/api";
+import { AiNarrative } from "../../components/AiNarrative";
 import toast from "react-hot-toast";
 
 const RISK_COLOR: Record<string, string> = {
@@ -244,9 +245,7 @@ export function DoctorPatientView() {
                 ))}
               </div>
               {health_score.ai_narrative && (
-                <p className="text-xs text-slate-600 mt-4 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-                  {health_score.ai_narrative}
-                </p>
+                <AiNarrative raw={health_score.ai_narrative} className="mt-4" />
               )}
             </div>
           )}

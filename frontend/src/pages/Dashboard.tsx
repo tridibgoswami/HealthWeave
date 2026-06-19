@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   Heart, Activity, Droplets, Zap, Flame, Shield, Brain, TrendingUp,
-  Upload, MessageSquare, ChevronRight, Sparkles, AlertTriangle,
+  Upload, MessageSquare, ChevronRight, AlertTriangle,
   BarChart3, FileText, ArrowUpRight, ArrowDownRight, Bell, RefreshCw,
 } from "lucide-react";
 import { intelligenceApi, recordsApi } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import { cn } from "../utils/cn";
+import { AiNarrative } from "../components/AiNarrative";
 
 /* ─── Score config ─────────────────────────────────────────────────── */
 const SCORES = [
@@ -330,10 +331,7 @@ export function Dashboard() {
                     </div>
 
                     {(latest.ai_narrative ?? latest.narrative) && (
-                      <div className="mt-5 flex gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                        <Sparkles size={15} className="text-brand-blue shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-800 leading-relaxed">{latest.ai_narrative ?? latest.narrative}</p>
-                      </div>
+                      <AiNarrative raw={latest.ai_narrative ?? latest.narrative} className="mt-5" />
                     )}
                   </>
                 )}
