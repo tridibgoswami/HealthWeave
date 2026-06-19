@@ -645,12 +645,18 @@ async def reprocess_record(
         }
 
     else:
+        if not doc:
+            reason = "No document record found for this report."
+        elif not record.structured_data:
+            reason = "The original file could not be retrieved from storage, and no prior extraction exists to fall back on."
+        else:
+            reason = (
+                "The original file could not be retrieved from storage, and the previous "
+                "extraction for this report found no usable test results to re-save."
+            )
         raise HTTPException(
             status_code=422,
-            detail=(
-                "Original file not available in storage and no structured data found. "
-                "Please re-upload the document."
-            ),
+            detail=f"{reason} Please delete this record and re-upload the file.",
         )
 
 

@@ -215,8 +215,8 @@ function RecordRow({
           // ignore
         }
       }, 15_000);
-    } catch {
-      toast.error("Could not start re-analysis. Try re-uploading the file.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Could not start re-analysis. Try re-uploading the file.");
     } finally {
       setReprocessing(false);
     }
