@@ -40,7 +40,7 @@ async def get_health_scores(
     result = await db.execute(
         select(HealthScore)
         .where(HealthScore.user_id == uuid.UUID(user_id))
-        .order_by(desc(HealthScore.scored_date))
+        .order_by(desc(HealthScore.scored_date), desc(HealthScore.created_at))
         .limit(limit)
     )
     scores = result.scalars().all()
@@ -545,9 +545,8 @@ async def _compute_scores_background(user_id: str):
         # narratives stored before this structured format existed).
         if isinstance(narrative, dict):
             narrative = _json.dumps(narrative)
-        score = HealthScore(
-            user_id=uuid.UUID(user_id),
-            scored_date=date.today(),
+
+        field_values = dict(
             overall_score=scores_data.get("overall_score"),
             heart_score=scores_data.get("heart_score"),
             liver_score=scores_data.get("liver_score"),
@@ -563,7 +562,24 @@ async def _compute_scores_background(user_id: str):
             data_completeness=result.get("data_completeness"),
             contributing_factors=result.get("contributing_factors", {}),
         )
-        db.add(score)
+
+        # health_scores has a UNIQUE (user_id, scored_date) constraint, so a
+        # second compute on the same calendar day (e.g. a 2nd/3rd report
+        # uploaded the same day, or clicking "Recompute" twice) must update
+        # today's existing row rather than INSERT, which would otherwise
+        # raise IntegrityError and get silently swallowed by the caller.
+        existing_result = await db.execute(
+            select(HealthScore).where(
+                HealthScore.user_id == uuid.UUID(user_id),
+                HealthScore.scored_date == date.today(),
+            )
+        )
+        existing = existing_result.scalar_one_or_none()
+        if existing:
+            for key, value in field_values.items():
+                setattr(existing, key, value)
+        else:
+            db.add(HealthScore(user_id=uuid.UUID(user_id), scored_date=date.today(), **field_values))
         await db.commit()
 
 

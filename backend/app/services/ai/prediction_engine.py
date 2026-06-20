@@ -48,6 +48,8 @@ class PredictionEngine:
 
         prompt = f"""Compute health scores for a patient based on their health data.
 
+Today's date: {date.today().isoformat()}
+
 Available Data:
 === Biomarker History ===
 {json.dumps(biomarkers, default=str, indent=2)[:3000]}

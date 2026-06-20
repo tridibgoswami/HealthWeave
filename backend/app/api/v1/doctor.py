@@ -388,7 +388,7 @@ async def get_patient_summary(
     score_result = await db.execute(
         select(HealthScore)
         .where(HealthScore.user_id == uuid.UUID(patient_id))
-        .order_by(desc(HealthScore.scored_date))
+        .order_by(desc(HealthScore.scored_date), desc(HealthScore.created_at))
         .limit(1)
     )
     score = score_result.scalar_one_or_none()
