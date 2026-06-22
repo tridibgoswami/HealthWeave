@@ -343,7 +343,11 @@ async def _process_document_background(
             )
 
     # Step 9: Recompute health scores and alerts with the new biomarker data
-    from app.api.v1.intelligence import _compute_scores_background, _generate_alerts_background
+    from app.api.v1.intelligence import (
+        _compute_scores_background,
+        _generate_alerts_background,
+        _run_correlations_background,
+    )
     try:
         await _compute_scores_background(user_id)
     except Exception as exc:
@@ -352,6 +356,14 @@ async def _process_document_background(
         await _generate_alerts_background(user_id)
     except Exception as exc:
         _log.warning("Post-upload alert generation failed: %s", exc)
+
+    # Step 10: Re-run cross-report correlation so every new report is checked
+    # against the patient's full history (repeat tests, trends, disease
+    # progression) instead of only on a manual "Run Analysis" click.
+    try:
+        await _run_correlations_background(user_id)
+    except Exception as exc:
+        _log.warning("Post-upload correlation analysis failed: %s", exc)
 
 
 @router.get("/")

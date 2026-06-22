@@ -51,11 +51,19 @@ function splitListItems(body: string): string[] {
   return [];
 }
 
-// Splits on emoji-prefixed ALL-CAPS headers, e.g. "⚠️ IMPORTANT DISCLAIMER:".
-// A fresh regex literal is created per call — a shared module-level `g` regex
-// would carry lastIndex state across calls and corrupt later parses.
+// Splits on emoji-prefixed ALL-CAPS headers, e.g. "⚠️ IMPORTANT DISCLAIMER:"
+// or "--- 🔴 PRIMARY CONCERN — LIVER HEALTH (52/100)" (no trailing colon,
+// "---" dividers instead of colons). A fresh regex literal is created per
+// call — a shared module-level `g` regex would carry lastIndex state across
+// calls and corrupt later parses.
 function parseLegacyNarrative(raw: string): Section[] {
-  const parts = raw.split(/(\p{Extended_Pictographic}️?\s*[A-Z][A-Z0-9\s/&-]{2,60}:)/gu);
+  const cleaned = raw.replace(/-{2,}/g, "\n");
+  // Each header "word" must start with 2+ consecutive uppercase letters, so a
+  // sentence-starting capital ("The", "Your"...) right after a header never
+  // gets swallowed into it (single capital + lowercase fails the {2,} run).
+  const headerPattern =
+    /(\p{Extended_Pictographic}️?\s*(?:[A-Z]{2,}[A-Z0-9]*[\s/&—–-]*)+(?:\(\d{1,3}\/100[^)]*\))?:?)/gu;
+  const parts = cleaned.split(headerPattern);
   if (parts.length <= 1) {
     return [{ title: "Summary", paragraphs: [raw.trim()], items: [] }];
   }

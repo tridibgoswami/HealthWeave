@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { authApi } from "../services/api";
 import { Dna, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Activity } from "lucide-react";
 
 const TRUST_POINTS = [
@@ -31,11 +32,7 @@ export function Login() {
     e.preventDefault();
     setForgotLoading(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "/api/v1"}/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail }),
-      });
+      await authApi.forgotPassword(forgotEmail);
       setForgotSent(true);
     } finally {
       setForgotLoading(false);

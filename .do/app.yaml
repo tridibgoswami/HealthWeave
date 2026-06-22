@@ -58,6 +58,17 @@ services:
         type: SECRET
         value: ""
 
+      # Email delivery (Resend) — fill RESEND_API_KEY in the DO dashboard
+      - key: RESEND_API_KEY
+        type: SECRET
+        value: ""
+      - key: FROM_EMAIL
+        value: noreply@healthweave.in
+      - key: FROM_NAME
+        value: HealthWeave
+      - key: APP_BASE_URL
+        value: https://app.healthweave.in
+
       # CORS — allow both the DO-assigned URL and any custom domain
       - key: CORS_ORIGINS
         value: ${frontend.PUBLIC_URL},https://app.healthweave.in

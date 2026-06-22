@@ -16,6 +16,7 @@ const queryClient = new QueryClient({
 });
 
 const Login           = React.lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
+const ResetPassword    = React.lazy(() => import("./pages/ResetPassword").then((m) => ({ default: m.ResetPassword })));
 const Register        = React.lazy(() => import("./pages/Register").then((m) => ({ default: m.Register })));
 const RegisterChoice  = React.lazy(() => import("./pages/RegisterChoice").then((m) => ({ default: m.RegisterChoice })));
 const RegisterDoctor  = React.lazy(() => import("./pages/RegisterDoctor").then((m) => ({ default: m.RegisterDoctor })));
@@ -97,6 +98,7 @@ function AppInner() {
           {/* Public */}
           <Route path="/"                    element={<LandingPage />} />
           <Route path="/login"               element={<Login />} />
+          <Route path="/reset-password"      element={<ResetPassword />} />
           <Route path="/register"            element={<RegisterChoice />} />
           <Route path="/register/patient"    element={<Register />} />
           <Route path="/register/doctor"     element={<RegisterDoctor />} />

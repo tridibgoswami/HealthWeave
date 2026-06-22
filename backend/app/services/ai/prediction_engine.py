@@ -74,7 +74,10 @@ Compute these scores (0-100, higher = healthier):
 
 Return JSON. The "ai_narrative" field MUST be a structured object (not a single
 paragraph) so the UI can render it as distinct sections — do not put emoji
-headers or numbered lists inside plain strings, use the array fields instead:
+headers, "---" dividers, or numbered lists inside any single string field, and
+do not write the whole assessment into "summary". Each key area, reassuring
+finding, and next step MUST be its own separate array entry below — never
+concatenate them into one block of text:
 {{
     "scores": {{
         "overall_score": 72,

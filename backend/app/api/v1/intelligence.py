@@ -531,6 +531,92 @@ async def get_knowledge_graph(
 
 # ── Background helpers ────────────────────────────────────────────────────────
 
+import re as _re
+
+# A header "word" must start with 2+ consecutive uppercase letters, so a
+# sentence-starting capital ("The", "Your"...) right after a header is never
+# mistaken for the start of another header — Python's stdlib `re` has no
+# \p{Extended_Pictographic}, so leading emoji are matched generically as
+# "non-word, non-whitespace" characters instead of a Unicode property class.
+_HEADER_RE = _re.compile(
+    r"^[^\w\s]{0,4}\s*((?:[A-Z]{2,}[A-Z0-9]*[\s/&—–-]*)+(?:\(\d{1,3}/100[^)]*\))?)"
+)
+_HEADER_COUNT_RE = _re.compile(r"(?:[A-Z]{2,}[A-Z0-9]*\s+){2,}[A-Z]{2,}[A-Z0-9]*")
+
+
+def _normalize_narrative(narrative) -> dict:
+    """
+    Best-effort conversion of an ai_narrative LLM response into the structured
+    shape the frontend (AiNarrative.tsx) renders as distinct sections.
+
+    Handles three shapes seen in practice:
+    1. Already a dict matching the requested schema — passed through.
+    2. A dict where the LLM crammed everything into a single field (e.g.
+       "summary") as one long string with emoji/ALL-CAPS headers separated by
+       "---" dividers, instead of using the dedicated array fields.
+    3. A plain string with the same "---"-delimited emoji-header shape.
+
+    Splitting server-side (rather than relying solely on the frontend's
+    best-effort parser) means every newly computed score gets a consistent,
+    correctly-sectioned narrative regardless of how strictly the LLM followed
+    the JSON schema in a given response.
+    """
+    if isinstance(narrative, str):
+        narrative = {"summary": narrative}
+    if not isinstance(narrative, dict):
+        return narrative
+
+    # Detect the "everything dumped into one field" case: any field whose
+    # text contains multiple "---"-style dividers or 2+ emoji-prefixed headers.
+    blob_key = None
+    blob_text = ""
+    for key in ("summary", "disclaimer", "data_currency_warning"):
+        val = narrative.get(key)
+        if isinstance(val, str) and ("---" in val or len(_HEADER_COUNT_RE.findall(val)) >= 3):
+            blob_key, blob_text = key, val
+            break
+
+    if not blob_key:
+        return narrative
+
+    chunks = [c.strip() for c in _re.split(r"-{2,}", blob_text) if c.strip()]
+    out: dict = {k: v for k, v in narrative.items() if k != blob_key}
+    out.setdefault("key_areas", [])
+    out.setdefault("reassuring_findings", [])
+    out.setdefault("next_steps", [])
+
+    for chunk in chunks:
+        match = _HEADER_RE.match(chunk)
+        header_clean = match.group(1).strip() if match else ""
+        body = chunk[match.end():].strip() if match else chunk
+        upper = header_clean.upper()
+
+        if "DISCLAIMER" in upper:
+            out["disclaimer"] = out.get("disclaimer") or body or chunk
+        elif "OVERALL HEALTH SCORE" in upper or (not header_clean and not out.get("summary")):
+            out["summary"] = out.get("summary") or (body or chunk)
+        elif "REASSUR" in upper:
+            items = [i.strip(" .") for i in _re.split(r"[•\n]|(?<=[a-z])\.\s+(?=[A-Z])", body) if i.strip(" .")]
+            out["reassuring_findings"].extend(items or [body])
+        elif "RECOMMEND" in upper or "NEXT STEP" in upper or "ACTION" in upper:
+            items = [i.strip() for i in _re.split(r"\d{1,2}\.\s+", body) if i.strip()]
+            out["next_steps"].extend(items or [body])
+        elif "DATA CURRENCY" in upper or "WARNING" in upper:
+            out["data_currency_warning"] = out.get("data_currency_warning") or body or chunk
+        elif header_clean:
+            score_match = _re.search(r"\(?(\d{1,3})/100", chunk)
+            out["key_areas"].append({
+                "title": _re.sub(r"\(.*?\)", "", header_clean).strip(),
+                "score": int(score_match.group(1)) if score_match else None,
+                "status": None,
+                "detail": body,
+            })
+        elif body:
+            out["summary"] = (out.get("summary") + " " + body).strip() if out.get("summary") else body
+
+    return out
+
+
 async def _compute_scores_background(user_id: str):
     import json as _json
     from app.core.database import get_db_context
@@ -538,7 +624,7 @@ async def _compute_scores_background(user_id: str):
         engine = PredictionEngine(db)
         result = await engine.compute_health_scores(uuid.UUID(user_id))
         scores_data = result.get("scores", {})
-        narrative = result.get("ai_narrative")
+        narrative = _normalize_narrative(result.get("ai_narrative"))
         # ai_narrative is a Text column — structured narratives come back as a
         # dict from the LLM and must be JSON-encoded for storage; the frontend
         # JSON.parse()s it back out (and falls back to plain-text parsing for
@@ -622,6 +708,13 @@ async def _run_correlations_background(user_id: str):
     async with get_db_context() as db:
         engine = CorrelationEngine(db)
         findings = await engine.run_full_correlation(uuid.UUID(user_id))
+
+        # Findings reflect the patient's *current* longitudinal state, not a
+        # historical log — replace the previous set rather than accumulating
+        # duplicates each time this runs (now also triggered on every upload,
+        # not just the manual "Run Analysis" button).
+        await db.execute(delete(CorrelationFinding).where(CorrelationFinding.user_id == uuid.UUID(user_id)))
+
         for finding in findings:
             cf = CorrelationFinding(
                 user_id=uuid.UUID(user_id),

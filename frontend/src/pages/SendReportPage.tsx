@@ -1,8 +1,27 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Send, Stethoscope, Building2, Search, CheckCircle, ChevronDown } from "lucide-react";
-import { consentApi, doctorApi, orgApi } from "../services/api";
+import { Send, Stethoscope, Building2, Search, CheckCircle, ChevronDown, Sparkles } from "lucide-react";
+import { consentApi, doctorApi, orgApi, intelligenceApi } from "../services/api";
 import toast from "react-hot-toast";
+
+// Strips JSON/markdown structure from a stored ai_narrative so it reads as
+// plain prose suitable for pre-filling the patient's message to the doctor.
+function plainTextFromNarrative(raw: string): string {
+  try {
+    const obj = JSON.parse(raw);
+    const parts: string[] = [];
+    if (obj.summary) parts.push(String(obj.summary));
+    if (Array.isArray(obj.key_areas) && obj.key_areas.length) {
+      parts.push(
+        "Areas of concern: " +
+          obj.key_areas.map((a: any) => (typeof a === "string" ? a : a.title)).filter(Boolean).join(", ")
+      );
+    }
+    return parts.join(" ").trim();
+  } catch {
+    return raw.replace(/[#*_`]/g, "").replace(/\s+/g, " ").trim();
+  }
+}
 
 type TargetType = "doctor" | "hospital";
 
@@ -150,6 +169,20 @@ export function SendReportPage() {
     onError: (err: any) => toast.error(err.response?.data?.detail || "Failed to send report"),
   });
 
+  const aiSummaryMut = useMutation({
+    mutationFn: async () => {
+      const res = await intelligenceApi.getHealthScores(1);
+      const latest = res.data?.scores?.[0];
+      if (!latest?.ai_narrative) throw new Error("No AI health summary available yet. Upload a report and run analysis first.");
+      return plainTextFromNarrative(latest.ai_narrative);
+    },
+    onSuccess: (text) => {
+      if (!text) { toast.error("No AI health summary available yet."); return; }
+      setMessage(text.slice(0, 500));
+    },
+    onError: (err: any) => toast.error(err.message || "Could not load AI summary"),
+  });
+
   const toggle = (k: string) => setShares((p: any) => ({ ...p, [k]: !p[k] }));
 
   const canSubmit =
@@ -277,9 +310,19 @@ export function SendReportPage() {
 
         {/* Patient message */}
         <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
-            Your Current Health Issues / Message*
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide">
+              Your Current Health Issues / Message*
+            </label>
+            <button
+              type="button"
+              onClick={() => aiSummaryMut.mutate()}
+              disabled={aiSummaryMut.isPending}
+              className="flex items-center gap-1 text-[11px] font-bold text-brand-blue hover:text-blue-700 disabled:opacity-50"
+            >
+              <Sparkles size={11} /> {aiSummaryMut.isPending ? "Loading…" : "Use AI Summary"}
+            </button>
+          </div>
           <textarea
             className="hw-input resize-none"
             rows={4}

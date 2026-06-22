@@ -77,6 +77,11 @@ export const authApi = {
     api.post("/auth/login", data),
 
   getMe: () => api.get("/auth/me"),
+
+  forgotPassword: (email: string) => api.post("/auth/forgot-password", { email }),
+
+  resetPassword: (data: { token: string; new_password: string }) =>
+    api.post("/auth/reset-password", data),
 };
 
 // ── Health Records ─────────────────────────────────────────────────────────────
